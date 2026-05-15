@@ -1,617 +1,823 @@
-import type { Metadata } from "next";
-import type { ReactNode } from "react";
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import {
-  formatDate,
-  formatStage,
-  getCountryMatches,
-  getCountryNameFromMatches,
-  getCountrySummary,
-  getFeaturedBroadcast,
-  getOtherCountryCodes,
-  getTeamName,
-  normalizeCountryCode,
-} from "@/lib/utils";
+import type { BroadcastInfo } from "@/lib/matches"
 
-type PageProps = {
-  params: Promise<{
-    code: string;
-  }>;
+export const broadcastsByCountry: Record<string, BroadcastInfo[]> = {
+  gb: [
+    {
+      countryCode: "gb",
+      countryName: "United Kingdom",
+      broadcaster: "BBC / ITV",
+      access: "Free",
+      url: "https://www.bbc.co.uk/iplayer",
+      sourceName: "BBC / ITV official broadcast rights",
+      sourceUrl: "https://www.bbc.co.uk/sport/football",
+      lastChecked: "2026-04-05",
+      hasFullCoverage: true,
+      notes: "Free full tournament coverage in the UK",
+      commentaryLanguages: ["English"],
+    },
+  ],
+
+  au: [
+    {
+      countryCode: "au",
+      countryName: "Australia",
+      broadcaster: "SBS",
+      access: "Free",
+      url: "https://www.sbs.com.au/ondemand/fifa-world-cup-2026",
+      sourceName: "SBS official World Cup coverage",
+      sourceUrl: "https://www.sbs.com.au/ondemand/fifa-world-cup-2026",
+      lastChecked: "2026-04-07",
+      hasFullCoverage: true,
+      notes: "Free full tournament coverage in Australia",
+      commentaryLanguages: ["English"],
+    },
+  ],
+
+  ch: [
+    {
+      countryCode: "ch",
+      countryName: "Switzerland",
+      broadcaster: "SRF",
+      access: "Free",
+      url: "https://www.srf.ch/play/tv",
+      sourceName: "SRF / RTS official broadcast rights",
+      sourceUrl: "https://www.rts.ch/sport/football/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Free coverage for German-speaking Switzerland",
+      commentaryLanguages: ["German"],
+    },
+    {
+      countryCode: "ch",
+      countryName: "Switzerland",
+      broadcaster: "RTS",
+      access: "Free",
+      url: "https://www.rts.ch/play/tv",
+      sourceName: "SRF / RTS official broadcast rights",
+      sourceUrl: "https://www.rts.ch/sport/football/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Free coverage for French-speaking Switzerland",
+      commentaryLanguages: ["French"],
+    },
+  ],
+
+  be: [
+    {
+      countryCode: "be",
+      countryName: "Belgium",
+      broadcaster: "RTBF",
+      access: "Free",
+      url: "https://www.rtbf.be/auvio/",
+      sourceName: "RTBF official broadcast rights",
+      sourceUrl: "https://www.rtbf.be/sport/football/",
+      lastChecked: "2026-04-07",
+      hasFullCoverage: true,
+      notes: "Free full tournament coverage in Belgium",
+      commentaryLanguages: ["French"],
+    },
+    {
+      countryCode: "be",
+      countryName: "Belgium",
+      broadcaster: "VRT",
+      access: "Free",
+      url: "https://www.vrt.be/vrtmax/",
+      sourceName: "VRT official broadcast rights",
+      sourceUrl: "https://www.vrt.be/vrtmax/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Free full tournament coverage in Belgium",
+      commentaryLanguages: ["Dutch"],
+    },
+  ],
+
+  fr: [
+    {
+      countryCode: "fr",
+      countryName: "France",
+      broadcaster: "TF1",
+      access: "Free",
+      url: "https://www.tf1.fr/",
+      sourceName: "TF1 official broadcast rights",
+      sourceUrl: "https://www.tf1info.fr/",
+      lastChecked: "2026-04-05",
+      hasFullCoverage: false,
+      notes: "Partial free coverage (selected matches)",
+      commentaryLanguages: ["French"],
+    },
+    {
+      countryCode: "fr",
+      countryName: "France",
+      broadcaster: "M6",
+      access: "Free",
+      url: "https://www.6play.fr/",
+      sourceName: "M6 official broadcast rights",
+      sourceUrl: "https://www.m6.fr/",
+      lastChecked: "2026-04-05",
+      hasFullCoverage: false,
+      notes: "Partial free coverage (selected matches)",
+      commentaryLanguages: ["French"],
+    },
+    {
+      countryCode: "fr",
+      countryName: "France",
+      broadcaster: "beIN SPORTS",
+      access: "Paid",
+      url: "https://www.beinsports.com/fr-fr/football/coupe-du-monde-de-la-fifa-2026",
+      affiliateUrl: undefined,
+      sourceName: "beIN SPORTS France World Cup 2026 page",
+      sourceUrl:
+        "https://www.beinsports.com/fr-fr/football/coupe-du-monde-de-la-fifa-2026",
+      lastChecked: "2026-04-07",
+      hasFullCoverage: true,
+      notes: "Paid full tournament coverage in France",
+      commentaryLanguages: ["French"],
+    },
+  ],
+
+  ca: [
+    {
+      countryCode: "ca",
+      countryName: "Canada",
+      broadcaster: "TSN",
+      access: "Paid",
+      url: "https://www.tsn.ca/",
+      sourceName: "Bell Media FIFA World Cup 26 announcement",
+      sourceUrl:
+        "https://www.bellmedia.ca/the-lede/press/fifa-world-cup-26-is-one-year-away-and-tsn-counts-down-to-the-tournament-with-preview-specials-all-new-podcasts-and-more/",
+      lastChecked: "2026-04-07",
+      hasFullCoverage: true,
+      notes: "Full tournament coverage in Canada via Bell Media sports ecosystem",
+      commentaryLanguages: ["English"],
+    },
+    {
+      countryCode: "ca",
+      countryName: "Canada",
+      broadcaster: "RDS",
+      access: "Paid",
+      url: "https://www.rds.ca/",
+      sourceName: "Bell Media FIFA World Cup 26 announcement",
+      sourceUrl:
+        "https://www.bellmedia.ca/fr/ventes-publicitaires/ressources/nouvelles/opportunites-publicitaires-pour-la-coupe-du-monde-fifa-2026/",
+      lastChecked: "2026-04-07",
+      hasFullCoverage: true,
+      notes: "Full tournament coverage in Canada for French-language audience",
+      commentaryLanguages: ["French"],
+    },
+  ],
+
+  us: [
+    {
+      countryCode: "us",
+      countryName: "United States",
+      broadcaster: "FOX Sports",
+      access: "Paid",
+      url: "https://www.foxsports.com/",
+      sourceName: "FOX Sports FIFA World Cup coverage",
+      sourceUrl: "https://www.foxsports.com/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "English-language World Cup coverage in the United States",
+      commentaryLanguages: ["English"],
+    },
+    {
+      countryCode: "us",
+      countryName: "United States",
+      broadcaster: "Telemundo",
+      access: "Free",
+      url: "https://www.telemundo.com/deportes",
+      sourceName: "NBCUniversal Telemundo World Cup coverage",
+      sourceUrl:
+        "https://www.nbcuniversal.com/article/telemundo-unveils-most-extensive-spanish-language-fifa-world-cuptm-presentation-broadcast-television",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: false,
+      notes: "Main Spanish-language broadcast (free over-the-air in some markets)",
+      commentaryLanguages: ["Spanish"],
+    },
+    {
+      countryCode: "us",
+      countryName: "United States",
+      broadcaster: "Universo",
+      access: "Paid",
+      url: "https://www.telemundo.com/universo",
+      sourceName: "NBCUniversal Universo coverage",
+      sourceUrl:
+        "https://www.nbcuniversal.com/article/telemundo-unveils-most-extensive-spanish-language-fifa-world-cuptm-presentation-broadcast-television",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Cable channel with extended coverage",
+      commentaryLanguages: ["Spanish"],
+    },
+    {
+      countryCode: "us",
+      countryName: "United States",
+      broadcaster: "Peacock",
+      access: "Paid",
+      url: "https://www.peacocktv.com/",
+      sourceName: "NBCUniversal Peacock streaming",
+      sourceUrl:
+        "https://www.nbcuniversal.com/article/telemundo-unveils-most-extensive-spanish-language-fifa-world-cuptm-presentation-broadcast-television",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Full streaming coverage in Spanish",
+      commentaryLanguages: ["Spanish"],
+    },
+  ],
+
+  es: [
+    {
+      countryCode: "es",
+      countryName: "Spain",
+      broadcaster: "RTVE",
+      access: "Free",
+      url: "https://www.rtve.es/play/",
+      sourceName: "RTVE official coverage",
+      sourceUrl: "https://www.rtve.es/deportes/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: false,
+      notes: "Free-to-air matches including selected key fixtures",
+      commentaryLanguages: ["Spanish"],
+    },
+    {
+      countryCode: "es",
+      countryName: "Spain",
+      broadcaster: "Movistar+",
+      access: "Paid",
+      url: "https://www.movistarplus.es/",
+      sourceName: "Movistar+ football coverage",
+      sourceUrl: "https://www.movistarplus.es/deportes/futbol",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Full tournament coverage via subscription",
+      commentaryLanguages: ["Spanish"],
+    },
+  ],
+
+  pt: [
+    {
+      countryCode: "pt",
+      countryName: "Portugal",
+      broadcaster: "RTP",
+      access: "Free",
+      url: "https://www.rtp.pt/play/",
+      sourceName: "RTP previous World Cup coverage",
+      sourceUrl: "https://www.rtp.pt/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: false,
+      notes: "Free-to-air matches including Portugal games and key fixtures",
+      commentaryLanguages: ["Portuguese"],
+    },
+    {
+      countryCode: "pt",
+      countryName: "Portugal",
+      broadcaster: "Sport TV",
+      access: "Paid",
+      url: "https://www.sporttv.pt/",
+      sourceName: "Sport TV historical rights",
+      sourceUrl: "https://www.sporttv.pt/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Full tournament coverage via subscription",
+      commentaryLanguages: ["Portuguese"],
+    },
+  ],
+
+  se: [
+    {
+      countryCode: "se",
+      countryName: "Sweden",
+      broadcaster: "SVT",
+      access: "Free",
+      url: "https://www.svtplay.se/",
+      sourceName: "SVT World Cup coverage",
+      sourceUrl: "https://www.svt.se/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: false,
+      notes: "Shared rights, broadcasts many matches",
+      commentaryLanguages: ["Swedish"],
+    },
+    {
+      countryCode: "se",
+      countryName: "Sweden",
+      broadcaster: "TV4",
+      access: "Free",
+      url: "https://www.tv4play.se/",
+      sourceName: "TV4 sports rights",
+      sourceUrl: "https://www.tv4.se/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: false,
+      notes: "Co-broadcast with SVT",
+      commentaryLanguages: ["Swedish"],
+    },
+  ],
+
+  no: [
+    {
+      countryCode: "no",
+      countryName: "Norway",
+      broadcaster: "NRK",
+      access: "Free",
+      url: "https://tv.nrk.no/",
+      sourceName: "NRK sports rights",
+      sourceUrl: "https://www.nrk.no/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: false,
+      notes: "Free matches including major fixtures",
+      commentaryLanguages: ["Norwegian"],
+    },
+    {
+      countryCode: "no",
+      countryName: "Norway",
+      broadcaster: "TV2",
+      access: "Paid",
+      url: "https://www.tv2.no/play/",
+      sourceName: "TV2 premium sports",
+      sourceUrl: "https://www.tv2.no/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Full coverage via subscription",
+      commentaryLanguages: ["Norwegian"],
+    },
+  ],
+
+  dk: [
+    {
+      countryCode: "dk",
+      countryName: "Denmark",
+      broadcaster: "DR",
+      access: "Free",
+      url: "https://www.dr.dk/drtv/",
+      sourceName: "DR World Cup coverage",
+      sourceUrl: "https://www.dr.dk/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: false,
+      notes: "Shared free coverage",
+      commentaryLanguages: ["Danish"],
+    },
+    {
+      countryCode: "dk",
+      countryName: "Denmark",
+      broadcaster: "TV2",
+      access: "Free",
+      url: "https://play.tv2.dk/",
+      sourceName: "TV2 Denmark sports rights",
+      sourceUrl: "https://www.tv2.dk/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: false,
+      notes: "Co-broadcast with DR",
+      commentaryLanguages: ["Danish"],
+    },
+  ],
+
+  fi: [
+    {
+      countryCode: "fi",
+      countryName: "Finland",
+      broadcaster: "YLE",
+      access: "Free",
+      url: "https://areena.yle.fi/",
+      sourceName: "YLE sports rights",
+      sourceUrl: "https://yle.fi/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Full or near full tournament coverage",
+      commentaryLanguages: ["Finnish"],
+    },
+  ],
+
+  is: [
+    {
+      countryCode: "is",
+      countryName: "Iceland",
+      broadcaster: "RUV",
+      access: "Free",
+      url: "https://www.ruv.is/sjonvarp",
+      sourceName: "RUV World Cup coverage",
+      sourceUrl: "https://www.ruv.is/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Full tournament coverage",
+      commentaryLanguages: ["Icelandic"],
+    },
+  ],
+
+  nl: [
+    {
+      countryCode: "nl",
+      countryName: "Netherlands",
+      broadcaster: "NOS",
+      access: "Free",
+      url: "https://nos.nl/",
+      sourceName: "NOS World Cup rights",
+      sourceUrl: "https://nos.nl/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: false,
+      notes: "Free matches including Netherlands games",
+      commentaryLanguages: ["Dutch"],
+    },
+    {
+      countryCode: "nl",
+      countryName: "Netherlands",
+      broadcaster: "ESPN NL",
+      access: "Paid",
+      url: "https://www.espn.nl/",
+      sourceName: "ESPN Netherlands",
+      sourceUrl: "https://www.espn.nl/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Full coverage via subscription",
+      commentaryLanguages: ["Dutch"],
+    },
+  ],
+
+  in: [
+    {
+      countryCode: "in",
+      countryName: "India",
+      broadcaster: "DD Sports",
+      access: "Free",
+      url: "https://prasarbharati.gov.in/",
+      sourceName: "Prasar Bharati sports rights",
+      sourceUrl: "https://prasarbharati.gov.in/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: false,
+      notes: "Selected matches on free TV",
+      commentaryLanguages: ["Hindi", "English"],
+    },
+    {
+      countryCode: "in",
+      countryName: "India",
+      broadcaster: "JioCinema",
+      access: "Free",
+      url: "https://www.jiocinema.com/",
+      sourceName: "JioCinema FIFA coverage",
+      sourceUrl: "https://www.jiocinema.com/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Full tournament streaming free in India",
+      commentaryLanguages: ["Hindi", "English", "Regional"],
+    },
+  ],
+
+  cn: [
+    {
+      countryCode: "cn",
+      countryName: "China",
+      broadcaster: "CCTV",
+      access: "Free",
+      url: "https://tv.cctv.com/",
+      sourceName: "CCTV sports rights",
+      sourceUrl: "https://tv.cctv.com/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Official broadcaster with wide free coverage",
+      commentaryLanguages: ["Chinese"],
+    },
+    {
+      countryCode: "cn",
+      countryName: "China",
+      broadcaster: "Migu",
+      access: "Paid",
+      url: "https://www.miguvideo.com/",
+      sourceName: "Migu sports streaming",
+      sourceUrl: "https://www.miguvideo.com/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Premium streaming platform",
+      commentaryLanguages: ["Chinese"],
+    },
+  ],
+
+  ma: [
+    {
+      countryCode: "ma",
+      countryName: "Morocco",
+      broadcaster: "SNRT",
+      access: "Free",
+      url: "https://snrt.ma/",
+      sourceName: "SNRT sports coverage",
+      sourceUrl: "https://snrt.ma/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: false,
+      notes: "Free national coverage for selected matches",
+      commentaryLanguages: ["Arabic", "French"],
+    },
+    {
+      countryCode: "ma",
+      countryName: "Morocco",
+      broadcaster: "beIN Sports",
+      access: "Paid",
+      url: "https://www.beinsports.com/",
+      sourceName: "beIN Sports MENA coverage",
+      sourceUrl: "https://www.beinsports.com/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Paid full tournament coverage",
+      commentaryLanguages: ["Arabic"],
+    },
+  ],
+
+  dz: [
+    {
+      countryCode: "dz",
+      countryName: "Algeria",
+      broadcaster: "ENTV",
+      access: "Free",
+      url: "https://www.entv.dz/",
+      sourceName: "ENTV sports coverage",
+      sourceUrl: "https://www.entv.dz/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: false,
+      notes: "Free national coverage for selected matches",
+      commentaryLanguages: ["Arabic"],
+    },
+    {
+      countryCode: "dz",
+      countryName: "Algeria",
+      broadcaster: "beIN Sports",
+      access: "Paid",
+      url: "https://www.beinsports.com/",
+      sourceName: "beIN Sports MENA coverage",
+      sourceUrl: "https://www.beinsports.com/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Paid full tournament coverage",
+      commentaryLanguages: ["Arabic"],
+    },
+  ],
+
+  tn: [
+    {
+      countryCode: "tn",
+      countryName: "Tunisia",
+      broadcaster: "Wataniya",
+      access: "Free",
+      url: "https://www.watania1.tn/",
+      sourceName: "Wataniya sports coverage",
+      sourceUrl: "https://www.watania1.tn/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: false,
+      notes: "Free national coverage for selected matches",
+      commentaryLanguages: ["Arabic"],
+    },
+    {
+      countryCode: "tn",
+      countryName: "Tunisia",
+      broadcaster: "beIN Sports",
+      access: "Paid",
+      url: "https://www.beinsports.com/",
+      sourceName: "beIN Sports MENA coverage",
+      sourceUrl: "https://www.beinsports.com/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Paid full tournament coverage",
+      commentaryLanguages: ["Arabic"],
+    },
+  ],
+
+  eg: [
+    {
+      countryCode: "eg",
+      countryName: "Egypt",
+      broadcaster: "ON Time Sports",
+      access: "Free",
+      url: "https://www.youtube.com/@ONTimeSports",
+      sourceName: "ON Time Sports coverage",
+      sourceUrl: "https://www.ontime.live/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: false,
+      notes: "Selected free coverage",
+      commentaryLanguages: ["Arabic"],
+    },
+    {
+      countryCode: "eg",
+      countryName: "Egypt",
+      broadcaster: "beIN Sports",
+      access: "Paid",
+      url: "https://www.beinsports.com/",
+      sourceName: "beIN Sports MENA coverage",
+      sourceUrl: "https://www.beinsports.com/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Paid full tournament coverage",
+      commentaryLanguages: ["Arabic"],
+    },
+  ],
+
+  sn: [
+    {
+      countryCode: "sn",
+      countryName: "Senegal",
+      broadcaster: "RTS",
+      access: "Free",
+      url: "https://www.rts.sn/",
+      sourceName: "RTS Senegal sports coverage",
+      sourceUrl: "https://www.rts.sn/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: false,
+      notes: "Free national coverage for selected matches",
+      commentaryLanguages: ["French"],
+    },
+    {
+      countryCode: "sn",
+      countryName: "Senegal",
+      broadcaster: "beIN Sports",
+      access: "Paid",
+      url: "https://www.beinsports.com/",
+      sourceName: "beIN Sports MENA coverage",
+      sourceUrl: "https://www.beinsports.com/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Paid full tournament coverage",
+      commentaryLanguages: ["Arabic"],
+    },
+  ],
+
+  ci: [
+    {
+      countryCode: "ci",
+      countryName: "Ivory Coast",
+      broadcaster: "RTI",
+      access: "Free",
+      url: "https://www.rti.ci/",
+      sourceName: "RTI sports coverage",
+      sourceUrl: "https://www.rti.ci/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: false,
+      notes: "Free national coverage for selected matches",
+      commentaryLanguages: ["French"],
+    },
+    {
+      countryCode: "ci",
+      countryName: "Ivory Coast",
+      broadcaster: "beIN Sports",
+      access: "Paid",
+      url: "https://www.beinsports.com/",
+      sourceName: "beIN Sports MENA coverage",
+      sourceUrl: "https://www.beinsports.com/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Paid full tournament coverage",
+      commentaryLanguages: ["Arabic"],
+    },
+  ],
+
+  ng: [
+    {
+      countryCode: "ng",
+      countryName: "Nigeria",
+      broadcaster: "NTA",
+      access: "Free",
+      url: "https://nta.ng/",
+      sourceName: "NTA sports coverage",
+      sourceUrl: "https://nta.ng/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: false,
+      notes: "Free national coverage for selected matches",
+      commentaryLanguages: ["English"],
+    },
+    {
+      countryCode: "ng",
+      countryName: "Nigeria",
+      broadcaster: "SuperSport",
+      access: "Paid",
+      url: "https://www.supersport.com/",
+      sourceName: "SuperSport coverage",
+      sourceUrl: "https://www.supersport.com/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Paid full coverage",
+      commentaryLanguages: ["English"],
+    },
+  ],
+
+  gh: [
+    {
+      countryCode: "gh",
+      countryName: "Ghana",
+      broadcaster: "GTV",
+      access: "Free",
+      url: "https://www.gbcghanaonline.com/gtv/",
+      sourceName: "GTV sports coverage",
+      sourceUrl: "https://www.gbcghanaonline.com/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: false,
+      notes: "Free national coverage for selected matches",
+      commentaryLanguages: ["English"],
+    },
+    {
+      countryCode: "gh",
+      countryName: "Ghana",
+      broadcaster: "SuperSport",
+      access: "Paid",
+      url: "https://www.supersport.com/",
+      sourceName: "SuperSport coverage",
+      sourceUrl: "https://www.supersport.com/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Paid full coverage",
+      commentaryLanguages: ["English"],
+    },
+  ],
+
+  za: [
+    {
+      countryCode: "za",
+      countryName: "South Africa",
+      broadcaster: "SABC",
+      access: "Free",
+      url: "https://www.sabcplus.com/",
+      sourceName: "SABC sports coverage",
+      sourceUrl: "https://www.sabc.co.za/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: false,
+      notes: "Selected free coverage",
+      commentaryLanguages: ["English"],
+    },
+    {
+      countryCode: "za",
+      countryName: "South Africa",
+      broadcaster: "SuperSport",
+      access: "Paid",
+      url: "https://www.supersport.com/",
+      sourceName: "SuperSport coverage",
+      sourceUrl: "https://www.supersport.com/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Paid full coverage",
+      commentaryLanguages: ["English"],
+    },
+  ],
+
+  cm: [
+    {
+      countryCode: "cm",
+      countryName: "Cameroon",
+      broadcaster: "CRTV",
+      access: "Free",
+      url: "https://www.crtv.cm/",
+      sourceName: "CRTV sports coverage",
+      sourceUrl: "https://www.crtv.cm/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: false,
+      notes: "Free national coverage for selected matches",
+      commentaryLanguages: ["French"],
+    },
+    {
+      countryCode: "cm",
+      countryName: "Cameroon",
+      broadcaster: "SuperSport",
+      access: "Paid",
+      url: "https://www.supersport.com/",
+      sourceName: "SuperSport coverage",
+      sourceUrl: "https://www.supersport.com/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Paid full coverage",
+      commentaryLanguages: ["English"],
+    },
+  ],
+
+  cd: [
+    {
+      countryCode: "cd",
+      countryName: "DR Congo",
+      broadcaster: "RTNC",
+      access: "Free",
+      url: "https://www.rtnc.cd/",
+      sourceName: "RTNC sports coverage",
+      sourceUrl: "https://www.rtnc.cd/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: false,
+      notes: "Free national coverage for selected matches",
+      commentaryLanguages: ["French"],
+    },
+    {
+      countryCode: "cd",
+      countryName: "DR Congo",
+      broadcaster: "SuperSport",
+      access: "Paid",
+      url: "https://www.supersport.com/",
+      sourceName: "SuperSport coverage",
+      sourceUrl: "https://www.supersport.com/",
+      lastChecked: "2026-04-13",
+      hasFullCoverage: true,
+      notes: "Paid full coverage",
+      commentaryLanguages: ["English"],
+    },
+  ],
 };
 
-function SectionTitle({ children }: { children: ReactNode }) {
-  return (
-    <h2
-      style={{
-        fontSize: "1.3rem",
-        fontWeight: 700,
-        marginTop: "1.4rem",
-        marginBottom: "0.75rem",
-      }}
-    >
-      {children}
-    </h2>
-  );
-}
+export const priorityCountryCodes = [
+  "gb",
+  "au",
+  "ch",
+  "be",
+  "fr",
+  "ca",
+  "us",
+] as const;
 
-function AccessBadge({ access }: { access: "Free" | "Paid" }) {
-  const isFree = access === "Free";
-
-  return (
-    <span
-      style={{
-        padding: "0.28rem 0.55rem",
-        borderRadius: "999px",
-        background: isFree ? "rgba(34,197,94,0.15)" : "rgba(245,158,11,0.15)",
-        color: isFree ? "#22C55E" : "#F59E0B",
-        fontSize: "0.74rem",
-        fontWeight: 700,
-        lineHeight: 1,
-      }}
-    >
-      {access}
-    </span>
-  );
-}
-
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { code } = await params;
-  const normalizedCode = normalizeCountryCode(code);
-
-  if (!normalizedCode) {
-    return {
-      title: "Country not found | WatchTVSport",
-      description: "The requested country page could not be found.",
-    };
-  }
-
-  const countryMatches = getCountryMatches(normalizedCode);
-
-  if (!countryMatches.length) {
-    return {
-      title: "Country not found | WatchTVSport",
-      description: "The requested country page could not be found.",
-    };
-  }
-
-  const countryName = getCountryNameFromMatches(countryMatches, normalizedCode);
-  const summary = getCountrySummary(countryMatches);
-
-  const title = `Where to Watch Football in ${countryName} – Official TV Channels`;
-  const description =
-    summary.freeCount > 0
-      ? `Find where to watch football legally in ${countryName}. Browse official TV channels and viewing options for upcoming matches, including ${summary.freeCount} match${summary.freeCount > 1 ? "es" : ""} with a free option currently listed.`
-      : `Find where to watch football legally in ${countryName}. Browse official TV channels and paid viewing options for upcoming matches and competitions.`;
-
-  return {
-    title,
-    description,
-    alternates: {
-      canonical: `/country/${normalizedCode}`,
-    },
-    openGraph: {
-      title,
-      description,
-      url: `/country/${normalizedCode}`,
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-    },
-  };
-}
-
-export default async function CountryPage({ params }: PageProps) {
-  const { code } = await params;
-  const normalizedCode = normalizeCountryCode(code);
-
-  if (!normalizedCode) {
-    notFound();
-  }
-
-  const countryMatches = getCountryMatches(normalizedCode);
-
-  if (!countryMatches.length) {
-    notFound();
-  }
-
-  const countryName = getCountryNameFromMatches(countryMatches, normalizedCode);
-  const summary = getCountrySummary(countryMatches);
-  const otherCountries = getOtherCountryCodes(normalizedCode);
-
-  const schema = {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    name: `Where to watch football in ${countryName}`,
-    url: `/country/${normalizedCode}`,
-    description: `Official football broadcasters and legal viewing options in ${countryName}.`,
-    about: {
-      "@type": "Thing",
-      name: `Football on TV in ${countryName}`,
-    },
-    mainEntity: countryMatches.slice(0, 20).map((item) => ({
-      "@type": "SportsEvent",
-      name: `${getTeamName(item.match.homeTeam)} vs ${getTeamName(item.match.awayTeam)}`,
-      startDate: item.match.matchDate,
-      url: `/watch/${item.match.slug}/${normalizedCode}`,
-    })),
-  };
-
-  return (
-    <main
-      style={{
-        background: "#0B1220",
-        color: "#FFFFFF",
-        minHeight: "100vh",
-        padding: "1.25rem 1rem 2.5rem",
-      }}
-    >
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-      />
-
-      <div
-        style={{
-          maxWidth: "1100px",
-          margin: "0 auto",
-        }}
-      >
-        <div
-          style={{
-            background: "#111827",
-            border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: "18px",
-            padding: "1.1rem",
-            marginBottom: "1.1rem",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              gap: "0.5rem",
-              flexWrap: "wrap",
-              marginBottom: "0.8rem",
-              alignItems: "center",
-            }}
-          >
-            <span
-              style={{
-                padding: "0.28rem 0.55rem",
-                borderRadius: "999px",
-                background: "rgba(59,130,246,0.15)",
-                color: "#BFDBFE",
-                fontSize: "0.74rem",
-                fontWeight: 700,
-                lineHeight: 1,
-              }}
-            >
-              Country guide
-            </span>
-
-            <span
-              style={{
-                padding: "0.28rem 0.55rem",
-                borderRadius: "999px",
-                background: "rgba(255,255,255,0.06)",
-                color: "#CBD5E1",
-                fontSize: "0.74rem",
-                fontWeight: 700,
-                lineHeight: 1,
-              }}
-            >
-              Official broadcasters only
-            </span>
-          </div>
-
-          <h1
-            style={{
-              fontSize: "2rem",
-              lineHeight: 1.05,
-              margin: 0,
-              marginBottom: "0.55rem",
-            }}
-          >
-            Where to watch football in {countryName}
-          </h1>
-
-          <p
-            style={{
-              color: "#CBD5E1",
-              fontSize: "0.97rem",
-              lineHeight: 1.55,
-              maxWidth: "820px",
-              marginTop: 0,
-              marginBottom: "0.8rem",
-            }}
-          >
-            Browse official football broadcasters and legal TV channels in {countryName}.
-            Compare free and paid viewing options for current and upcoming matches,
-            then open the dedicated country viewing page for each event.
-          </p>
-
-          <div
-            style={{
-              display: "flex",
-              gap: "0.75rem 1rem",
-              flexWrap: "wrap",
-              color: "#94A3B8",
-              fontSize: "0.88rem",
-            }}
-          >
-            <div>
-              {countryMatches.length} match{countryMatches.length > 1 ? "es" : ""}
-            </div>
-            <div>{summary.freeCount} with a free option</div>
-            <div>{summary.paidCount} with a paid option</div>
-            <div>
-              {summary.broadcasters.length} broadcaster
-              {summary.broadcasters.length > 1 ? "s" : ""}
-            </div>
-          </div>
-        </div>
-
-        <SectionTitle>Available matches in {countryName}</SectionTitle>
-
-        <div
-          style={{
-            display: "grid",
-            gap: "0.8rem",
-          }}
-        >
-          {countryMatches.map((item) => {
-            const homeTeam = getTeamName(item.match.homeTeam);
-            const awayTeam = getTeamName(item.match.awayTeam);
-            const featuredBroadcast = getFeaturedBroadcast(item.match);
-
-            return (
-              <div
-                key={item.match.slug}
-                style={{
-                  background: "#111827",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  borderRadius: "14px",
-                  padding: "0.9rem",
-                  display: "grid",
-                  gap: "0.7rem",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: "0.75rem",
-                    alignItems: "flex-start",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <div>
-                    <div
-                      style={{
-                        color: "#94A3B8",
-                        fontSize: "0.82rem",
-                        marginBottom: "0.2rem",
-                      }}
-                    >
-                      {item.match.competition ?? "FIFA World Cup 2026"} •{" "}
-                      {formatStage(item.match.group)}
-                    </div>
-
-                    <div
-                      style={{
-                        fontSize: "1rem",
-                        fontWeight: 700,
-                        marginBottom: "0.25rem",
-                        lineHeight: 1.3,
-                      }}
-                    >
-                      {homeTeam} vs {awayTeam}
-                    </div>
-
-                    <div
-                      style={{
-                        color: "#CBD5E1",
-                        fontSize: "0.88rem",
-                      }}
-                    >
-                      {formatDate(item.match.matchDate)}
-                    </div>
-
-                    {item.match.hostCity && item.match.hostCountry ? (
-                      <div
-                        style={{
-                          color: "#94A3B8",
-                          fontSize: "0.82rem",
-                          marginTop: "0.25rem",
-                        }}
-                      >
-                        {item.match.hostCity}, {item.match.hostCountry}
-                      </div>
-                    ) : null}
-                  </div>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "0.4rem",
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    {item.broadcasts.some((broadcast) => broadcast.access === "Free") ? (
-                      <AccessBadge access="Free" />
-                    ) : null}
-                    {item.broadcasts.some((broadcast) => broadcast.access === "Paid") ? (
-                      <AccessBadge access="Paid" />
-                    ) : null}
-                  </div>
-                </div>
-
-                {featuredBroadcast ? (
-                  <div
-                    style={{
-                      background: "rgba(255,255,255,0.04)",
-                      border: "1px solid rgba(255,255,255,0.06)",
-                      borderRadius: "12px",
-                      padding: "0.75rem 0.85rem",
-                    }}
-                  >
-                    <div
-                      style={{
-                        color: "#94A3B8",
-                        fontSize: "0.8rem",
-                        marginBottom: "0.2rem",
-                      }}
-                    >
-                      Featured local option
-                    </div>
-                    <div
-                      style={{
-                        fontWeight: 700,
-                        marginBottom: "0.3rem",
-                        fontSize: "0.95rem",
-                      }}
-                    >
-                      {featuredBroadcast.broadcaster}
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "0.4rem",
-                        flexWrap: "wrap",
-                        alignItems: "center",
-                      }}
-                    >
-                      <AccessBadge access={featuredBroadcast.access} />
-                      {featuredBroadcast.commentaryLanguages &&
-                      featuredBroadcast.commentaryLanguages.length > 0 ? (
-                        <span
-                          style={{
-                            color: "#CBD5E1",
-                            fontSize: "0.82rem",
-                          }}
-                        >
-                          Commentary: {featuredBroadcast.commentaryLanguages.join(", ")}
-                        </span>
-                      ) : null}
-                    </div>
-                  </div>
-                ) : null}
-
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "0.6rem",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <Link
-                    href={`/watch/${item.match.slug}/${normalizedCode}`}
-                    style={{
-                      background: "#3B82F6",
-                      color: "#FFFFFF",
-                      textDecoration: "none",
-                      padding: "0.65rem 0.85rem",
-                      borderRadius: "9px",
-                      fontWeight: 700,
-                      fontSize: "0.88rem",
-                      lineHeight: 1.1,
-                    }}
-                  >
-                    Country page
-                  </Link>
-
-                  <Link
-                    href={`/match/${item.match.slug}`}
-                    style={{
-                      border: "1px solid rgba(255,255,255,0.12)",
-                      color: "#FFFFFF",
-                      textDecoration: "none",
-                      padding: "0.65rem 0.85rem",
-                      borderRadius: "9px",
-                      fontWeight: 700,
-                      fontSize: "0.88rem",
-                      lineHeight: 1.1,
-                    }}
-                  >
-                    Match page
-                  </Link>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <SectionTitle>Main broadcasters in {countryName}</SectionTitle>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
-            gap: "0.8rem",
-          }}
-        >
-          {summary.broadcasters.map((item) => (
-            <div
-              key={`${item.countryCode}-${item.broadcaster}`}
-              style={{
-                background: "#111827",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "14px",
-                padding: "0.9rem",
-                display: "grid",
-                gap: "0.55rem",
-              }}
-            >
-              <div>
-                <div
-                  style={{
-                    color: "#94A3B8",
-                    fontSize: "0.82rem",
-                    marginBottom: "0.15rem",
-                  }}
-                >
-                  {countryName}
-                </div>
-                <div
-                  style={{
-                    fontWeight: 700,
-                    fontSize: "0.98rem",
-                    lineHeight: 1.3,
-                  }}
-                >
-                  {item.broadcaster}
-                </div>
-              </div>
-
-              <div>
-                <AccessBadge access={item.access} />
-              </div>
-
-              {item.commentaryLanguages && item.commentaryLanguages.length > 0 ? (
-                <div
-                  style={{
-                    color: "#CBD5E1",
-                    fontSize: "0.84rem",
-                    lineHeight: 1.45,
-                  }}
-                >
-                  {item.commentaryLanguages.join(", ")}
-                </div>
-              ) : null}
-            </div>
-          ))}
-        </div>
-
-        <SectionTitle>Explore other countries</SectionTitle>
-
-        <div
-          style={{
-            display: "flex",
-            gap: "0.55rem",
-            flexWrap: "wrap",
-          }}
-        >
-          {otherCountries.map((item) => (
-            <Link
-              key={item.code}
-              href={`/country/${item.code}`}
-              style={{
-                textDecoration: "none",
-                color: "#FFFFFF",
-                padding: "0.58rem 0.82rem",
-                borderRadius: "999px",
-                background: "#111827",
-                border: "1px solid rgba(255,255,255,0.08)",
-                fontSize: "0.86rem",
-                lineHeight: 1.1,
-              }}
-            >
-              {item.name}
-            </Link>
-          ))}
-        </div>
-
-        <SectionTitle>FAQ</SectionTitle>
-
-        <div
-          style={{
-            display: "grid",
-            gap: "0.75rem",
-          }}
-        >
-          <div
-            style={{
-              background: "#111827",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: "14px",
-              padding: "0.9rem",
-            }}
-          >
-            <h3 style={{ marginTop: 0, marginBottom: "0.45rem", fontSize: "1rem" }}>
-              Where can I watch football in {countryName}?
-            </h3>
-            <p style={{ color: "#CBD5E1", marginBottom: 0, lineHeight: 1.6, fontSize: "0.92rem" }}>
-              You can browse official broadcasters and legal football TV channels in{" "}
-              {countryName} on this page, then open each dedicated event page for more
-              details.
-            </p>
-          </div>
-
-          <div
-            style={{
-              background: "#111827",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: "14px",
-              padding: "0.9rem",
-            }}
-          >
-            <h3 style={{ marginTop: 0, marginBottom: "0.45rem", fontSize: "1rem" }}>
-              Are free football viewing options available in {countryName}?
-            </h3>
-            <p style={{ color: "#CBD5E1", marginBottom: 0, lineHeight: 1.6, fontSize: "0.92rem" }}>
-              {summary.freeCount > 0
-                ? `Yes. ${summary.freeCount} match${summary.freeCount > 1 ? "es" : ""} currently listed on this page include at least one official free viewing option in ${countryName}.`
-                : `No official free viewing option is currently listed on this page for ${countryName}.`}
-            </p>
-          </div>
-
-          <div
-            style={{
-              background: "#111827",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: "14px",
-              padding: "0.9rem",
-            }}
-          >
-            <h3 style={{ marginTop: 0, marginBottom: "0.45rem", fontSize: "1rem" }}>
-              Does WatchTVSport list illegal streams?
-            </h3>
-            <p style={{ color: "#CBD5E1", marginBottom: 0, lineHeight: 1.6, fontSize: "0.92rem" }}>
-              No. WatchTVSport only lists official broadcasters and legal viewing
-              options by country.
-            </p>
-          </div>
-        </div>
-
-        <div
-          style={{
-            marginTop: "1.6rem",
-            background: "#111827",
-            border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: "14px",
-            padding: "0.9rem",
-            color: "#CBD5E1",
-            lineHeight: 1.55,
-            fontSize: "0.9rem",
-          }}
-        >
-          WatchTVSport only lists official broadcasters. No illegal streams. No VPN
-          recommendations. Information is provided for legal viewing options only.
-        </div>
-      </div>
-    </main>
-  );
+export function getAllBroadcasts(): BroadcastInfo[] {
+  return Object.values(broadcastsByCountry).flat();
 }
