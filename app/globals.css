@@ -1,0 +1,248 @@
+/* =========================
+   RESET
+   ========================= */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+/* =========================
+   DESIGN TOKENS
+   ========================= */
+:root {
+  --bg-main: #0b1220;
+  --bg-secondary: #0f172a;
+  --bg-surface: #111827;
+
+  --text-primary: #ffffff;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-primary-active: #1d4ed8;
+
+  --color-free: #22c55e;
+  --color-free-bg: rgba(34, 197, 94, 0.15);
+
+  --color-paid: #f59e0b;
+  --color-paid-bg: rgba(245, 158, 11, 0.15);
+
+  --color-best: #bfdbfe;
+  --color-best-bg: rgba(59, 130, 246, 0.15);
+
+  --border-light: rgba(255, 255, 255, 0.08);
+
+  --radius-card: 14px;
+  --radius-button: 10px;
+  --radius-pill: 999px;
+
+  --space-xs: 6px;
+  --space-sm: 10px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+
+  --font-main: Inter, system-ui, Arial, sans-serif;
+}
+
+/* =========================
+   BASE
+   ========================= */
+html {
+  background: var(--bg-main) !important;
+}
+
+body {
+  background: var(--bg-main) !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-main);
+}
+
+a {
+  color: var(--color-primary);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* =========================
+   LAYOUT
+   ========================= */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.section {
+  margin-top: var(--space-xl);
+}
+
+.section-title {
+  font-size: 28px;
+  margin-bottom: var(--space-md);
+  color: var(--text-primary);
+}
+
+/* =========================
+   HERO
+   ========================= */
+.hero {
+  text-align: center;
+  margin-bottom: var(--space-xl);
+}
+
+.hero-title {
+  font-size: 36px;
+  line-height: 1.15;
+  margin-bottom: var(--space-md);
+  color: var(--text-primary);
+}
+
+.hero-subtitle {
+  color: var(--text-secondary);
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.7;
+  font-size: 18px;
+}
+
+/* =========================
+   BUTTONS
+   ========================= */
+.btn-primary {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: var(--radius-button);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-hover);
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+  padding: 10px 16px;
+  border-radius: var(--radius-button);
+  text-decoration: none;
+  display: inline-block;
+}
+
+/* =========================
+   CARDS
+   ========================= */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-card);
+  padding: var(--space-md);
+}
+
+.card-free {
+  background: rgba(34, 197, 94, 0.05);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+/* =========================
+   BADGES
+   ========================= */
+.badge {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border-light);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-primary);
+}
+
+.badge-free {
+  color: var(--color-free);
+  background: var(--color-free-bg);
+  border-color: rgba(34, 197, 94, 0.25);
+}
+
+.badge-paid {
+  color: var(--color-paid);
+  background: var(--color-paid-bg);
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+.badge-best {
+  color: var(--color-best);
+  background: var(--color-best-bg);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+/* =========================
+   CHIPS
+   ========================= */
+.chip {
+  display: inline-block;
+  padding: 8px 14px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-pill);
+  margin: 4px;
+  cursor: pointer;
+  color: var(--text-primary);
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.chip:hover {
+  border-color: rgba(59, 130, 246, 0.45);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+/* =========================
+   TABLE
+   ========================= */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.table th,
+.table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.table th {
+  text-align: left;
+  color: var(--text-secondary);
+}
+
+/* =========================
+   TRUST
+   ========================= */
+.trust {
+  margin-top: var(--space-xl);
+  padding: var(--space-md);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-card);
+  text-align: center;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.03);
+}
