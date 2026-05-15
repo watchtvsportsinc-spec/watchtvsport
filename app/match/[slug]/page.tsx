@@ -137,11 +137,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const freeCount = broadcasts.filter((item) => item.access === "Free").length;
   const countryCount = new Set(broadcasts.map((item) => item.countryCode)).size;
 
-  const title = `Watch ${homeTeam} vs ${awayTeam} – Official TV Channels by Country`;
+  const title = `Watch ${homeTeam} vs ${awayTeam} Live on TV | Official Broadcasters`;
   const description =
     freeCount > 0
-      ? `Find where to watch ${homeTeam} vs ${awayTeam} legally by country. Compare official broadcasters worldwide, including ${freeCount} free option${freeCount > 1 ? "s" : ""} currently listed across ${countryCount} countr${countryCount > 1 ? "ies" : "y"}.`
-      : `Find where to watch ${homeTeam} vs ${awayTeam} legally by country. Compare official broadcasters and paid viewing options worldwide.`;
+      ? `Find where to watch ${homeTeam} vs ${awayTeam} legally worldwide. Compare official broadcasters, free and paid TV channels by country, including ${freeCount} free option${freeCount > 1 ? "s" : ""} currently listed across ${countryCount} countr${countryCount > 1 ? "ies" : "y"}.`
+      : `Find where to watch ${homeTeam} vs ${awayTeam} legally worldwide. Compare official broadcasters and paid TV channels by country.`;
 
   return {
     title,
@@ -244,13 +244,42 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
     selectedCountries.length > 0 ||
     selectedLanguages.length > 0;
 
-  const schema = {
+  const faqItems = [
+    {
+      question: `Where can I watch ${homeTeam} vs ${awayTeam}?`,
+      answer: `You can compare official broadcasters for ${homeTeam} vs ${awayTeam} by country on WatchTVSport and open a dedicated local viewing page for each market.`,
+    },
+    {
+      question: `Is ${homeTeam} vs ${awayTeam} free to watch?`,
+      answer:
+        freeBroadcasts.length > 0
+          ? `${freeBroadcasts.length} official free option${freeBroadcasts.length > 1 ? "s are" : " is"} currently listed for this match. Availability depends on the country and broadcaster.`
+          : `No official free option is currently listed for ${homeTeam} vs ${awayTeam}. Paid official broadcasters may still be available by country.`,
+    },
+    {
+      question: `What time does ${homeTeam} vs ${awayTeam} start?`,
+      answer: `${homeTeam} vs ${awayTeam} starts on ${formatDate(safeMatch.matchDate)}. Local time may vary depending on the viewer's country.`,
+    },
+    {
+      question: `Which TV channels broadcast ${homeTeam} vs ${awayTeam}?`,
+      answer: `TV channels and streaming platforms vary by country. WatchTVSport lists official broadcasters only and separates free and paid viewing options.`,
+    },
+    {
+      question: `Does WatchTVSport list illegal streams?`,
+      answer: `No. WatchTVSport only lists official broadcasters and legal viewing options by country.`,
+    },
+  ];
+
+  const sportsEventSchema = {
     "@context": "https://schema.org",
     "@type": "SportsEvent",
     name: `${homeTeam} vs ${awayTeam}`,
+    description: `Find where to watch ${homeTeam} vs ${awayTeam} legally worldwide. Compare official broadcasters, free and paid TV channels by country.`,
     startDate: safeMatch.matchDate,
     sport: "Soccer",
     eventStatus: "https://schema.org/EventScheduled",
+    eventAttendanceMode: "https://schema.org/OnlineEventAttendanceMode",
+    url: `https://watchtvsport.com/match/${safeMatch.slug}`,
     location: {
       "@type": "Place",
       name:
@@ -258,6 +287,16 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
           ? `${safeMatch.hostCity}, ${safeMatch.hostCountry}`
           : safeMatch.competition ?? "FIFA World Cup 2026",
     },
+    competitor: [
+      {
+        "@type": "SportsTeam",
+        name: homeTeam,
+      },
+      {
+        "@type": "SportsTeam",
+        name: awayTeam,
+      },
+    ],
     offers: broadcasts.map((item) => ({
       "@type": "Offer",
       name: `${item.broadcaster} in ${item.countryName}`,
@@ -266,6 +305,44 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
       areaServed: item.countryName,
       availability: "https://schema.org/InStock",
     })),
+  };
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: "https://watchtvsport.com",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Matches",
+        item: "https://watchtvsport.com",
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: `${homeTeam} vs ${awayTeam}`,
+        item: `https://watchtvsport.com/match/${safeMatch.slug}`,
+      },
+    ],
   };
 
   return (
@@ -279,7 +356,15 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
     >
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(sportsEventSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
 
       <div
@@ -506,6 +591,32 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
               </div>
             ))}
           </div>
+        </div>
+
+        <div
+          style={{
+            marginBottom: "1rem",
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <Link
+            href={`/watch/${safeMatch.slug}/${uniqueCountries[0]?.countryCode.toLowerCase() ?? "us"}`}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "#3B82F6",
+              color: "#FFFFFF",
+              textDecoration: "none",
+              padding: "0.7rem 1rem",
+              borderRadius: "10px",
+              fontWeight: 800,
+              fontSize: "0.9rem",
+            }}
+          >
+            Compare broadcasters by country
+          </Link>
         </div>
 
         <div
@@ -1044,7 +1155,7 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
           ))}
         </div>
 
-        <SectionTitle>FAQ</SectionTitle>
+        <SectionTitle>Match FAQ</SectionTitle>
 
         <div
           style={{
@@ -1052,98 +1163,37 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
             gap: "0.75rem",
           }}
         >
-          <div
-            style={{
-              background: "#111827",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: "14px",
-              padding: "0.9rem",
-            }}
-          >
-            <h3
+          {faqItems.map((item) => (
+            <div
+              key={item.question}
               style={{
-                marginTop: 0,
-                marginBottom: "0.45rem",
-                fontSize: "1rem",
+                background: "#111827",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: "14px",
+                padding: "0.9rem",
               }}
             >
-              Where can I watch {homeTeam} vs {awayTeam}?
-            </h3>
-            <p
-              style={{
-                color: "#CBD5E1",
-                marginBottom: 0,
-                lineHeight: 1.6,
-                fontSize: "0.92rem",
-              }}
-            >
-              You can compare official broadcasters by country on this page and
-              open the dedicated local viewing page for each market.
-            </p>
-          </div>
-
-          <div
-            style={{
-              background: "#111827",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: "14px",
-              padding: "0.9rem",
-            }}
-          >
-            <h3
-              style={{
-                marginTop: 0,
-                marginBottom: "0.45rem",
-                fontSize: "1rem",
-              }}
-            >
-              Is {homeTeam} vs {awayTeam} free anywhere?
-            </h3>
-            <p
-              style={{
-                color: "#CBD5E1",
-                marginBottom: 0,
-                lineHeight: 1.6,
-                fontSize: "0.92rem",
-              }}
-            >
-              {freeBroadcasts.length > 0
-                ? `Yes. ${freeBroadcasts.length} official free option${
-                    freeBroadcasts.length > 1 ? "s are" : " is"
-                  } currently listed for this match.`
-                : "No official free option is currently listed for this match."}
-            </p>
-          </div>
-
-          <div
-            style={{
-              background: "#111827",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: "14px",
-              padding: "0.9rem",
-            }}
-          >
-            <h3
-              style={{
-                marginTop: 0,
-                marginBottom: "0.45rem",
-                fontSize: "1rem",
-              }}
-            >
-              Does WatchTVSport list illegal streams?
-            </h3>
-            <p
-              style={{
-                color: "#CBD5E1",
-                marginBottom: 0,
-                lineHeight: 1.6,
-                fontSize: "0.92rem",
-              }}
-            >
-              No. WatchTVSport only lists official broadcasters and legal viewing
-              options by country.
-            </p>
-          </div>
+              <h3
+                style={{
+                  marginTop: 0,
+                  marginBottom: "0.45rem",
+                  fontSize: "1rem",
+                }}
+              >
+                {item.question}
+              </h3>
+              <p
+                style={{
+                  color: "#CBD5E1",
+                  marginBottom: 0,
+                  lineHeight: 1.6,
+                  fontSize: "0.92rem",
+                }}
+              >
+                {item.answer}
+              </p>
+            </div>
+          ))}
         </div>
 
         <SectionTitle>Other matches</SectionTitle>
