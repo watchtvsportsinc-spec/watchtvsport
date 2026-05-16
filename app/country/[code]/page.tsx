@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { matches, type MatchData, type BroadcastInfo } from "@/lib/matches";
-
+import MatchStatusBadge from "@/components/MatchStatusBadge";
 type PageProps = {
   params: Promise<{
     code: string;
@@ -34,6 +34,16 @@ type CountryMatchItem = {
 
 const matchesList: MatchData[] = Array.isArray(matches) ? matches : [];
 
+function getFlagEmoji(countryCode: string): string {
+  if (!countryCode || countryCode.length !== 2) return "🏳️";
+
+  return countryCode
+    .toUpperCase()
+    .replace(/./g, (char) =>
+      String.fromCodePoint(127397 + char.charCodeAt(0))
+    );
+}
+
 function getTeamName(team: MatchData["homeTeam"]): string {
   if (typeof team === "string") return team;
 
@@ -44,6 +54,64 @@ function getTeamName(team: MatchData["homeTeam"]): string {
   }
 
   return "TBD";
+}
+
+
+function getTeamFlagEmoji(team: MatchData["homeTeam"]): string {
+  const teamName = getTeamName(team);
+
+  const flagsByTeamName: Record<string, string> = {
+    Algeria: "🇩🇿",
+    Argentina: "🇦🇷",
+    Australia: "🇦🇺",
+    Austria: "🇦🇹",
+    Belgium: "🇧🇪",
+    "Bosnia and Herzegovina": "🇧🇦",
+    Brazil: "🇧🇷",
+    Canada: "🇨🇦",
+    "Cabo Verde": "🇨🇻",
+    Colombia: "🇨🇴",
+    "Congo DR": "🇨🇩",
+    Croatia: "🇭🇷",
+    Curaçao: "🇨🇼",
+    Czechia: "🇨🇿",
+    Ecuador: "🇪🇨",
+    Egypt: "🇪🇬",
+    England: "🏴",
+    France: "🇫🇷",
+    Germany: "🇩🇪",
+    Ghana: "🇬🇭",
+    Haiti: "🇭🇹",
+    "IR Iran": "🇮🇷",
+    Iraq: "🇮🇶",
+    Japan: "🇯🇵",
+    Jordan: "🇯🇴",
+    "Korea Republic": "🇰🇷",
+    Mexico: "🇲🇽",
+    Morocco: "🇲🇦",
+    Netherlands: "🇳🇱",
+    "New Zealand": "🇳🇿",
+    Norway: "🇳🇴",
+    Panama: "🇵🇦",
+    Paraguay: "🇵🇾",
+    Portugal: "🇵🇹",
+    Qatar: "🇶🇦",
+    "Saudi Arabia": "🇸🇦",
+    Scotland: "🏴",
+    Senegal: "🇸🇳",
+    "South Africa": "🇿🇦",
+    Spain: "🇪🇸",
+    Sweden: "🇸🇪",
+    Switzerland: "🇨🇭",
+    Tunisia: "🇹🇳",
+    Türkiye: "🇹🇷",
+    Uruguay: "🇺🇾",
+    USA: "🇺🇸",
+    Uzbekistan: "🇺🇿",
+    "Côte d'Ivoire": "🇨🇮",
+  };
+
+  return flagsByTeamName[teamName] ?? "🏳️";
 }
 
 function ensureMatch(match: MatchData): SafeMatchData {
@@ -225,8 +293,7 @@ function getOtherCountryCodes(currentCode: string): { code: string; name: string
 
   return Array.from(map.entries())
     .map(([code, name]) => ({ code, name }))
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .slice(0, 12);
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export async function generateMetadata({
@@ -288,6 +355,7 @@ export default async function CountryPage({ params }: PageProps) {
   }
 
   const countryName = getCountryNameFromMatches(countryMatches, normalizedCode);
+  const countryFlag = getFlagEmoji(normalizedCode);
   const summary = getCountrySummary(countryMatches);
   const otherCountries = getOtherCountryCodes(normalizedCode);
 
@@ -315,7 +383,7 @@ export default async function CountryPage({ params }: PageProps) {
         background: "#0B1220",
         color: "#FFFFFF",
         minHeight: "100vh",
-        padding: "2rem 1rem 4rem",
+        padding: "1.25rem 1rem 4rem",
       }}
     >
       <script
@@ -331,43 +399,44 @@ export default async function CountryPage({ params }: PageProps) {
       >
         <div
           style={{
-            background: "#111827",
-            border: "1px solid rgba(255,255,255,0.08)",
+            background: "#0B1A33",
+            border: "1px solid rgba(59,130,246,0.22)",
             borderRadius: "20px",
-            padding: "1.5rem",
-            marginBottom: "2rem",
+            padding: "1.25rem",
+            marginBottom: "1rem",
+            textAlign: "center",
           }}
         >
           <div
             style={{
               display: "flex",
-              gap: "0.75rem",
+              justifyContent: "center",
+              gap: "0.5rem",
               flexWrap: "wrap",
-              marginBottom: "1rem",
-              alignItems: "center",
+              marginBottom: "0.85rem",
             }}
           >
             <span
               style={{
-                padding: "0.35rem 0.65rem",
+                padding: "0.3rem 0.65rem",
                 borderRadius: "999px",
-                background: "rgba(59,130,246,0.15)",
+                background: "rgba(59,130,246,0.18)",
                 color: "#BFDBFE",
                 fontSize: "0.8rem",
-                fontWeight: 600,
+                fontWeight: 800,
               }}
             >
-              Country guide
+              FIFA World Cup 2026
             </span>
 
             <span
               style={{
-                padding: "0.35rem 0.65rem",
+                padding: "0.3rem 0.65rem",
                 borderRadius: "999px",
                 background: "rgba(255,255,255,0.06)",
                 color: "#CBD5E1",
                 fontSize: "0.8rem",
-                fontWeight: 600,
+                fontWeight: 800,
               }}
             >
               Official broadcasters only
@@ -376,295 +445,103 @@ export default async function CountryPage({ params }: PageProps) {
 
           <h1
             style={{
-              fontSize: "2.2rem",
+              fontSize: "clamp(1.65rem, 5vw, 2.25rem)",
               lineHeight: 1.1,
               margin: 0,
-              marginBottom: "0.85rem",
+              marginBottom: "0.55rem",
             }}
           >
-            Where to watch football in {countryName}
+            Where to watch FIFA World Cup in {countryName}{" "}
+            <span aria-hidden="true">{countryFlag}</span>
           </h1>
 
           <p
             style={{
               color: "#CBD5E1",
-              fontSize: "1.05rem",
-              lineHeight: 1.6,
-              maxWidth: "820px",
-              marginTop: 0,
-              marginBottom: "1rem",
+              fontSize: "0.98rem",
+              lineHeight: 1.55,
+              maxWidth: "760px",
+              margin: "0 auto 1rem",
             }}
           >
-            Browse official football broadcasters and legal TV channels in {countryName}.
-            Compare free and paid viewing options for current and upcoming matches,
-            then open the dedicated country viewing page for each event.
+            Find official TV channels and legal viewing options for FIFA World Cup
+            matches in {countryName}.
           </p>
 
           <div
             style={{
               display: "flex",
-              gap: "1rem",
+              gap: "0.5rem",
+              justifyContent: "center",
               flexWrap: "wrap",
               color: "#94A3B8",
-              fontSize: "0.95rem",
+              fontSize: "0.86rem",
             }}
           >
-            <div>{countryMatches.length} match{countryMatches.length > 1 ? "es" : ""}</div>
-            <div>{summary.freeCount} with a free option</div>
-            <div>{summary.paidCount} with a paid option</div>
-            <div>{summary.broadcasters.length} broadcaster{summary.broadcasters.length > 1 ? "s" : ""}</div>
+            <span
+              style={{
+                padding: "0.35rem 0.65rem",
+                borderRadius: "999px",
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
+              <strong style={{ color: "#FFFFFF" }}>{countryMatches.length}</strong>{" "}
+              matches
+            </span>
+
+            <span
+              style={{
+                padding: "0.35rem 0.65rem",
+                borderRadius: "999px",
+                background: "rgba(34,197,94,0.12)",
+                border: "1px solid rgba(34,197,94,0.18)",
+              }}
+            >
+              <strong style={{ color: "#22C55E" }}>{summary.freeCount}</strong>{" "}
+              free
+            </span>
+
+            <span
+              style={{
+                padding: "0.35rem 0.65rem",
+                borderRadius: "999px",
+                background: "rgba(245,158,11,0.12)",
+                border: "1px solid rgba(245,158,11,0.18)",
+              }}
+            >
+              <strong style={{ color: "#F59E0B" }}>{summary.paidCount}</strong>{" "}
+              paid
+            </span>
+
+            <span
+              style={{
+                padding: "0.35rem 0.65rem",
+                borderRadius: "999px",
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
+              <strong style={{ color: "#FFFFFF" }}>
+                {summary.broadcasters.length}
+              </strong>{" "}
+              broadcasters
+            </span>
           </div>
         </div>
 
-        <SectionTitle>Available matches in {countryName}</SectionTitle>
+        <SectionTitle>Watch in other countries</SectionTitle>
 
         <div
           style={{
-            display: "grid",
-            gap: "1rem",
-          }}
-        >
-          {countryMatches.map((item) => {
-            const homeTeam = getTeamName(item.match.homeTeam);
-            const awayTeam = getTeamName(item.match.awayTeam);
-            const featuredBroadcast = getFeaturedBroadcast(item.broadcasts);
-
-            return (
-              <div
-                key={item.match.slug}
-                style={{
-                  background: "#111827",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  borderRadius: "18px",
-                  padding: "1.25rem",
-                  display: "grid",
-                  gap: "1rem",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: "1rem",
-                    alignItems: "flex-start",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <div>
-                    <div
-                      style={{
-                        color: "#94A3B8",
-                        fontSize: "0.92rem",
-                        marginBottom: "0.3rem",
-                      }}
-                    >
-                      {item.match.competition ?? "FIFA World Cup 2026"} • {formatStage(item.match.group)}
-                    </div>
-
-                    <div
-                      style={{
-                        fontSize: "1.25rem",
-                        fontWeight: 700,
-                        marginBottom: "0.35rem",
-                      }}
-                    >
-                      {homeTeam} vs {awayTeam}
-                    </div>
-
-                    <div
-                      style={{
-                        color: "#CBD5E1",
-                        fontSize: "0.96rem",
-                      }}
-                    >
-                      {formatDate(item.match.matchDate)}
-                    </div>
-
-                    {item.match.hostCity && item.match.hostCountry ? (
-                      <div
-                        style={{
-                          color: "#94A3B8",
-                          fontSize: "0.92rem",
-                          marginTop: "0.35rem",
-                        }}
-                      >
-                        {item.match.hostCity}, {item.match.hostCountry}
-                      </div>
-                    ) : null}
-                  </div>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "0.5rem",
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    {item.broadcasts.some((broadcast) => broadcast.access === "Free") ? (
-                      <AccessBadge access="Free" />
-                    ) : null}
-                    {item.broadcasts.some((broadcast) => broadcast.access === "Paid") ? (
-                      <AccessBadge access="Paid" />
-                    ) : null}
-                  </div>
-                </div>
-
-                {featuredBroadcast ? (
-                  <div
-                    style={{
-                      background: "rgba(255,255,255,0.04)",
-                      border: "1px solid rgba(255,255,255,0.06)",
-                      borderRadius: "14px",
-                      padding: "0.9rem 1rem",
-                    }}
-                  >
-                    <div
-                      style={{
-                        color: "#94A3B8",
-                        fontSize: "0.88rem",
-                        marginBottom: "0.3rem",
-                      }}
-                    >
-                      Featured local option
-                    </div>
-                    <div
-                      style={{
-                        fontWeight: 700,
-                        marginBottom: "0.35rem",
-                      }}
-                    >
-                      {featuredBroadcast.broadcaster}
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "0.5rem",
-                        flexWrap: "wrap",
-                        alignItems: "center",
-                      }}
-                    >
-                      <AccessBadge access={featuredBroadcast.access} />
-                      {featuredBroadcast.commentaryLanguages &&
-                      featuredBroadcast.commentaryLanguages.length > 0 ? (
-                        <span
-                          style={{
-                            color: "#CBD5E1",
-                            fontSize: "0.88rem",
-                          }}
-                        >
-                          Commentary: {featuredBroadcast.commentaryLanguages.join(", ")}
-                        </span>
-                      ) : null}
-                    </div>
-                  </div>
-                ) : null}
-
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "0.75rem",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <Link
-                    href={`/watch/${item.match.slug}/${normalizedCode}`}
-                    style={{
-                      background: "#3B82F6",
-                      color: "#FFFFFF",
-                      textDecoration: "none",
-                      padding: "0.8rem 1rem",
-                      borderRadius: "10px",
-                      fontWeight: 700,
-                    }}
-                  >
-                    View country page
-                  </Link>
-
-                  <Link
-                    href={`/match/${item.match.slug}`}
-                    style={{
-                      border: "1px solid rgba(255,255,255,0.12)",
-                      color: "#FFFFFF",
-                      textDecoration: "none",
-                      padding: "0.8rem 1rem",
-                      borderRadius: "10px",
-                      fontWeight: 700,
-                    }}
-                  >
-                    View match page
-                  </Link>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <SectionTitle>Main broadcasters in {countryName}</SectionTitle>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))",
-            gap: "1rem",
-          }}
-        >
-          {summary.broadcasters.map((item) => (
-            <div
-              key={`${item.countryCode}-${item.broadcaster}`}
-              style={{
-                background: "#111827",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "16px",
-                padding: "1rem",
-                display: "grid",
-                gap: "0.75rem",
-              }}
-            >
-              <div>
-                <div
-                  style={{
-                    color: "#94A3B8",
-                    fontSize: "0.9rem",
-                    marginBottom: "0.25rem",
-                  }}
-                >
-                  {countryName}
-                </div>
-                <div
-                  style={{
-                    fontWeight: 700,
-                    fontSize: "1.05rem",
-                  }}
-                >
-                  {item.broadcaster}
-                </div>
-              </div>
-
-              <div>
-                <AccessBadge access={item.access} />
-              </div>
-
-              {item.commentaryLanguages && item.commentaryLanguages.length > 0 ? (
-                <div
-                  style={{
-                    color: "#CBD5E1",
-                    fontSize: "0.9rem",
-                  }}
-                >
-                  {item.commentaryLanguages.join(", ")}
-                </div>
-              ) : null}
-            </div>
-          ))}
-        </div>
-
-        <SectionTitle>Explore other countries</SectionTitle>
-
-        <div
-          style={{
+            background: "#111827",
+            border: "1px solid rgba(59,130,246,0.22)",
+            borderRadius: "16px",
+            padding: "0.45rem 0.55rem",
             display: "flex",
-            gap: "0.75rem",
+            gap: "0.45rem",
             flexWrap: "wrap",
+            marginBottom: "1.5rem",
           }}
         >
           {otherCountries.map((item) => (
@@ -674,15 +551,213 @@ export default async function CountryPage({ params }: PageProps) {
               style={{
                 textDecoration: "none",
                 color: "#FFFFFF",
-                padding: "0.75rem 1rem",
+                padding: "0.22rem 0.5rem",
                 borderRadius: "999px",
-                background: "#111827",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "rgba(59,130,246,0.12)",
+                border: "1px solid rgba(59,130,246,0.28)",
+                fontWeight: 800,
+                fontSize: "0.74rem",
               }}
             >
-              {item.name}
+              <span aria-hidden="true">{getFlagEmoji(item.code)}</span> {item.name}
             </Link>
           ))}
+        </div>
+
+
+<h2
+  style={{
+    fontSize: "1.15rem",
+    margin: "1.25rem 0 0.75rem",
+    lineHeight: 1.25,
+  }}
+>
+  Official TV channels in {countryName} {countryFlag}
+</h2>
+
+        <div
+          style={{
+            display: "grid",
+            gap: "0.45rem",
+            marginBottom: "1.5rem",
+          }}
+        >
+          {summary.broadcasters.map((item) => (
+            <div
+              key={`${item.countryCode}-${item.broadcaster}`}
+              style={{
+                background: "#111827",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: "14px",
+                padding: "0.55rem 0.65rem",
+                display: "grid",
+                gridTemplateColumns: "minmax(0, 1fr) auto",
+                gap: "0.65rem",
+                alignItems: "center",
+              }}
+            >
+              <div
+                style={{
+                  minWidth: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  flexWrap: "wrap",
+                }}
+              >
+                <span aria-hidden="true">{countryFlag}</span>
+                <strong>{item.broadcaster}</strong>
+
+                {item.commentaryLanguages && item.commentaryLanguages.length > 0 ? (
+                  <span
+                    style={{
+                      color: "#94A3B8",
+                      fontSize: "0.85rem",
+                    }}
+                  >
+                    • {item.commentaryLanguages.join(", ")}
+                  </span>
+                ) : null}
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: "0.45rem",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                  flexWrap: "wrap",
+                }}
+              >
+                <a
+                  href={item.affiliateUrl || item.url}
+                  target="_blank"
+                  rel="nofollow sponsored noopener noreferrer"
+                  style={{
+                    background: "#3B82F6",
+                    color: "#FFFFFF",
+                    textDecoration: "none",
+                    padding: "0.35rem 0.65rem",
+                    borderRadius: "9px",
+                    fontWeight: 800,
+                    fontSize: "0.82rem",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  Watch on {item.broadcaster}
+                </a>
+
+                <AccessBadge access={item.access} />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <h2
+  style={{
+    fontSize: "1.15rem",
+    margin: "1.25rem 0 0.75rem",
+    lineHeight: 1.25,
+  }}
+>
+  Available matches in {countryName}
+</h2>
+
+        <div
+          style={{
+            display: "grid",
+            gap: "0.55rem",
+            marginBottom: "1.5rem",
+          }}
+        >
+          {countryMatches.map((item) => {
+            const homeTeam = getTeamName(item.match.homeTeam);
+            const awayTeam = getTeamName(item.match.awayTeam);
+            const homeFlag = getTeamFlagEmoji(item.match.homeTeam);
+            const awayFlag = getTeamFlagEmoji(item.match.awayTeam);
+            const featuredBroadcast = getFeaturedBroadcast(item.broadcasts);
+
+            return (
+              <Link
+                key={item.match.slug}
+                href={`/watch/${item.match.slug}/${normalizedCode}`}
+                style={{
+                  background: "#111827",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  borderRadius: "12px",
+                  padding: "0.42rem 0.65rem",
+                  display: "grid",
+                  gridTemplateColumns: "auto minmax(0, 1fr) auto",
+                  gap: "0.6rem",
+                  alignItems: "center",
+                  color: "#FFFFFF",
+                  textDecoration: "none",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "0.35rem",
+                    alignItems: "center",
+                    minWidth: "150px",
+                    color: "#CBD5E1",
+                    fontSize: "0.74rem",
+                    fontWeight: 700,
+                    lineHeight: 1.1,
+                  }}
+                >
+                  <span>{formatStage(item.match.group)}</span>
+                  <span style={{ color: "#64748B" }}>•</span>
+                  <MatchStatusBadge matchDate={item.match.matchDate} />
+                </div>
+
+                <div
+                  style={{
+                    fontWeight: 800,
+                    fontSize: "0.92rem",
+                    lineHeight: 1.25,
+                    textAlign: "center",
+                    minWidth: 0,
+                  }}
+                >
+                  <span aria-hidden="true">{homeFlag}</span> {homeTeam} vs {awayTeam}{" "}
+                  <span aria-hidden="true">{awayFlag}</span>
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "0.35rem",
+                    alignItems: "center",
+                    justifyContent: "flex-end",
+                    flexWrap: "wrap",
+                    minWidth: "90px",
+                  }}
+                >
+                  {featuredBroadcast ? (
+                    <span
+                      style={{
+                        color: "#CBD5E1",
+                        fontSize: "0.76rem",
+                        fontWeight: 700,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {featuredBroadcast.broadcaster}
+                    </span>
+                  ) : null}
+
+                  {item.broadcasts.some((broadcast) => broadcast.access === "Free") ? (
+                    <AccessBadge access="Free" />
+                  ) : null}
+
+                  {item.broadcasts.some((broadcast) => broadcast.access === "Paid") ? (
+                    <AccessBadge access="Paid" />
+                  ) : null}
+                </div>
+              </Link>
+            );
+          })}
         </div>
 
         <SectionTitle>FAQ</SectionTitle>
