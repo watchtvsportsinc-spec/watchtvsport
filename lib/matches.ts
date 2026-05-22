@@ -17,6 +17,7 @@ export type BroadcastInfo = {
   notes?: string;
   commentaryLanguages?: string[];
   coverageType?: "full" | "partial";
+  coverageStatus?: "confirmed" | "expected" | "to_update";
   matchSlugs?: string[];
   excludedMatchSlugs?: string[];
 };
@@ -29,12 +30,12 @@ function isBroadcastAvailableForMatch(
     broadcast.coverageType ??
     (broadcast.hasFullCoverage === false ? "partial" : "full");
 
-  if (coverageType === "full") {
-    return true;
-  }
-
   if (broadcast.excludedMatchSlugs && broadcast.excludedMatchSlugs.length > 0) {
     return !broadcast.excludedMatchSlugs.includes(matchSlug);
+  }
+
+  if (coverageType === "full") {
+    return true;
   }
 
   if (broadcast.matchSlugs && broadcast.matchSlugs.length > 0) {
