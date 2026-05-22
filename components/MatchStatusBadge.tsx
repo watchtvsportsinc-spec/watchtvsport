@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 type MatchStatusBadgeProps = {
   matchDate: string;
+  slug?: string;
   liveDurationMinutes?: number;
 };
 
@@ -123,6 +124,7 @@ export default function MatchStatusBadge({
           }}
         />
       ) : null}
+
       {status.label}
     </span>
   );

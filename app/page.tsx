@@ -10,6 +10,8 @@ import {
 } from "@/lib/utils";
 import { matches } from "@/lib/matches";
 import { SectionTitle } from "@/components/ui";
+import MatchStatusBadge from "@/components/MatchStatusBadge";
+import { isMatchFinished } from "@/lib/match-status";
 
 function getDayLabel(dateString?: string) {
   if (!dateString) return "Date TBC";
@@ -157,24 +159,32 @@ export default function HomePage() {
   }, [todayDayKey]);
 
   const nextDayKey = useMemo(() => {
-    const now = Date.now();
+    const groupedMatches = matches.reduce<Record<string, typeof matches>>(
+      (acc, match) => {
+        const dayKey = getDayKey(match.matchDate);
 
-    const upcomingMatches = [...matches]
-      .filter((match) => {
-        const time = match.matchDate ? new Date(match.matchDate).getTime() : Number.MAX_SAFE_INTEGER;
-        return time >= now;
-      })
-      .sort((a, b) => {
-        const aTime = a.matchDate ? new Date(a.matchDate).getTime() : Number.MAX_SAFE_INTEGER;
-        const bTime = b.matchDate ? new Date(b.matchDate).getTime() : Number.MAX_SAFE_INTEGER;
-        return aTime - bTime;
-      });
+        if (!acc[dayKey]) {
+          acc[dayKey] = [];
+        }
 
-    return upcomingMatches.length > 0 ? getDayKey(upcomingMatches[0].matchDate) : null;
+        acc[dayKey].push(match);
+
+        return acc;
+      },
+      {}
+    );
+
+    const sortedDays = Object.keys(groupedMatches).sort();
+
+    const nextActiveDay = sortedDays.find((dayKey) =>
+      groupedMatches[dayKey].some((match) => !isMatchFinished(match.slug))
+    );
+
+    return nextActiveDay || null;
   }, []);
 
   const featuredMatches = useMemo(() => {
-    if (todayMatches.length > 0) {
+    if (todayMatches.length > 0 && todayMatches.some((match) => !isMatchFinished(match.slug))) {
       return todayMatches;
     }
 
@@ -191,7 +201,7 @@ export default function HomePage() {
       });
   }, [todayMatches, nextDayKey]);
 
-  const featuredMatchesTitle = todayMatches.length > 0 ? "Matches today" : "Next games";
+  const featuredMatchesTitle = todayMatches.length > 0 && todayMatches.some((match) => !isMatchFinished(match.slug)) ? "Matches today" : "Next games";
 
   const sortedMatches = useMemo(() => {
     const normalizedTeamQuery = teamQuery.trim().toLowerCase();
@@ -334,32 +344,21 @@ export default function HomePage() {
             background: "#111827",
             border: "1px solid rgba(255,255,255,0.08)",
             borderRadius: "18px",
-            padding: "1rem",
+            padding: "0.75rem",
             marginBottom: "0.8rem",
           }}
         >
           <div
             style={{
               fontWeight: 800,
-              fontSize: "1rem",
+              fontSize: "0.92rem",
               marginBottom: "0.35rem",
             }}
           >
             Find your team
           </div>
 
-          <div
-            style={{
-              color: "#CBD5E1",
-              fontSize: "0.9rem",
-              lineHeight: 1.55,
-              marginBottom: "0.8rem",
-            }}
-          >
-            Enter a national team to see all FIFA World Cup 2026 matches for that team.
-          </div>
-
-          <div
+                   <div
             style={{
               display: "flex",
               gap: "0.6rem",
@@ -387,9 +386,9 @@ export default function HomePage() {
                   background: "#0F172A",
                   color: "#FFFFFF",
                   border: "1px solid rgba(255,255,255,0.10)",
-                  borderRadius: "12px",
-                  padding: "0.8rem 0.95rem",
-                  fontSize: "0.95rem",
+                  borderRadius: "10px",
+                 padding: "0.62rem 0.85rem",
+                  fontSize: "0.90rem",
                   outline: "none",
                 }}
               />
@@ -484,7 +483,7 @@ export default function HomePage() {
 
         <section
           style={{
-            background: "linear-gradient(180deg, #26d492 0%, #0F172A 100%)",
+background: "linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)",
             border: "1px solid rgba(255,255,255,0.08)",
             borderRadius: "18px",
             padding: "1.1rem",
@@ -527,7 +526,7 @@ export default function HomePage() {
                     {isNewDay ? (
                       <div
                         style={{
-                          padding: index === 0 ? "0.55rem 0.75rem 0.2rem" : "0.7rem 0.75rem 0.2rem",
+                          padding: index === 0 ? "0.38rem 0.65rem 0.15rem" : "0.5rem 0.65rem 0.15rem",
                           background: "rgba(255,255,255,0.015)",
                         }}
                       >
@@ -541,7 +540,7 @@ export default function HomePage() {
                             background: "rgba(255, 255, 255, 0.64)",
                             border: "1px solid rgba(59,130,246,0.35)",
                             borderRadius: "8px",
-                            padding: "0.28rem 0.42rem",
+                            padding: "0.2rem 0.36rem",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -559,7 +558,7 @@ export default function HomePage() {
                         gridTemplateColumns: "92px 1fr 92px",
                         gap: "0.45rem",
                         alignItems: "center",
-                        padding: "0.36rem 0.75rem",
+                        padding: "0.22rem 0.65rem",
                         textDecoration: "none",
                         color: "#FFFFFF",
                         borderTop: isNewDay ? "1px solid rgba(255,255,255,0.04)" : "none",
@@ -567,7 +566,7 @@ export default function HomePage() {
                         borderBottom: "1px solid rgba(255,255,255,0.04)",
                         borderLeft: "1px solid rgba(255,255,255,0.04)",
                         background: "rgba(255,255,255,0.01)",
-                        minHeight: "34px",
+                        minHeight: "28px",
                       }}
                     >
                       <div style={{ textAlign: "center" }}>
@@ -576,19 +575,39 @@ export default function HomePage() {
                             display: "inline-flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            minWidth: "72px",
-                            padding: "0.24rem 0.4rem",
-                            borderRadius: "10px",
-                            background: "rgba(59,130,246,0.10)",
-                            border: "1px solid rgba(59,130,246,0.18)",
+                            minWidth: "64px",
+                            padding: "0.05rem 0",
                             color: "#BFDBFE",
                             fontWeight: 800,
-                            fontSize: "0.82rem",
+                            fontSize: "0.78rem",
                             lineHeight: 1,
                             whiteSpace: "nowrap",
                           }}
                         >
-                          {getTimeLabel(match.matchDate)}
+                      
+<span
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: "0.3rem",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              <span>{getTimeLabel(match.matchDate)}</span>
+
+                              <span
+                                style={{
+                                  transform: "scale(0.68)",
+                                  transformOrigin: "left center",
+                                  display: "inline-flex",
+                                  marginLeft: "-0.12rem",
+                                }}
+                              >
+                                <MatchStatusBadge matchDate={match.matchDate} slug={match.slug} />
+                              </span>
+                            </span>
+                        
                         </div>
                       </div>
 
@@ -794,7 +813,7 @@ export default function HomePage() {
                     {isNewDay ? (
                       <div
                         style={{
-                          padding: index === 0 ? "0.55rem 0.75rem 0.2rem" : "0.7rem 0.75rem 0.2rem",
+                          padding: index === 0 ? "0.38rem 0.65rem 0.15rem" : "0.5rem 0.65rem 0.15rem",
                           background: "rgba(255,255,255,0.015)",
                         }}
                       >
@@ -808,7 +827,7 @@ export default function HomePage() {
                             background: "rgba(255, 255, 255, 0.64)",
                             border: "1px solid rgba(59,130,246,0.35)",
                             borderRadius: "8px",
-                            padding: "0.28rem 0.42rem",
+                            padding: "0.2rem 0.36rem",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -826,7 +845,7 @@ export default function HomePage() {
                         gridTemplateColumns: "92px 1fr 92px",
                         gap: "0.45rem",
                         alignItems: "center",
-                        padding: "0.36rem 0.75rem",
+                        padding: "0.22rem 0.65rem",
                         textDecoration: "none",
                         color: "#FFFFFF",
                         borderTop: isNewDay ? "1px solid rgba(255,255,255,0.04)" : "none",
@@ -834,7 +853,7 @@ export default function HomePage() {
                         borderBottom: "1px solid rgba(255,255,255,0.04)",
                         borderLeft: "1px solid rgba(255,255,255,0.04)",
                         background: index % 2 === 0 ? "rgba(255,255,255,0.01)" : "transparent",
-                        minHeight: "34px",
+                        minHeight: "28px",
                       }}
                     >
                       <div style={{ textAlign: "center" }}>
@@ -843,19 +862,39 @@ export default function HomePage() {
                             display: "inline-flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            minWidth: "72px",
-                            padding: "0.24rem 0.4rem",
-                            borderRadius: "10px",
-                            background: "rgba(59,130,246,0.10)",
-                            border: "1px solid rgba(59,130,246,0.18)",
+                            minWidth: "64px",
+                            padding: "0.05rem 0",
                             color: "#BFDBFE",
                             fontWeight: 800,
-                            fontSize: "0.82rem",
+                            fontSize: "0.78rem",
                             lineHeight: 1,
                             whiteSpace: "nowrap",
                           }}
                         >
-                          {getTimeLabel(match.matchDate)}
+                          
+<span
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: "0.3rem",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              <span>{getTimeLabel(match.matchDate)}</span>
+
+                              <span
+                                style={{
+                                  transform: "scale(0.68)",
+                                  transformOrigin: "left center",
+                                  display: "inline-flex",
+                                  marginLeft: "-0.12rem",
+                                }}
+                              >
+                                <MatchStatusBadge matchDate={match.matchDate} slug={match.slug} />
+                              </span>
+                            </span>
+                        
                         </div>
                       </div>
 

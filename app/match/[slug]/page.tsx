@@ -554,69 +554,55 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
           <div
             style={{
               display: "flex",
-              gap: "0.5rem",
-              flexWrap: "wrap",
-              justifyContent: "center",
-              marginBottom: "0.2rem",
-            }}
-          >
-            {[
-              { value: countryCount, label: "Countries" },
-              { value: freeBroadcasts.length, label: "Free" },
-              { value: paidBroadcasts.length, label: "Paid" },
-            ].map((item) => (
-              <div
-                key={item.label}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.35rem",
-                  background: "rgba(255,255,255,0.03)",
-                  border: "1px solid rgba(255,255,255,0.05)",
-                  borderRadius: "999px",
-                  padding: "0.3rem 0.55rem",
-                }}
-              >
-                <span style={{ fontSize: "0.85rem", fontWeight: 700 }}>
-                  {item.value}
-                </span>
-                <span
-                  style={{
-                    color: "#94A3B8",
-                    fontSize: "0.72rem",
-                  }}
-                >
-                  {item.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div
-          style={{
-            marginBottom: "1rem",
-            display: "flex",
-            justifyContent: "center",
-          }}
-        >
-          <Link
-            href={`/watch/${safeMatch.slug}/${uniqueCountries[0]?.countryCode.toLowerCase() ?? "us"}`}
-            style={{
-              display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
-              background: "#3B82F6",
-              color: "#FFFFFF",
-              textDecoration: "none",
-              padding: "0.7rem 1rem",
-              borderRadius: "10px",
-              fontWeight: 800,
-              fontSize: "0.9rem",
+              gap: "0.55rem",
+              flexWrap: "wrap",
+              marginTop: "0.2rem",
+              marginBottom: "0.75rem",
+              color: "#CBD5E1",
+              fontSize: "0.74rem",
+              fontWeight: 700,
+              lineHeight: 1,
             }}
           >
-            Compare broadcasters by country
-          </Link>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
+              <span style={{ color: "#94A3B8", fontSize: "0.82rem" }}>⊚</span>
+              <span>{countryCount} Countries</span>
+            </div>
+
+            <span style={{ color: "rgba(255,255,255,0.16)" }}>|</span>
+
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
+              <span style={{ color: "#94A3B8", fontSize: "0.82rem" }}>✦</span>
+              <span>{freeBroadcasts.length} Free</span>
+            </div>
+
+            <span style={{ color: "rgba(255,255,255,0.16)" }}>|</span>
+
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
+              <span style={{ color: "#94A3B8", fontSize: "0.82rem" }}>◼</span>
+              <span>{paidBroadcasts.length} Paid</span>
+            </div>
+
+            <span style={{ color: "rgba(255,255,255,0.16)" }}>|</span>
+
+            <Link
+              href={`/watch/${safeMatch.slug}`}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.25rem",
+                color: "#60A5FA",
+                textDecoration: "none",
+                fontWeight: 800,
+                whiteSpace: "nowrap",
+              }}
+            >
+              View all countries
+              <span style={{ fontSize: "0.9rem" }}>→</span>
+            </Link>
+          </div>
         </div>
 
         <div
