@@ -104,5 +104,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }));
   });
 
-  return [...staticPages, ...matchPages, ...watchPages];
+  const countryCodes = Array.from(
+    new Set(
+      safeMatches.flatMap((match) =>
+        getSafeBroadcasts(match).map((broadcast) => broadcast.countryCode)
+      )
+    )
+  ).sort();
+
+  const countryPages: MetadataRoute.Sitemap = countryCodes.map((countryCode) => ({
+    url: `${baseUrl}/country/${countryCode}`,
+    lastModified: new Date(),
+    changeFrequency: "daily",
+    priority: 0.85,
+  }));
+
+  return [...staticPages, ...matchPages, ...watchPages, ...countryPages];
 }
