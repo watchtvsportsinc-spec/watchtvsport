@@ -280,13 +280,12 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
     eventStatus: "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OnlineEventAttendanceMode",
     url: `https://watchtvsport.com/match/${safeMatch.slug}`,
-   location: {
+location: {
   "@type": "Place",
   name:
     safeMatch.hostCity && safeMatch.hostCountry
       ? `${safeMatch.hostCity}, ${safeMatch.hostCountry}`
       : safeMatch.competition ?? "FIFA World Cup 2026",
-
   address: {
     "@type": "PostalAddress",
     addressLocality: safeMatch.hostCity ?? undefined,
