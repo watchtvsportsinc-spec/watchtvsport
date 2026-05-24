@@ -280,13 +280,19 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
     eventStatus: "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OnlineEventAttendanceMode",
     url: `https://watchtvsport.com/match/${safeMatch.slug}`,
-    location: {
-      "@type": "Place",
-      name:
-        safeMatch.hostCity && safeMatch.hostCountry
-          ? `${safeMatch.hostCity}, ${safeMatch.hostCountry}`
-          : safeMatch.competition ?? "FIFA World Cup 2026",
-    },
+   location: {
+  "@type": "Place",
+  name:
+    safeMatch.hostCity && safeMatch.hostCountry
+      ? `${safeMatch.hostCity}, ${safeMatch.hostCountry}`
+      : safeMatch.competition ?? "FIFA World Cup 2026",
+
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: safeMatch.hostCity ?? undefined,
+    addressCountry: safeMatch.hostCountry ?? undefined,
+  },
+},
     competitor: [
       {
         "@type": "SportsTeam",
@@ -672,20 +678,20 @@ maxWidth: "var(--hero-grid-max-width, 520px)",
             <span style={{ color: "rgba(255,255,255,0.16)" }}>|</span>
 
             <Link
-              href={`/watch/${safeMatch.slug}`}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.25rem",
-                color: "#60A5FA",
-                textDecoration: "none",
-                fontWeight: 800,
-                whiteSpace: "nowrap",
-              }}
-            >
-              View all countries
-              <span style={{ fontSize: "0.9rem" }}>→</span>
-            </Link>
+  href={`#watch-by-country`}
+  style={{
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "0.25rem",
+    color: "#60A5FA",
+    textDecoration: "none",
+    fontWeight: 800,
+    whiteSpace: "nowrap",
+  }}
+>
+  View all countries
+  <span style={{ fontSize: "0.9rem" }}>→</span>
+</Link>
           </div>
         </div>
 
@@ -1173,7 +1179,9 @@ maxWidth: "var(--hero-grid-max-width, 520px)",
   )}
 </div>
 
-        <SectionTitle>Watch this match by country</SectionTitle>
+      <div id="watch-by-country">
+  <SectionTitle>Watch this match by country</SectionTitle>
+</div>
 
         <div
           style={{

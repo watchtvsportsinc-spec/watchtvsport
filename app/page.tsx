@@ -213,6 +213,7 @@ export default function HomePage() {
         const homeTeam = getTeamName(match.homeTeam);
         const awayTeam = getTeamName(match.awayTeam);
 
+      
         return (
           startsWithQuery(homeTeam, normalizedTeamQuery) ||
           startsWithQuery(awayTeam, normalizedTeamQuery)
@@ -236,6 +237,59 @@ export default function HomePage() {
         padding: "1.25rem 1rem 2.5rem",
       }}
     >
+
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            .homepageTeamShort {
+              display: none;
+            }
+
+@media (max-width: 767px) {
+
+  .homepageMatchRow {
+    grid-template-columns: 76px minmax(0, 1fr) 70px !important;
+    gap: 0.25rem !important;
+    padding: 0.22rem 0.42rem !important;
+  }
+
+  .homepageHeroTitle {
+    font-size: 1.55rem !important;
+    line-height: 1.08 !important;
+  }
+
+  .homepageMatchTime {
+    min-width: auto !important;
+    font-size: 0.70rem !important;
+  }
+
+  .homepageTeamName {
+    gap: 0.20rem !important;
+    font-size: 0.68rem !important;
+    line-height: 1 !important;
+  }
+
+  .homepageTeamFull {
+    display: none !important;
+  }
+
+  .homepageTeamShort {
+    display: inline !important;
+  }
+
+  .homepageVsPill {
+    font-size: 0.52rem !important;
+    padding: 0.08rem 0.24rem !important;
+  }
+
+  .homepageStageText {
+    font-size: 0.58rem !important;
+  }
+
+}
+          `,
+        }}
+      />
    
       <div
         style={{
@@ -283,8 +337,9 @@ export default function HomePage() {
           </span>
         </div>
 
-        <h1
-          style={{
+<h1
+  className="homepageHeroTitle"
+  style={{
             fontSize: "2rem",
             lineHeight: 1.05,
             margin: "0 auto",
@@ -553,6 +608,7 @@ background: "linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)",
 
                     <Link
                       href={`/match/${match.slug}`}
+                      className="homepageMatchRow"
                       style={{
                         display: "grid",
                         gridTemplateColumns: "92px 1fr 92px",
@@ -571,6 +627,7 @@ background: "linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)",
                     >
                       <div style={{ textAlign: "center" }}>
                         <div
+                          className="homepageMatchTime"
                           style={{
                             display: "inline-flex",
                             alignItems: "center",
@@ -622,6 +679,7 @@ background: "linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)",
                         }}
                       >
                         <span
+                          className="homepageTeamName"
                           style={{
                             fontWeight: 700,
                             fontSize: "0.92rem",
@@ -659,11 +717,13 @@ background: "linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)",
                               textOverflow: "ellipsis",
                             }}
                           >
-                            {getTeamName(match.homeTeam)}
+                            <span className="homepageTeamFull">{getTeamName(match.homeTeam)}</span>
+                            <span className="homepageTeamShort">{getTeamName(match.homeTeam).slice(0, 2).toUpperCase()}</span>
                           </span>
                         </span>
 
                         <span
+                          className="homepageVsPill"
                           style={{
                             padding: "0.14rem 0.34rem",
                             borderRadius: "999px",
@@ -681,6 +741,7 @@ background: "linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)",
                         </span>
 
                         <span
+                          className="homepageTeamName"
                           style={{
                             fontWeight: 700,
                             fontSize: "0.92rem",
@@ -704,7 +765,8 @@ background: "linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)",
                               textOverflow: "ellipsis",
                             }}
                           >
-                            {getTeamName(match.awayTeam)}
+                            <span className="homepageTeamFull">{getTeamName(match.awayTeam)}</span>
+                            <span className="homepageTeamShort">{getTeamName(match.awayTeam).slice(0, 2).toUpperCase()}</span>
                           </span>
                           {getTeamFlagCode(getTeamName(match.awayTeam)) ? (
                             <img
@@ -840,6 +902,7 @@ background: "linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)",
 
                     <Link
                       href={`/match/${match.slug}`}
+                      className="homepageMatchRow"
                       style={{
                         display: "grid",
                         gridTemplateColumns: "92px 1fr 92px",
@@ -858,6 +921,7 @@ background: "linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)",
                     >
                       <div style={{ textAlign: "center" }}>
                         <div
+                          className="homepageMatchTime"
                           style={{
                             display: "inline-flex",
                             alignItems: "center",
@@ -909,6 +973,7 @@ background: "linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)",
                         }}
                       >
                         <span
+                          className="homepageTeamName"
                           style={{
                             fontWeight: 700,
                             fontSize: "0.92rem",
@@ -946,11 +1011,13 @@ background: "linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)",
                               textOverflow: "ellipsis",
                             }}
                           >
-                            {getTeamName(match.homeTeam)}
+                            <span className="homepageTeamFull">{getTeamName(match.homeTeam)}</span>
+                            <span className="homepageTeamShort">{getTeamName(match.homeTeam).slice(0, 2).toUpperCase()}</span>
                           </span>
                         </span>
 
                         <span
+                          className="homepageVsPill"
                           style={{
                             padding: "0.14rem 0.34rem",
                             borderRadius: "999px",
@@ -968,6 +1035,7 @@ background: "linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)",
                         </span>
 
                         <span
+                          className="homepageTeamName"
                           style={{
                             fontWeight: 700,
                             fontSize: "0.92rem",
@@ -991,7 +1059,8 @@ background: "linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)",
                               textOverflow: "ellipsis",
                             }}
                           >
-                            {getTeamName(match.awayTeam)}
+                            <span className="homepageTeamFull">{getTeamName(match.awayTeam)}</span>
+                            <span className="homepageTeamShort">{getTeamName(match.awayTeam).slice(0, 2).toUpperCase()}</span>
                           </span>
                           {getTeamFlagCode(getTeamName(match.awayTeam)) ? (
                             <img
