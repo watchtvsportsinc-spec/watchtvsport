@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://watchtvsport.com"),
@@ -317,6 +318,7 @@ padding: "0 1rem",
             </div>
           </footer>
         </div>
+        <Analytics />
       </body>
     </html>
   );
