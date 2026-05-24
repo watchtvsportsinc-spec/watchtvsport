@@ -369,12 +369,28 @@ export default async function CountryPage({ params }: PageProps) {
       "@type": "Thing",
       name: `Football on TV in ${countryName}`,
     },
-    mainEntity: countryMatches.slice(0, 20).map((item) => ({
-      "@type": "SportsEvent",
-      name: `${getTeamName(item.match.homeTeam)} vs ${getTeamName(item.match.awayTeam)}`,
-      startDate: item.match.matchDate,
-      url: `/watch/${item.match.slug}/${normalizedCode}`,
-    })),
+    mainEntity: countryMatches.slice(0, 20).map((item) => (
+{
+  "@type": "SportsEvent",
+  name: `${getTeamName(item.match.homeTeam)} vs ${getTeamName(item.match.awayTeam)}`,
+  startDate: item.match.matchDate,
+  endDate: item.match.matchDate,
+  eventStatus: "https://schema.org/EventScheduled",
+  url: `https://watchtvsport.com/watch/${item.match.slug}/${normalizedCode}`,
+  location: {
+    "@type": "Place",
+    name:
+      item.match.hostCity && item.match.hostCountry
+        ? `${item.match.hostCity}, ${item.match.hostCountry}`
+        : item.match.competition ?? "FIFA World Cup 2026",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: item.match.hostCity ?? undefined,
+      addressCountry: item.match.hostCountry ?? undefined,
+    },
+  },
+}
+  )),
   };
 
   return (
