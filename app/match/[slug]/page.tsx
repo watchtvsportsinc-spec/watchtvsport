@@ -270,47 +270,77 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
     },
   ];
 
-  const sportsEventSchema = {
-    "@context": "https://schema.org",
-    "@type": "SportsEvent",
-    name: `${homeTeam} vs ${awayTeam}`,
-    description: `Find where to watch ${homeTeam} vs ${awayTeam} legally worldwide. Compare official broadcasters, free and paid TV channels by country.`,
-    startDate: safeMatch.matchDate,
-    sport: "Soccer",
-    eventStatus: "https://schema.org/EventScheduled",
-    eventAttendanceMode: "https://schema.org/OnlineEventAttendanceMode",
-    url: `https://watchtvsport.com/match/${safeMatch.slug}`,
-location: {
-  "@type": "Place",
-  name:
-    safeMatch.hostCity && safeMatch.hostCountry
-      ? `${safeMatch.hostCity}, ${safeMatch.hostCountry}`
-      : safeMatch.competition ?? "FIFA World Cup 2026",
-  address: {
-    "@type": "PostalAddress",
-    addressLocality: safeMatch.hostCity ?? undefined,
-    addressCountry: safeMatch.hostCountry ?? undefined,
+const sportsEventSchema = {
+  "@context": "https://schema.org",
+  "@type": "SportsEvent",
+  name: `${homeTeam} vs ${awayTeam}`,
+  description: `Find where to watch ${homeTeam} vs ${awayTeam} legally worldwide. Compare official broadcasters, free and paid TV channels by country.`,
+
+  image: [
+    "https://watchtvsport.com/og-image.jpg",
+  ],
+
+  organizer: {
+    "@type": "SportsOrganization",
+    name: "FIFA",
   },
-},
-    competitor: [
-      {
-        "@type": "SportsTeam",
-        name: homeTeam,
-      },
-      {
-        "@type": "SportsTeam",
-        name: awayTeam,
-      },
-    ],
-    offers: broadcasts.map((item) => ({
-      "@type": "Offer",
-      name: `${item.broadcaster} in ${item.countryName}`,
-      url: item.affiliateUrl || item.url,
-      category: item.access,
-      areaServed: item.countryName,
-      availability: "https://schema.org/InStock",
-    })),
-  };
+
+  performer: [
+    {
+      "@type": "SportsTeam",
+      name: homeTeam,
+    },
+    {
+      "@type": "SportsTeam",
+      name: awayTeam,
+    },
+  ],
+
+  startDate: safeMatch.matchDate,
+  endDate: safeMatch.matchDate,
+  sport: "Soccer",
+  eventStatus: "https://schema.org/EventScheduled",
+  eventAttendanceMode: "https://schema.org/OnlineEventAttendanceMode",
+
+  url: `https://watchtvsport.com/match/${safeMatch.slug}`,
+
+  location: {
+    "@type": "Place",
+    name:
+      safeMatch.hostCity && safeMatch.hostCountry
+        ? `${safeMatch.hostCity}, ${safeMatch.hostCountry}`
+        : safeMatch.competition ?? "FIFA World Cup 2026",
+
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: safeMatch.hostCity ?? undefined,
+      addressCountry: safeMatch.hostCountry ?? undefined,
+    },
+  },
+
+  competitor: [
+    {
+      "@type": "SportsTeam",
+      name: homeTeam,
+    },
+    {
+      "@type": "SportsTeam",
+      name: awayTeam,
+    },
+  ],
+
+  offers: broadcasts.map((item) => ({
+    "@type": "Offer",
+    name: `${item.broadcaster} in ${item.countryName}`,
+    url: item.affiliateUrl || item.url,
+    category: item.access,
+    areaServed: item.countryName,
+    availability: "https://schema.org/InStock",
+    price: "0",
+    priceCurrency: "USD",
+    validFrom: safeMatch.matchDate,
+  })),
+};
 
   const faqSchema = {
     "@context": "https://schema.org",

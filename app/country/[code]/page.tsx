@@ -369,10 +369,25 @@ export default async function CountryPage({ params }: PageProps) {
       "@type": "Thing",
       name: `Football on TV in ${countryName}`,
     },
-    mainEntity: countryMatches.slice(0, 20).map((item) => (
-{
+    mainEntity: countryMatches.slice(0, 20).map((item) => ({
   "@type": "SportsEvent",
   name: `${getTeamName(item.match.homeTeam)} vs ${getTeamName(item.match.awayTeam)}`,
+  description: `Find where to watch ${getTeamName(item.match.homeTeam)} vs ${getTeamName(item.match.awayTeam)} legally in ${countryName}.`,
+  image: ["https://watchtvsport.com/og-image.jpg"],
+  organizer: {
+    "@type": "SportsOrganization",
+    name: "FIFA",
+  },
+  performer: [
+    {
+      "@type": "SportsTeam",
+      name: getTeamName(item.match.homeTeam),
+    },
+    {
+      "@type": "SportsTeam",
+      name: getTeamName(item.match.awayTeam),
+    },
+  ],
   startDate: item.match.matchDate,
   endDate: item.match.matchDate,
   eventStatus: "https://schema.org/EventScheduled",
@@ -389,8 +404,18 @@ export default async function CountryPage({ params }: PageProps) {
       addressCountry: item.match.hostCountry ?? undefined,
     },
   },
-}
-  )),
+  offers: item.broadcasts.map((broadcast) => ({
+    "@type": "Offer",
+    name: `${broadcast.broadcaster} in ${broadcast.countryName}`,
+    url: broadcast.affiliateUrl || broadcast.url,
+    category: broadcast.access,
+    areaServed: broadcast.countryName,
+    availability: "https://schema.org/InStock",
+    price: "0",
+    priceCurrency: "USD",
+    validFrom: item.match.matchDate,
+  })),
+})),
   };
 
   return (
