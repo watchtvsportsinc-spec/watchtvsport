@@ -1,4 +1,5 @@
 import TeamFlagUnderName from "@/components/TeamFlagUnderName";
+import BestOptionCTA from "@/source/components/monetization/BestOptionCTA";
 import { SectionTitle, AccessBadge } from "@/components/ui";
 import Image from "next/image";
 import type { Metadata } from "next";
@@ -551,6 +552,25 @@ export default async function WatchCountryPage({ params, searchParams }: PagePro
   >
     Official broadcasters and legal viewing options.
   </p>
+  <div
+  style={{
+    marginBottom: "1rem",
+  }}
+>
+  <BestOptionCTA
+    broadcaster={
+      localBroadcasts[0]?.broadcaster ||
+      sortedBroadcasts[0]?.broadcaster ||
+      "Official Broadcaster"
+    }
+    country={countryName}
+    url={
+      localBroadcasts[0]?.affiliateUrl ||
+      localBroadcasts[0]?.url ||
+      "#"
+    }
+  />
+</div>
 </div>
 
         <div

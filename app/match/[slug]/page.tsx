@@ -41,7 +41,7 @@ function getWatchButtonLabel(countryCode: string, broadcaster: string) {
 
   if (["de", "at"].includes(code)) {
     return `Ansehen auf ${broadcaster}`;
-  }
+  } 
 
   if (["es"].includes(code)) {
     return `Ver en ${broadcaster}`;
@@ -367,6 +367,87 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
 
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            @media (max-width: 767px) {
+  .matchHeroCard {
+    --hero-card-padding: 0.5rem 0.45rem 0.55rem;
+    --hero-grid-gap: 0px;
+    --hero-grid-max-width: 100%;
+    --hero-team-min-width: 96px;
+    --hero-flag-size: 46px;
+    --hero-team-font-size: 0.78rem;
+    --hero-team-margin-bottom: 0.28rem;
+    --hero-center-min-width: 86px;
+    --hero-pill-padding: 0.22rem 0.42rem;
+    --hero-pill-font-size: 0.62rem;
+    --hero-pill-gap: 0.28rem;
+    --hero-stage-gap: 0.42rem;
+    --hero-vs-font-size: 13px;
+    --hero-vs-gap: 0.25rem;
+    --hero-meta-font-size: 0.65rem;
+    --hero-stats-gap: 0.34rem;
+    --hero-stats-font-size: 0.64rem;
+    --hero-stats-margin-bottom: 0.35rem;
+  }
+
+  .matchHeroGrid {
+    align-items: start !important;
+  }
+
+  .matchHeroStats {
+    line-height: 1.15 !important;
+  }
+
+  .broadcasterCard {
+    --broadcaster-card-columns: minmax(0, 1fr);
+    --broadcaster-card-padding: 0.65rem;
+    --broadcaster-card-gap: 0.5rem;
+  }
+
+  .broadcasterCard .broadcasterInfo {
+    font-size: 0.82rem !important;
+    gap: 0.38rem !important;
+    line-height: 1.2 !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  .broadcasterActions {
+    width: 100% !important;
+    justify-content: center !important;
+    flex-wrap: nowrap !important;
+    gap: 0.45rem !important;
+  }
+
+  .broadcasterActions a {
+    max-width: none !important;
+    overflow: visible !important;
+  }
+
+  .broadcasterActions a span:last-child {
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+  }
+
+  .broadcasterCountryLink {
+    width: auto !important;
+    justify-content: center !important;
+    margin-top: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .broadcasterCountryLink img {
+    display: none !important;
+  }
+}
+  
+`,
+        }}
+      />
+
       <div
         style={{
           maxWidth: "1100px",
@@ -374,22 +455,24 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
         }}
       >
         <div
+          className="matchHeroCard"
           style={{
             background: "#071632",
             border: "1px solid rgba(255,255,255,0.08)",
             borderRadius: "18px",
-            padding: "1rem 1.1rem 0.95rem",
-            marginBottom: "1.1rem",
+padding: "var(--hero-card-padding, 0.7rem 0.7rem 0.8rem)",
+marginBottom: "0.9rem",
           }}
         >
           <div
+            className="matchHeroGrid"
             style={{
               display: "grid",
               gridTemplateColumns: "1fr auto 1fr",
-              alignItems: "start",
-              gap: "10px",
-              marginBottom: "0.45rem",
-              maxWidth: "620px",
+alignItems: "center",
+gap: "var(--hero-grid-gap, 4px)",
+marginBottom: "0.2rem",
+maxWidth: "var(--hero-grid-max-width, 520px)",
               marginLeft: "auto",
               marginRight: "auto",
             }}
@@ -398,7 +481,7 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
               style={{
                 display: "flex",
                 justifyContent: "flex-end",
-                paddingTop: "18px",
+                paddingTop: "4px",
               }}
             >
               <TeamFlagUnderName
@@ -406,25 +489,25 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
                 countryCode={fifaCodeToIso2(safeMatch.homeTeam.code)}
                 size={62}
                 teamNameStyle={{
-                  fontSize: "1.05rem",
+                  fontSize: "var(--hero-team-font-size, 1.05rem)",
                   fontWeight: 800,
                   lineHeight: 1.15,
                   textAlign: "center",
                   color: "#FFFFFF",
-                  marginBottom: "0.75rem",
+                  marginBottom: "var(--hero-team-margin-bottom, 0.75rem)",
                 }}
                 wrapperStyle={{
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  minWidth: "160px",
+                  minWidth: "var(--hero-team-min-width, 160px)",
                 }}
                 flagStyle={{
-                  width: "62px",
-                  height: "62px",
-                  minWidth: "62px",
-                  minHeight: "62px",
+                  width: "var(--hero-flag-size, 62px)",
+                  height: "var(--hero-flag-size, 62px)",
+                  minWidth: "var(--hero-flag-size, 62px)",
+                  minHeight: "var(--hero-flag-size, 62px)",
                   borderRadius: "999px",
                   objectFit: "cover",
                   background: "#071632",
@@ -440,20 +523,20 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                minWidth: "120px",
+                minWidth: "var(--hero-center-min-width, 120px)",
                 textAlign: "center",
               }}
             >
               <span
                 style={{
-                  padding: "0.28rem 0.55rem",
+                  padding: "var(--hero-pill-padding, 0.28rem 0.55rem)",
                   borderRadius: "999px",
                   background: "rgba(59,130,246,0.15)",
                   color: "#BFDBFE",
-                  fontSize: "0.74rem",
+                  fontSize: "var(--hero-pill-font-size, 0.74rem)",
                   fontWeight: 700,
                   lineHeight: 1,
-                  marginBottom: "0.45rem",
+                  marginBottom: "var(--hero-pill-gap, 0.45rem)",
                 }}
               >
                 {safeMatch.competition ?? "FIFA World Cup 2026"}
@@ -461,14 +544,14 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
 
               <span
                 style={{
-                  padding: "0.28rem 0.55rem",
+                  padding: "var(--hero-pill-padding, 0.28rem 0.55rem)",
                   borderRadius: "999px",
                   background: "rgba(255,255,255,0.06)",
                   color: "#CBD5E1",
-                  fontSize: "0.74rem",
+                  fontSize: "var(--hero-pill-font-size, 0.74rem)",
                   fontWeight: 700,
                   lineHeight: 1,
-                  marginBottom: "0.8rem",
+                  marginBottom: "var(--hero-stage-gap, 0.8rem)",
                 }}
               >
                 {stageLabel}
@@ -476,12 +559,12 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
 
               <div
                 style={{
-                  fontSize: "16px",
+                  fontSize: "var(--hero-vs-font-size, 16px)",
                   fontWeight: 800,
                   color: "#94A3B8",
                   letterSpacing: "0.08em",
                   textAlign: "center",
-                  marginBottom: "0.45rem",
+                  marginBottom: "var(--hero-vs-gap, 0.45rem)",
                 }}
               >
                 VS
@@ -490,7 +573,7 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
               <div
                 style={{
                   color: "#94A3B8",
-                  fontSize: "0.76rem",
+                  fontSize: "var(--hero-meta-font-size, 0.76rem)",
                   lineHeight: 1.5,
                   textAlign: "center",
                 }}
@@ -514,7 +597,7 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
               style={{
                 display: "flex",
                 justifyContent: "flex-start",
-                paddingTop: "18px",
+                paddingTop: "4px",
               }}
             >
               <TeamFlagUnderName
@@ -522,25 +605,25 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
                 countryCode={fifaCodeToIso2(safeMatch.awayTeam.code)}
                 size={62}
                 teamNameStyle={{
-                  fontSize: "0.88rem",
+                  fontSize: "var(--hero-team-font-size, 0.88rem)",
                   fontWeight: 800,
                   lineHeight: 1.15,
                   textAlign: "center",
                   color: "#FFFFFF",
-                  marginBottom: "0.35rem",
+                  marginBottom: "var(--hero-team-margin-bottom, 0.35rem)",
                 }}
                 wrapperStyle={{
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  minWidth: "110px",
+                  minWidth: "var(--hero-team-min-width, 160px)",
                 }}
                 flagStyle={{
-                  width: "62px",
-                  height: "62px",
-                  minWidth: "62px",
-                  minHeight: "62px",
+                  width: "var(--hero-flag-size, 62px)",
+                  height: "var(--hero-flag-size, 62px)",
+                  minWidth: "var(--hero-flag-size, 62px)",
+                  minHeight: "var(--hero-flag-size, 62px)",
                   borderRadius: "999px",
                   objectFit: "cover",
                   background: "#071632",
@@ -552,16 +635,17 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
           </div>
 
           <div
+            className="matchHeroStats"
             style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: "0.55rem",
+              gap: "var(--hero-stats-gap, 0.55rem)",
               flexWrap: "wrap",
               marginTop: "0.2rem",
-              marginBottom: "0.75rem",
+              marginBottom: "var(--hero-stats-margin-bottom, 0.75rem)",
               color: "#CBD5E1",
-              fontSize: "0.74rem",
+              fontSize: "var(--hero-stats-font-size, 0.74rem)",
               fontWeight: 700,
               lineHeight: 1,
             }}
@@ -617,7 +701,7 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
               background: "rgba(255,255,255,0.03)",
               border: "1px solid rgba(255,255,255,0.08)",
               borderRadius: "14px",
-              padding: "0.65rem",
+              padding: "0.5rem",
               display: "grid",
               gap: "0.5rem",
             }}
@@ -625,9 +709,9 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
             <div
               style={{
                 display: "flex",
-                justifyContent: "space-between",
+              justifyContent: "flex-start",
                 alignItems: "center",
-                gap: "0.6rem",
+                gap: "0.45rem",
                 flexWrap: "wrap",
               }}
             >
@@ -914,203 +998,180 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
           ) : null}
         </div>
 
-        <SectionTitle>All viewing options</SectionTitle>
+<SectionTitle>All viewing options</SectionTitle>
 
+<div
+  style={{
+    display: "grid",
+    gap: "0.5rem",
+  }}
+>
+  {sortedBroadcasts.length > 0 ? (
+    sortedBroadcasts.map((item) => (
+      <div
+        key={`${item.countryCode}-${item.broadcaster}-${item.access}`}
+        className="broadcasterCard"
+        style={{
+          background: "#111827",
+          border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: "12px",
+          padding: "var(--broadcaster-card-padding, 0.28rem 0.45rem)",
+          display: "grid",
+          gridTemplateColumns: "var(--broadcaster-card-columns, minmax(0, 1fr) auto auto)",
+          alignItems: "center",
+          gap: "var(--broadcaster-card-gap, 0.75rem)",
+        }}
+      >
         <div
+          className="broadcasterInfo"
           style={{
-            display: "grid",
+            minWidth: 0,
+            display: "flex",
+            alignItems: "center",
             gap: "0.5rem",
+            flexWrap: "wrap",
+            fontSize: "0.8rem",
+            lineHeight: 1.1,
           }}
         >
-          {sortedBroadcasts.length > 0 ? (
-            sortedBroadcasts.map((item) => (
-              <div
-                key={`${item.countryCode}-${item.broadcaster}-${item.access}`}
-                style={{
-                  background: "#111827",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  borderRadius: "12px",
-                  padding: "0.28rem 0.45rem",
-                  display: "grid",
-                  gridTemplateColumns: "minmax(0, 1fr) auto auto",
-                  alignItems: "center",
-                  gap: "0.75rem",
-                }}
-              >
-                <div
-                  style={{
-                    minWidth: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    flexWrap: "wrap",
-                    fontSize: "0.8rem",
-                    lineHeight: 1.1,
-                  }}
-                >
-                  <span
-                    style={{
-                      width: "20px",
-                      height: "14px",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Image
-                      src={`/flags/${item.countryCode}.png`}
-                      alt={getCountryDisplayName(broadcasts, item.countryCode)}
-                      width={20}
-                      height={14}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "contain",
-                      }}
-                    />
-                  </span>
+          <Image
+            src={`/flags/${item.countryCode}.png`}
+            alt={getCountryDisplayName(broadcasts, item.countryCode)}
+            width={20}
+            height={14}
+            style={{ objectFit: "contain", flexShrink: 0 }}
+          />
 
-                  <span style={{ color: "#64748B" }}>•</span>
+          <span style={{ color: "#64748B" }}>•</span>
 
-                  <span
-                    style={{
-                      fontWeight: 700,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    {item.broadcaster}
-                  </span>
+          <span style={{ fontWeight: 700, whiteSpace: "nowrap" }}>
+            {item.broadcaster}
+          </span>
 
-                  {item.commentaryLanguages && item.commentaryLanguages.length > 0 ? (
-                    <>
-                      <span style={{ color: "#64748B" }}>•</span>
-                      <span style={{ color: "#CBD5E1" }}>
-                        {item.commentaryLanguages.join(", ")}
-                      </span>
-                    </>
-                  ) : null}
-                </div>
+          {item.commentaryLanguages?.length ? (
+            <>
+              <span style={{ color: "#64748B" }}>•</span>
+              <span style={{ color: "#CBD5E1" }}>
+                {item.commentaryLanguages.join(", ")}
+              </span>
+            </>
+          ) : null}
+        </div>
 
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "flex-end",
-                    gap: "0.35rem",
-                    minWidth: "fit-content",
-                  }}
-                >
-                  <a
-                    href={item.affiliateUrl || item.url}
-                    target="_blank"
-                    rel="nofollow sponsored noopener noreferrer"
-                    aria-label={getWatchButtonLabel(item.countryCode, item.broadcaster)}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "0.48rem",
-                      background: "linear-gradient(180deg, #02091a 0%, #0f245e 100%)",
-                      color: "#FFFFFF",
-                      textDecoration: "none",
-                      padding: "0.18rem 0.45rem",
-                      fontWeight: 700,
-                      fontSize: "0.8rem",
-                      lineHeight: 1,
-                      whiteSpace: "nowrap",
-                      boxShadow:
-                        "inset 0 1px 0 rgba(255,255,255,0.14), 0 4px 10px rgba(29,78,216,0.22)",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                    }}
-                  >
-                    <span
-                      aria-hidden="true"
-                      style={{
-                        width: "14px",
-                        height: "14px",
-                        borderRadius: "999px",
-                        background: "rgba(255,255,255,0.14)",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <span
-                        style={{
-                          width: 0,
-                          height: 0,
-                          borderTop: "4px solid transparent",
-                          borderBottom: "4px solid transparent",
-                          borderLeft: "6px solid #FFFFFF",
-                          marginLeft: "1px",
-                        }}
-                      />
-                    </span>
-
-                    <span>{getWatchButtonLabel(item.countryCode, item.broadcaster)}</span>
-                  </a>
-
-                  <AccessBadge access={item.access} />
-                </div>
-
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    minWidth: "50px",
-                  }}
-                >
-                  <Link
-                    href={`/watch/${safeMatch.slug}/${item.countryCode.toLowerCase()}`}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "0.42rem",
-                      color: "#BFDBFE",
-                      textDecoration: "none",
-                      fontSize: "0.78rem",
-                      fontWeight: 700,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    <Image
-                      src={`/flags/${item.countryCode}.png`}
-                      alt={getCountryDisplayName(broadcasts, item.countryCode)}
-                      width={16}
-                      height={16}
-                      style={{
-                        width: "16px",
-                        height: "16px",
-                        borderRadius: "3px",
-                        objectFit: "contain",
-                        flexShrink: 0,
-                      }}
-                    />
-
-                    <span>All TV</span>
-                  </Link>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div
+        <div
+          className="broadcasterActions"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "var(--broadcaster-actions-justify, flex-end)",
+            gap: "0.35rem",
+            minWidth: "fit-content",
+          }}
+        >
+          <a
+            href={item.affiliateUrl || item.url}
+            target="_blank"
+            rel="nofollow sponsored noopener noreferrer"
+            aria-label={getWatchButtonLabel(item.countryCode, item.broadcaster)}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.48rem",
+              background: "linear-gradient(180deg, #02091a 0%, #0f245e 100%)",
+              color: "#FFFFFF",
+              textDecoration: "none",
+              padding: "0.18rem 0.45rem",
+              fontWeight: 700,
+              fontSize: "0.8rem",
+              lineHeight: 1,
+              whiteSpace: "nowrap",
+              boxShadow:
+                "inset 0 1px 0 rgba(255,255,255,0.14), 0 4px 10px rgba(29,78,216,0.22)",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
+            <span
+              aria-hidden="true"
               style={{
-                background: "#111827",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "12px",
-                padding: "0.9rem",
-                color: "#CBD5E1",
-                fontSize: "0.9rem",
-                lineHeight: 1.55,
+                width: "14px",
+                height: "14px",
+                borderRadius: "999px",
+                background: "rgba(255,255,255,0.14)",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
               }}
             >
-              No official viewing option matches the selected filters.
-            </div>
-          )}
+              <span
+                style={{
+                  width: 0,
+                  height: 0,
+                  borderTop: "4px solid transparent",
+                  borderBottom: "4px solid transparent",
+                  borderLeft: "6px solid #FFFFFF",
+                  marginLeft: "1px",
+                }}
+              />
+            </span>
+
+<span className="watchButtonText">
+  Watch
+</span>
+          </a>
+
+          <AccessBadge access={item.access} />
+
+          <Link
+            href={`/watch/${safeMatch.slug}/${item.countryCode.toLowerCase()}`}
+            className="broadcasterCountryLink"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              gap: "0.42rem",
+              color: "#BFDBFE",
+              textDecoration: "none",
+              fontSize: "0.78rem",
+              fontWeight: 700,
+              whiteSpace: "nowrap",
+            }}
+          >
+            <Image
+              src={`/flags/${item.countryCode}.png`}
+              alt={getCountryDisplayName(broadcasts, item.countryCode)}
+              width={16}
+              height={16}
+              style={{
+                width: "16px",
+                height: "16px",
+                borderRadius: "3px",
+                objectFit: "contain",
+                flexShrink: 0,
+              }}
+            />
+
+            <span>All TV</span>
+          </Link>
         </div>
+      </div>
+    ))
+  ) : (
+    <div
+      style={{
+        background: "#111827",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: "12px",
+        padding: "0.9rem",
+        color: "#CBD5E1",
+        fontSize: "0.9rem",
+        lineHeight: 1.55,
+      }}
+    >
+      No official viewing option matches the selected filters.
+    </div>
+  )}
+</div>
 
         <SectionTitle>Watch this match by country</SectionTitle>
 

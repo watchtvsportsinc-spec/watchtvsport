@@ -46,8 +46,8 @@ export default function TeamFlagUnderName({
           width={size}
           height={size}
           style={{
-            width: "78%",
-            height: "78%",
+            width: "68%",
+            height: "68%",
             objectFit: "contain",
             display: "block",
             ...flagStyle,
@@ -56,6 +56,7 @@ export default function TeamFlagUnderName({
       </div>
 
       <div
+        className="wts-mobile-hide"
         style={{
           marginTop: "0.42rem",
           fontSize: "0.9rem",

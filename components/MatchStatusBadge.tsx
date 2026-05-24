@@ -29,33 +29,34 @@ function getStatus(matchDate: string, liveDurationMinutes: number) {
 
   if (now > liveEndTime) {
     return {
-      label: "Finished",
+      label: "FT",
       status: "finished" as const,
     };
   }
 
   const diffMs = startTime - now;
   const totalMinutes = Math.max(0, Math.floor(diffMs / 60000));
+
   const days = Math.floor(totalMinutes / (60 * 24));
   const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
   const minutes = totalMinutes % 60;
 
   if (days > 0) {
     return {
-      label: `Starts in ${days}d ${hours}h`,
+      label: `${days}d`,
       status: "upcoming" as const,
     };
   }
 
   if (hours > 0) {
     return {
-      label: `Starts in ${hours}h ${minutes}m`,
+      label: `${hours}h`,
       status: "upcoming" as const,
     };
   }
 
   return {
-    label: `Starts in ${minutes}m`,
+    label: `${minutes}m`,
     status: "upcoming" as const,
   };
 }
@@ -90,11 +91,13 @@ export default function MatchStatusBadge({
       style={{
         display: "inline-flex",
         alignItems: "center",
-        gap: "0.35rem",
+        justifyContent: "center",
+        gap: "0.3rem",
         width: "fit-content",
+        minWidth: "48px",
         borderRadius: "999px",
-        padding: "0.22rem 0.5rem",
-        fontSize: "0.72rem",
+        padding: "0.2rem 0.45rem",
+        fontSize: "0.68rem",
         fontWeight: 900,
         lineHeight: 1,
         whiteSpace: "nowrap",
@@ -110,17 +113,20 @@ export default function MatchStatusBadge({
             ? "1px solid rgba(148,163,184,0.18)"
             : "1px solid rgba(59,130,246,0.25)",
         boxShadow: isLive ? "0 0 14px rgba(220,38,38,0.28)" : "none",
+        letterSpacing: "0.01em",
+        flexShrink: 0,
       }}
     >
       {isLive ? (
         <span
           aria-hidden="true"
           style={{
-            width: "0.42rem",
-            height: "0.42rem",
+            width: "0.38rem",
+            height: "0.38rem",
             borderRadius: "999px",
             background: "#FFFFFF",
             display: "inline-block",
+            flexShrink: 0,
           }}
         />
       ) : null}
