@@ -1,71 +1,225 @@
 "use client";
-import { usePathname } from "next/navigation";
-import { getDictionary } from "@/lib/i18n";
-import Link from "next/link";
-import { useMemo, useState } from "react";
-import {
-  getHomepageStats,
-  getTeamName,
-  formatStage,
-} from "@/lib/utils";
-import { matches } from "@/lib/matches";
-import { SectionTitle } from "@/components/ui";
-import MatchStatusBadge from "@/components/MatchStatusBadge";
-import { isMatchFinished } from "@/lib/match-status";
 
-function getDayLabel(dateString?: string) {
+import Link from "next/link";
+import {
+  useMemo,
+  useRef,
+  useState,
+  type DragEvent as ReactDragEvent,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
+import { matches } from "@/lib/matches";
+import { getTeamName } from "@/lib/utils";
+
+type Match = (typeof matches)[number];
+
+type TrustIconName = "shield" | "globe" | "lock" | "users";
+
+function TrustIcon({ name }: { name: TrustIconName }) {
+  const commonStyle = {
+    width: "34px",
+    height: "34px",
+    minWidth: "34px",
+    color: "#60A5FA",
+    display: "block",
+  };
+
+  if (name === "shield") {
+    return (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+        style={commonStyle}
+      >
+        <path
+          d="M12 3L5 6v5.5c0 4.2 2.9 7.9 7 9.5 4.1-1.6 7-5.3 7-9.5V6l-7-3Z"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M8.5 12l2.2 2.2 4.8-5"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  }
+
+  if (name === "globe") {
+    return (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+        style={commonStyle}
+      >
+        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+        <path
+          d="M3 12h18M12 3c2.4 2.4 3.6 5.4 3.6 9S14.4 18.6 12 21M12 3C9.6 5.4 8.4 8.4 8.4 12S9.6 18.6 12 21"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
+  }
+
+  if (name === "lock") {
+    return (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+        style={commonStyle}
+      >
+        <path
+          d="M7 10V8a5 5 0 0 1 10 0v2"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        />
+        <rect
+          x="5"
+          y="10"
+          width="14"
+          height="10"
+          rx="2"
+          stroke="currentColor"
+          strokeWidth="1.8"
+        />
+        <path
+          d="M12 14v2"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style={commonStyle}>
+      <path
+        d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M2.8 20c.8-3.5 3.1-5.3 6.2-5.3s5.4 1.8 6.2 5.3"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <path
+        d="M17 11a3 3 0 1 0 0-6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <path
+        d="M16.6 14.8c2.4.4 3.9 2 4.6 5.2"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+
+type PremiumStatIconName = "calendar" | "globe" | "screen" | "shield";
+
+function PremiumStatIcon({ name }: { name: PremiumStatIconName }) {
+  const commonStyle = {
+    width: "30px",
+    height: "30px",
+    minWidth: "30px",
+    display: "block",
+  };
+
+  if (name === "calendar") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ ...commonStyle, color: "#E5E7EB" }}>
+        <rect x="4" y="5" width="16" height="15" rx="3" stroke="currentColor" strokeWidth="1.6" />
+        <path d="M8 3.5v3M16 3.5v3M4 9h16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        <path d="M8 13h2M13 13h3M8 16h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (name === "globe") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ ...commonStyle, color: "#E5E7EB" }}>
+        <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.6" />
+        <path d="M3.5 12h17M12 3.5c2.2 2.5 3.2 5.3 3.2 8.5s-1 6-3.2 8.5M12 3.5C9.8 6 8.8 8.8 8.8 12s1 6 3.2 8.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (name === "screen") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ ...commonStyle, color: "#F59E0B" }}>
+        <rect x="4" y="5" width="16" height="12" rx="2" stroke="currentColor" strokeWidth="1.7" />
+        <path d="M9 20h6M12 17v3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+        <path d="M9 13l2-2 2 1.6 2.5-3.1" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ ...commonStyle, color: "#E5E7EB" }}>
+      <path d="M12 3.5 5 6.5v5.2c0 4.1 2.8 7.6 7 8.8 4.2-1.2 7-4.7 7-8.8V6.5l-7-3Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      <path d="m8.7 12 2.1 2.1 4.5-4.8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function getMatchDateLabel(dateString?: string) {
   if (!dateString) return "Date TBC";
 
   const date = new Date(dateString);
   if (Number.isNaN(date.getTime())) return "Date TBC";
 
-  return new Intl.DateTimeFormat("en-CA", {
+  return new Intl.DateTimeFormat("en-US", {
     weekday: "short",
-    day: "numeric",
     month: "short",
-    timeZone: "America/Toronto",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   }).format(date);
 }
 
-function getDayKey(dateString?: string) {
-  if (!dateString) return "date-tbc";
+function getShortDateLabel(dateString?: string) {
+  if (!dateString) return "TBC";
 
   const date = new Date(dateString);
-  if (Number.isNaN(date.getTime())) return "date-tbc";
 
-  return new Intl.DateTimeFormat("en-CA", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    timeZone: "America/Toronto",
-  }).format(date);
-}
+  if (Number.isNaN(date.getTime())) return "TBC";
 
-function getTodayDayKey() {
-  return new Intl.DateTimeFormat("en-CA", {
-    year: "numeric",
-    month: "2-digit",
+  return new Intl.DateTimeFormat("en-US", {
     day: "2-digit",
-    timeZone: "America/Toronto",
-  }).format(new Date());
+    month: "short",
+  })
+    .format(date)
+    .toUpperCase();
 }
 
 function getTimeLabel(dateString?: string) {
   if (!dateString) return "--:--";
 
   const date = new Date(dateString);
+
   if (Number.isNaN(date.getTime())) return "--:--";
 
   return new Intl.DateTimeFormat("en-CA", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
-    timeZone: "America/Toronto",
   }).format(date);
-}
-
-function startsWithQuery(teamName: string, query: string) {
-  return teamName.toLowerCase().startsWith(query.toLowerCase());
 }
 
 function getTeamFlagCode(teamName: string) {
@@ -77,11 +231,8 @@ function getTeamFlagCode(teamName: string) {
     Belgium: "be",
     "Bosnia and Herzegovina": "ba",
     Brazil: "br",
-    "Cabo Verde": "cv",
     Canada: "ca",
     Colombia: "co",
-    "Congo DR": "cd",
-    "Côte d'Ivoire": "ci",
     Croatia: "hr",
     Curaçao: "cw",
     Czechia: "cz",
@@ -92,1166 +243,1775 @@ function getTeamFlagCode(teamName: string) {
     Germany: "de",
     Ghana: "gh",
     Haiti: "ht",
-    "IR Iran": "ir",
-    Iraq: "iq",
     Japan: "jp",
-    Jordan: "jo",
-    "Korea Republic": "kr",
     Mexico: "mx",
     Morocco: "ma",
     Netherlands: "nl",
-    "New Zealand": "nz",
-    Norway: "no",
-    Panama: "pa",
     Paraguay: "py",
     Portugal: "pt",
-    Qatar: "qa",
-    "Saudi Arabia": "sa",
-    Scotland: "gb",
     Senegal: "sn",
     "South Africa": "za",
     Spain: "es",
-    Sweden: "se",
     Switzerland: "ch",
-    Tunisia: "tn",
-    Türkiye: "tr",
-    Uruguay: "uy",
     USA: "us",
-    Uzbekistan: "uz",
   };
 
   return map[teamName] || "";
 }
 
-export default function HomePage() {
-  const stats = getHomepageStats();
-  const [teamQuery, setTeamQuery] = useState("");
+function SmallMatchCard({ match }: { match: Match }) {
+  const homeTeam = getTeamName(match.homeTeam);
+  const awayTeam = getTeamName(match.awayTeam);
 
-  const uniqueTeamNames = useMemo(() => {
-    return Array.from(
-      new Set(
-        matches.flatMap((match) => [
-          getTeamName(match.homeTeam),
-          getTeamName(match.awayTeam),
-        ])
-      )
-    ).sort((a, b) => a.localeCompare(b));
-  }, []);
+  const homeFlag = getTeamFlagCode(homeTeam);
+  const awayFlag = getTeamFlagCode(awayTeam);
 
-  const suggestedTeams = useMemo(() => {
-    if (!teamQuery.trim()) return [];
+  const countriesCount = new Set(
+    match.broadcasts?.map((item) => item.countryCode),
+  ).size;
 
-    return uniqueTeamNames
-      .filter((teamName) => startsWithQuery(teamName, teamQuery.trim()))
-      .slice(0, 8);
-  }, [teamQuery, uniqueTeamNames]);
+  const freeCount =
+    match.broadcasts?.filter((item) => item.access === "Free").length || 0;
 
-  const todayDayKey = useMemo(() => getTodayDayKey(), []);
-
-  const todayMatches = useMemo(() => {
-    return [...matches]
-      .filter((match) => getDayKey(match.matchDate) === todayDayKey)
-      .sort((a, b) => {
-        const aTime = a.matchDate ? new Date(a.matchDate).getTime() : Number.MAX_SAFE_INTEGER;
-        const bTime = b.matchDate ? new Date(b.matchDate).getTime() : Number.MAX_SAFE_INTEGER;
-        return aTime - bTime;
-      });
-  }, [todayDayKey]);
-
-  const nextDayKey = useMemo(() => {
-    const groupedMatches = matches.reduce<Record<string, typeof matches>>(
-      (acc, match) => {
-        const dayKey = getDayKey(match.matchDate);
-
-        if (!acc[dayKey]) {
-          acc[dayKey] = [];
-        }
-
-        acc[dayKey].push(match);
-
-        return acc;
-      },
-      {}
-    );
-
-    const sortedDays = Object.keys(groupedMatches).sort();
-
-    const nextActiveDay = sortedDays.find((dayKey) =>
-      groupedMatches[dayKey].some((match) => !isMatchFinished(match.slug))
-    );
-
-    return nextActiveDay || null;
-  }, []);
-
-  const featuredMatches = useMemo(() => {
-    if (todayMatches.length > 0 && todayMatches.some((match) => !isMatchFinished(match.slug))) {
-      return todayMatches;
-    }
-
-    if (!nextDayKey) {
-      return [];
-    }
-
-    return [...matches]
-      .filter((match) => getDayKey(match.matchDate) === nextDayKey)
-      .sort((a, b) => {
-        const aTime = a.matchDate ? new Date(a.matchDate).getTime() : Number.MAX_SAFE_INTEGER;
-        const bTime = b.matchDate ? new Date(b.matchDate).getTime() : Number.MAX_SAFE_INTEGER;
-        return aTime - bTime;
-      });
-  }, [todayMatches, nextDayKey]);
-
-  const featuredMatchesTitle = todayMatches.length > 0 && todayMatches.some((match) => !isMatchFinished(match.slug)) ? "Matches today" : "Next games";
-
-  const sortedMatches = useMemo(() => {
-    const normalizedTeamQuery = teamQuery.trim().toLowerCase();
-
-    return [...matches]
-      .filter((match) => {
-        if (!normalizedTeamQuery) return true;
-
-        const homeTeam = getTeamName(match.homeTeam);
-        const awayTeam = getTeamName(match.awayTeam);
-
-      
-        return (
-          startsWithQuery(homeTeam, normalizedTeamQuery) ||
-          startsWithQuery(awayTeam, normalizedTeamQuery)
-        );
-      })
-      .sort((a, b) => {
-        const aTime = a.matchDate ? new Date(a.matchDate).getTime() : Number.MAX_SAFE_INTEGER;
-        const bTime = b.matchDate ? new Date(b.matchDate).getTime() : Number.MAX_SAFE_INTEGER;
-        return aTime - bTime;
-      });
-  }, [teamQuery]);
+  const hasFree = freeCount > 0;
 
   return (
-    <main
+    <Link
+      href={`/match/${match.slug}`}
+      draggable={false}
       style={{
         position: "relative",
-        background:
-          "radial-gradient(circle at top, rgba(59,130,246,0.10), transparent 30%), #0B1220",
+        overflow: "hidden",
+        textDecoration: "none",
         color: "#FFFFFF",
-        minHeight: "100vh",
-        padding: "1.25rem 1rem 2.5rem",
+        background:
+          "radial-gradient(circle at 50% 0%, rgba(59,130,246,0.30), transparent 42%), linear-gradient(180deg, #10203A 0%, #0B1628 100%)",
+        border: "1px solid rgba(96,165,250,0.42)",
+        borderRadius: "18px",
+        padding: "0.72rem 0.72rem 0.62rem",
+        display: "grid",
+        gap: "0.48rem",
+        minHeight: "146px",
+        boxShadow:
+          "0 18px 44px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.07)",
       }}
     >
-
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-            .homepageTeamShort {
-              display: none;
-            }
-
-@media (max-width: 767px) {
-
-  .homepageMatchRow {
-    grid-template-columns: 76px minmax(0, 1fr) 70px !important;
-    gap: 0.25rem !important;
-    padding: 0.22rem 0.42rem !important;
-  }
-
-  .homepageHeroTitle {
-    font-size: 1.55rem !important;
-    line-height: 1.08 !important;
-  }
-
-  .homepageMatchTime {
-    min-width: auto !important;
-    font-size: 0.70rem !important;
-  }
-
-  .homepageTeamName {
-    gap: 0.20rem !important;
-    font-size: 0.68rem !important;
-    line-height: 1 !important;
-  }
-
-  .homepageTeamFull {
-    display: none !important;
-  }
-
-  .homepageTeamShort {
-    display: inline !important;
-  }
-
-  .homepageVsPill {
-    font-size: 0.52rem !important;
-    padding: 0.08rem 0.24rem !important;
-  }
-
-  .homepageStageText {
-    font-size: 0.58rem !important;
-  }
-
-}
-          `,
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(135deg, rgba(59,130,246,0.13), transparent 36%, rgba(34,197,94,0.05)), radial-gradient(circle at center, rgba(255,255,255,0.055), transparent 48%)",
+          pointerEvents: "none",
         }}
       />
-   
+
       <div
         style={{
-          maxWidth: "1100px",
-          margin: "0 auto",
+          position: "relative",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: "0.28rem",
+        }}
+      >
+        <span
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(59,130,246,0.48), rgba(29,78,216,0.24))",
+            border: "1px solid rgba(96,165,250,0.42)",
+            borderRadius: "999px",
+            padding: "0.28rem 0.58rem",
+            color: "#DBEAFE",
+            fontSize: "0.68rem",
+            lineHeight: 1,
+            fontWeight: 950,
+            boxShadow: "0 0 18px rgba(59,130,246,0.18)",
+          }}
+        >
+          {getShortDateLabel(match.matchDate)}
+        </span>
+
+        <span
+          style={{
+            background: "rgba(15,23,42,0.58)",
+            border: "1px solid rgba(148,163,184,0.16)",
+            borderRadius: "999px",
+            padding: "0.27rem 0.5rem",
+            color: "#93C5FD",
+            fontSize: "0.66rem",
+            lineHeight: 1,
+            fontWeight: 850,
+          }}
+        >
+          {match.group ? `Group ${match.group}` : "Knockout"}
+        </span>
+      </div>
+
+      <div
+        style={{
+          position: "relative",
+          display: "grid",
+          gridTemplateColumns: "1fr 58px 1fr",
+          alignItems: "center",
+          gap: "0.38rem",
+          minHeight: "68px",
         }}
       >
         <div
           style={{
-            display: "flex",
-            gap: "0.5rem",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            alignItems: "center",
-            width: "fit-content",
-            margin: "0 auto 0.8rem",
-          }}
-        >
-          <span
-            style={{
-              padding: "0.28rem 0.55rem",
-              borderRadius: "999px",
-              background: "rgba(59,130,246,0.15)",
-              color: "#BFDBFE",
-              fontSize: "0.74rem",
-              fontWeight: 700,
-              lineHeight: 1,
-            }}
-          >
-            Official broadcasters only
-          </span>
-
-          <span
-            style={{
-              padding: "0.28rem 0.55rem",
-              borderRadius: "999px",
-              background: "rgba(255,255,255,0.06)",
-              color: "#CBD5E1",
-              fontSize: "0.74rem",
-              fontWeight: 700,
-              lineHeight: 1,
-            }}
-          >
-            FIFA World Cup 2026
-          </span>
-        </div>
-
-<h1
-  className="homepageHeroTitle"
-  style={{
-            fontSize: "2rem",
-            lineHeight: 1.05,
-            margin: "0 auto",
-            marginBottom: "0.55rem",
-            maxWidth: "900px",
-            letterSpacing: "-0.02em",
-            textAlign: "center",
-          }}
-        >
-          Official FIFA World Cup 2026 TV channels & broadcasters
-        </h1>
-
-        <div
-          style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-            gap: "0.5rem",
-            marginBottom: "0.8rem",
+            justifyItems: "center",
+            alignContent: "center",
+            gap: "0.42rem",
+            minWidth: 0,
           }}
         >
-          {[
-            { value: stats.totalMatches, label: "Matches" },
-            { value: stats.totalCountries, label: "Countries" },
-            { value: stats.freeOptions, label: "Free" },
-            { value: stats.paidOptions, label: "Paid" },
-          ].map((item) => (
-            <div
-              key={item.label}
+          {homeFlag ? (
+            <img
+              src={`/flags/${homeFlag}.png`}
+              alt=""
+              draggable={false}
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.35rem",
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(255,255,255,0.05)",
+                width: "52px",
+                height: "52px",
                 borderRadius: "999px",
-                padding: "0.3rem 0.55rem",
+                objectFit: "cover",
+                boxShadow:
+                  "0 0 0 2px rgba(255,255,255,0.76), 0 0 0 4px rgba(59,130,246,0.20), 0 12px 22px rgba(0,0,0,0.28)",
               }}
-            >
-              <span style={{ fontSize: "0.85rem", fontWeight: 700 }}>
-                {item.value}
-              </span>
-              <span
-                style={{
-                  color: "#94A3B8",
-                  fontSize: "0.72rem",
-                }}
-              >
-                {item.label}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        <div
-          id="team-finder"
-          style={{
-            background: "#111827",
-            border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: "18px",
-            padding: "0.75rem",
-            marginBottom: "0.8rem",
-          }}
-        >
-          <div
-            style={{
-              fontWeight: 800,
-              fontSize: "0.92rem",
-              marginBottom: "0.35rem",
-            }}
-          >
-            Find your team
-          </div>
-
-                   <div
-            style={{
-              display: "flex",
-              gap: "0.6rem",
-              flexWrap: "wrap",
-              alignItems: "flex-start",
-            }}
-          >
-            <div
-              style={{
-                flex: "1 1 260px",
-                minWidth: "220px",
-              }}
-            >
-              <input
-                type="text"
-                value={teamQuery}
-                onChange={(event) => setTeamQuery(event.target.value)}
-                placeholder="Search a team: France, Brazil, Mexico..."
-                aria-label="Search a team"
-                autoComplete="new-password"
-                name="team-search"
-                style={{
-                  width: "100%",
-                  boxSizing: "border-box",
-                  background: "#0F172A",
-                  color: "#FFFFFF",
-                  border: "1px solid rgba(255,255,255,0.10)",
-                  borderRadius: "10px",
-                 padding: "0.62rem 0.85rem",
-                  fontSize: "0.90rem",
-                  outline: "none",
-                }}
-              />
-
-              {suggestedTeams.length > 0 ? (
-                <div
-                  style={{
-                    marginTop: "0.45rem",
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: "0.45rem",
-                  }}
-                >
-                  {suggestedTeams.map((teamName) => (
-                    <button
-                      key={teamName}
-                      type="button"
-                      onClick={() => setTeamQuery(teamName)}
-                      style={{
-                        cursor: "pointer",
-                        color: "#FFFFFF",
-                        background: "rgba(59,130,246,0.14)",
-                        border: "1px solid rgba(59,130,246,0.30)",
-                        borderRadius: "999px",
-                        padding: "0.45rem 0.7rem",
-                        fontSize: "0.85rem",
-                        lineHeight: 1,
-                        fontWeight: 600,
-                      }}
-                    >
-                      {teamName}
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-
-            <button
-              type="button"
-              style={{
-                border: "none",
-                cursor: "pointer",
-                textDecoration: "none",
-                color: "#FFFFFF",
-                background: "#3B82F6",
-                fontWeight: 700,
-                padding: "0.8rem 1rem",
-                borderRadius: "12px",
-                fontSize: "0.92rem",
-                lineHeight: 1,
-              }}
-            >
-              Search
-            </button>
-
-            {teamQuery ? (
-              <button
-                type="button"
-                onClick={() => setTeamQuery("")}
-                style={{
-                  cursor: "pointer",
-                  color: "#CBD5E1",
-                  fontWeight: 600,
-                  padding: "0.8rem 1rem",
-                  borderRadius: "12px",
-                  border: "1px solid rgba(255,255,255,0.10)",
-                  background: "rgba(255,255,255,0.03)",
-                  fontSize: "0.92rem",
-                  lineHeight: 1,
-                }}
-              >
-                Clear
-              </button>
-            ) : null}
-          </div>
-
-          {teamQuery ? (
-            <div
-              style={{
-                marginTop: "0.7rem",
-                color: "#94A3B8",
-                fontSize: "0.84rem",
-              }}
-            >
-              {sortedMatches.length} match{sortedMatches.length > 1 ? "es" : ""} found for{" "}
-              <span style={{ color: "#FFFFFF", fontWeight: 700 }}>{teamQuery}</span>
-            </div>
+            />
           ) : null}
-        </div>
 
-        <SectionTitle>{featuredMatchesTitle}</SectionTitle>
-
-        <section
-          style={{
-background: "linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: "18px",
-            padding: "1.1rem",
-            boxShadow: "0 18px 40px rgba(0,0,0,0.22)",
-            textAlign: "center",
-            marginBottom: "0.8rem",
-          }}
-        >
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns: "92px 1fr 92px",
-              gap: "0.45rem",
-              padding: "0.48rem 0.75rem",
-              borderBottom: "1px solid rgba(255,255,255,0.08)",
-              background: "rgba(255,255,255,0.03)",
-              color: "#94A3B8",
-              fontSize: "0.62rem",
-              fontWeight: 800,
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
+              width: "100%",
+              textAlign: "center",
+              fontSize: "0.76rem",
+              fontWeight: 950,
+              lineHeight: 1.08,
+              minHeight: "1.65rem",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
             }}
           >
-            <div style={{ textAlign: "center" }}>Time</div>
-            <div>Match</div>
-            <div style={{ textAlign: "right" }}>Stage</div>
+            {homeTeam}
           </div>
-
-          <div>
-            {featuredMatches.length > 0 ? (
-              featuredMatches.map((match, index) => {
-                const stageLabel = formatStage(match.group);
-                const currentDayKey = getDayKey(match.matchDate);
-                const previousDayKey =
-                  index > 0 ? getDayKey(featuredMatches[index - 1].matchDate) : null;
-                const isNewDay = index === 0 || currentDayKey !== previousDayKey;
-
-                return (
-                  <div key={match.slug}>
-                    {isNewDay ? (
-                      <div
-                        style={{
-                          padding: index === 0 ? "0.38rem 0.65rem 0.15rem" : "0.5rem 0.65rem 0.15rem",
-                          background: "rgba(255,255,255,0.015)",
-                        }}
-                      >
-                        <span
-                          style={{
-                            textAlign: "center",
-                            color: "#000205",
-                            fontSize: "0.84rem",
-                            fontWeight: 800,
-                            letterSpacing: "0.04em",
-                            background: "rgba(255, 255, 255, 0.64)",
-                            border: "1px solid rgba(59,130,246,0.35)",
-                            borderRadius: "8px",
-                            padding: "0.2rem 0.36rem",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          {getDayLabel(match.matchDate)}
-                        </span>
-                      </div>
-                    ) : null}
-
-                    <Link
-                      href={`/match/${match.slug}`}
-                      className="homepageMatchRow"
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "92px 1fr 92px",
-                        gap: "0.45rem",
-                        alignItems: "center",
-                        padding: "0.22rem 0.65rem",
-                        textDecoration: "none",
-                        color: "#FFFFFF",
-                        borderTop: isNewDay ? "1px solid rgba(255,255,255,0.04)" : "none",
-                        borderRight: "1px solid rgba(255,255,255,0.04)",
-                        borderBottom: "1px solid rgba(255,255,255,0.04)",
-                        borderLeft: "1px solid rgba(255,255,255,0.04)",
-                        background: "rgba(255,255,255,0.01)",
-                        minHeight: "28px",
-                      }}
-                    >
-                      <div style={{ textAlign: "center" }}>
-                        <div
-                          className="homepageMatchTime"
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            minWidth: "64px",
-                            padding: "0.05rem 0",
-                            color: "#BFDBFE",
-                            fontWeight: 800,
-                            fontSize: "0.78rem",
-                            lineHeight: 1,
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                      
-<span
-                              style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                gap: "0.3rem",
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              <span>{getTimeLabel(match.matchDate)}</span>
-
-                              <span
-                                style={{
-                                  transform: "scale(0.68)",
-                                  transformOrigin: "left center",
-                                  display: "inline-flex",
-                                  marginLeft: "-0.12rem",
-                                }}
-                              >
-                                <MatchStatusBadge matchDate={match.matchDate} slug={match.slug} />
-                              </span>
-                            </span>
-                        
-                        </div>
-                      </div>
-
-                      <div
-                        style={{
-                          minWidth: 0,
-                          display: "grid",
-                          gridTemplateColumns: "1fr auto 1fr",
-                          alignItems: "center",
-                          columnGap: "0.5rem",
-                          width: "100%",
-                        }}
-                      >
-                        <span
-                          className="homepageTeamName"
-                          style={{
-                            fontWeight: 700,
-                            fontSize: "0.92rem",
-                            lineHeight: 1.05,
-                            color: "#FFFFFF",
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "flex-end",
-                            gap: "0.45rem",
-                            minWidth: 0,
-                            width: "100%",
-                          }}
-                        >
-                          {getTeamFlagCode(getTeamName(match.homeTeam)) ? (
-                            <img
-                              src={`/flags/${getTeamFlagCode(getTeamName(match.homeTeam))}.png`}
-                              alt=""
-                              style={{
-                                width: "20px",
-                                height: "20px",
-                                borderRadius: "999px",
-                                objectFit: "cover",
-                                display: "block",
-                                flexShrink: 0,
-                              }}
-                            />
-                          ) : null}
-                          <span
-                            style={{
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            }}
-                          >
-                            <span className="homepageTeamFull">{getTeamName(match.homeTeam)}</span>
-                            <span className="homepageTeamShort">{getTeamName(match.homeTeam).slice(0, 2).toUpperCase()}</span>
-                          </span>
-                        </span>
-
-                        <span
-                          className="homepageVsPill"
-                          style={{
-                            padding: "0.14rem 0.34rem",
-                            borderRadius: "999px",
-                            background: "rgba(255,255,255,0.06)",
-                            border: "1px solid rgba(255,255,255,0.08)",
-                            color: "#CBD5E1",
-                            fontSize: "0.58rem",
-                            fontWeight: 800,
-                            lineHeight: 1,
-                            letterSpacing: "0.04em",
-                            flexShrink: 0,
-                          }}
-                        >
-                          VS
-                        </span>
-
-                        <span
-                          className="homepageTeamName"
-                          style={{
-                            fontWeight: 700,
-                            fontSize: "0.92rem",
-                            lineHeight: 1.05,
-                            color: "#FFFFFF",
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "flex-start",
-                            gap: "0.45rem",
-                            minWidth: 0,
-                            width: "100%",
-                          }}
-                        >
-                          <span
-                            style={{
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            }}
-                          >
-                            <span className="homepageTeamFull">{getTeamName(match.awayTeam)}</span>
-                            <span className="homepageTeamShort">{getTeamName(match.awayTeam).slice(0, 2).toUpperCase()}</span>
-                          </span>
-                          {getTeamFlagCode(getTeamName(match.awayTeam)) ? (
-                            <img
-                              src={`/flags/${getTeamFlagCode(getTeamName(match.awayTeam))}.png`}
-                              alt=""
-                              style={{
-                                width: "20px",
-                                height: "20px",
-                                borderRadius: "999px",
-                                objectFit: "cover",
-                                display: "block",
-                                flexShrink: 0,
-                              }}
-                            />
-                          ) : null}
-                        </span>
-                      </div>
-
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "flex-end",
-                        }}
-                      >
-                        <span
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            padding: "0.12rem 0.34rem",
-                            borderRadius: "999px",
-                            background: "rgba(255,255,255,0.04)",
-                            border: "1px solid rgba(255,255,255,0.08)",
-                            color: "#94A3B8",
-                            fontSize: "0.56rem",
-                            fontWeight: 700,
-                            whiteSpace: "nowrap",
-                            lineHeight: 1,
-                          }}
-                        >
-                          {stageLabel}
-                        </span>
-                      </div>
-                    </Link>
-                  </div>
-                );
-              })
-            ) : (
-              <div
-                style={{
-                  padding: "1.1rem 0.75rem 0.4rem",
-                  color: "#CBD5E1",
-                  fontSize: "0.92rem",
-                  lineHeight: 1.6,
-                }}
-              >
-                No upcoming matches scheduled.
-              </div>
-            )}
-          </div>
-        </section>
-
-        <SectionTitle>All scheduled matches</SectionTitle>
-
-        <section
-          style={{
-            background: "linear-gradient(180deg, #111827 0%, #0F172A 100%)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: "18px",
-            padding: "1.1rem",
-            boxShadow: "0 18px 40px rgba(0,0,0,0.22)",
-            textAlign: "center",
-          }}
-        >
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "92px 1fr 92px",
-              gap: "0.45rem",
-              padding: "0.48rem 0.75rem",
-              borderBottom: "1px solid rgba(255,255,255,0.08)",
-              background: "rgba(255,255,255,0.03)",
-              color: "#94A3B8",
-              fontSize: "0.62rem",
-              fontWeight: 800,
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-            }}
-          >
-            <div style={{ textAlign: "center" }}>Time</div>
-            <div>Match</div>
-            <div style={{ textAlign: "right" }}>Stage</div>
-          </div>
-
-          <div>
-            {sortedMatches.length > 0 ? (
-              sortedMatches.map((match, index) => {
-                const currentDayKey = getDayKey(match.matchDate);
-                const previousDayKey =
-                  index > 0 ? getDayKey(sortedMatches[index - 1].matchDate) : null;
-                const isNewDay = index === 0 || currentDayKey !== previousDayKey;
-                const stageLabel = formatStage(match.group);
-
-                return (
-                  <div key={match.slug}>
-                    {isNewDay ? (
-                      <div
-                        style={{
-                          padding: index === 0 ? "0.38rem 0.65rem 0.15rem" : "0.5rem 0.65rem 0.15rem",
-                          background: "rgba(255,255,255,0.015)",
-                        }}
-                      >
-                        <span
-                          style={{
-                            textAlign: "center",
-                            color: "#000205",
-                            fontSize: "0.84rem",
-                            fontWeight: 800,
-                            letterSpacing: "0.04em",
-                            background: "rgba(255, 255, 255, 0.64)",
-                            border: "1px solid rgba(59,130,246,0.35)",
-                            borderRadius: "8px",
-                            padding: "0.2rem 0.36rem",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          {getDayLabel(match.matchDate)}
-                        </span>
-                      </div>
-                    ) : null}
-
-                    <Link
-                      href={`/match/${match.slug}`}
-                      className="homepageMatchRow"
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "92px 1fr 92px",
-                        gap: "0.45rem",
-                        alignItems: "center",
-                        padding: "0.22rem 0.65rem",
-                        textDecoration: "none",
-                        color: "#FFFFFF",
-                        borderTop: isNewDay ? "1px solid rgba(255,255,255,0.04)" : "none",
-                        borderRight: "1px solid rgba(255,255,255,0.04)",
-                        borderBottom: "1px solid rgba(255,255,255,0.04)",
-                        borderLeft: "1px solid rgba(255,255,255,0.04)",
-                        background: index % 2 === 0 ? "rgba(255,255,255,0.01)" : "transparent",
-                        minHeight: "28px",
-                      }}
-                    >
-                      <div style={{ textAlign: "center" }}>
-                        <div
-                          className="homepageMatchTime"
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            minWidth: "64px",
-                            padding: "0.05rem 0",
-                            color: "#BFDBFE",
-                            fontWeight: 800,
-                            fontSize: "0.78rem",
-                            lineHeight: 1,
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          
-<span
-                              style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                gap: "0.3rem",
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              <span>{getTimeLabel(match.matchDate)}</span>
-
-                              <span
-                                style={{
-                                  transform: "scale(0.68)",
-                                  transformOrigin: "left center",
-                                  display: "inline-flex",
-                                  marginLeft: "-0.12rem",
-                                }}
-                              >
-                                <MatchStatusBadge matchDate={match.matchDate} slug={match.slug} />
-                              </span>
-                            </span>
-                        
-                        </div>
-                      </div>
-
-                      <div
-                        style={{
-                          minWidth: 0,
-                          display: "grid",
-                          gridTemplateColumns: "1fr auto 1fr",
-                          alignItems: "center",
-                          columnGap: "0.5rem",
-                          width: "100%",
-                        }}
-                      >
-                        <span
-                          className="homepageTeamName"
-                          style={{
-                            fontWeight: 700,
-                            fontSize: "0.92rem",
-                            lineHeight: 1.05,
-                            color: "#FFFFFF",
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "flex-end",
-                            gap: "0.45rem",
-                            minWidth: 0,
-                            width: "100%",
-                          }}
-                        >
-                          {getTeamFlagCode(getTeamName(match.homeTeam)) ? (
-                            <img
-                              src={`/flags/${getTeamFlagCode(getTeamName(match.homeTeam))}.png`}
-                              alt=""
-                              style={{
-                                width: "20px",
-                                height: "20px",
-                                borderRadius: "999px",
-                                objectFit: "cover",
-                                display: "block",
-                                flexShrink: 0,
-                              }}
-                            />
-                          ) : null}
-                          <span
-                            style={{
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            }}
-                          >
-                            <span className="homepageTeamFull">{getTeamName(match.homeTeam)}</span>
-                            <span className="homepageTeamShort">{getTeamName(match.homeTeam).slice(0, 2).toUpperCase()}</span>
-                          </span>
-                        </span>
-
-                        <span
-                          className="homepageVsPill"
-                          style={{
-                            padding: "0.14rem 0.34rem",
-                            borderRadius: "999px",
-                            background: "rgba(255,255,255,0.06)",
-                            border: "1px solid rgba(255,255,255,0.08)",
-                            color: "#CBD5E1",
-                            fontSize: "0.58rem",
-                            fontWeight: 800,
-                            lineHeight: 1,
-                            letterSpacing: "0.04em",
-                            flexShrink: 0,
-                          }}
-                        >
-                          VS
-                        </span>
-
-                        <span
-                          className="homepageTeamName"
-                          style={{
-                            fontWeight: 700,
-                            fontSize: "0.92rem",
-                            lineHeight: 1.05,
-                            color: "#FFFFFF",
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "flex-start",
-                            gap: "0.45rem",
-                            minWidth: 0,
-                            width: "100%",
-                          }}
-                        >
-                          <span
-                            style={{
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            }}
-                          >
-                            <span className="homepageTeamFull">{getTeamName(match.awayTeam)}</span>
-                            <span className="homepageTeamShort">{getTeamName(match.awayTeam).slice(0, 2).toUpperCase()}</span>
-                          </span>
-                          {getTeamFlagCode(getTeamName(match.awayTeam)) ? (
-                            <img
-                              src={`/flags/${getTeamFlagCode(getTeamName(match.awayTeam))}.png`}
-                              alt=""
-                              style={{
-                                width: "20px",
-                                height: "20px",
-                                borderRadius: "999px",
-                                objectFit: "cover",
-                                display: "block",
-                                flexShrink: 0,
-                              }}
-                            />
-                          ) : null}
-                        </span>
-                      </div>
-
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "flex-end",
-                        }}
-                      >
-                        <span
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            padding: "0.12rem 0.34rem",
-                            borderRadius: "999px",
-                            background: "rgba(255,255,255,0.04)",
-                            border: "1px solid rgba(255,255,255,0.08)",
-                            color: "#94A3B8",
-                            fontSize: "0.56rem",
-                            fontWeight: 700,
-                            whiteSpace: "nowrap",
-                            lineHeight: 1,
-                          }}
-                        >
-                          {stageLabel}
-                        </span>
-                      </div>
-                    </Link>
-                  </div>
-                );
-              })
-            ) : (
-              <div
-                style={{
-                  padding: "1.1rem 0.75rem 0.4rem",
-                  color: "#CBD5E1",
-                  fontSize: "0.92rem",
-                  lineHeight: 1.6,
-                }}
-              >
-                No matches found for <span style={{ fontWeight: 700 }}>{teamQuery}</span>.
-              </div>
-            )}
-          </div>
-        </section>
-
-        <SectionTitle>How WatchTVSport works</SectionTitle>
-
-        <div
-          style={{
-            display: "flex",
-            gap: "0.5rem",
-            flexWrap: "wrap",
-            marginBottom: "0.8rem",
-            justifyContent: "center",
-            alignItems: "center",
-            width: "100%",
-            margin: "0 auto 0.8rem",
-            maxWidth: "fit-content",
-          }}
-        >
-          {[
-            {
-              title: "1. Pick a match",
-              text: "Open a match page to compare official broadcasters and legal viewing options across countries.",
-            },
-            {
-              title: "2. Check your country",
-              text: "Open the dedicated country page to see local broadcasters and whether the match is free or paid.",
-            },
-            {
-              title: "3. Use official links",
-              text: "WatchTVSport only lists official broadcasters and legal viewing options. No illegal streams. No VPN recommendations.",
-            },
-          ].map((item) => (
-            <div
-              key={item.title}
-              style={{
-                background: "#111827",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "14px",
-                padding: "0.9rem",
-              }}
-            >
-              <div style={{ fontWeight: 700, marginBottom: "0.35rem", fontSize: "0.95rem" }}>
-                {item.title}
-              </div>
-              <div style={{ color: "#CBD5E1", lineHeight: 1.55, fontSize: "0.9rem" }}>
-                {item.text}
-              </div>
-            </div>
-          ))}
         </div>
 
-        <SectionTitle>FAQ</SectionTitle>
-
         <div
-          id="faq"
           style={{
             display: "grid",
-            gap: "0.75rem",
+            justifyItems: "center",
+            alignContent: "center",
+            gap: "0.32rem",
           }}
         >
-          {[
-            {
-              title: "What does WatchTVSport do?",
-              text: "WatchTVSport helps users find where to watch football matches legally by country, with official broadcasters and free or paid viewing information.",
-            },
-            {
-              title: "Does WatchTVSport list illegal streams?",
-              text: "No. WatchTVSport only lists official broadcasters and legal viewing options by country.",
-            },
-            {
-              title: "Can I compare countries?",
-              text: "Yes. You can browse country pages and match pages to compare official viewing options across multiple markets.",
-            },
-          ].map((item) => (
-            <div
-              key={item.title}
+          <span
+            style={{
+              width: "38px",
+              height: "38px",
+              borderRadius: "999px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background:
+                "linear-gradient(180deg, rgba(15,23,42,0.92), rgba(2,6,23,0.72))",
+              border: "1px solid rgba(255,255,255,0.14)",
+              color: "#FFFFFF",
+              fontSize: "0.82rem",
+              fontWeight: 1000,
+              letterSpacing: "0.04em",
+              boxShadow:
+                "0 0 24px rgba(59,130,246,0.22), inset 0 1px 0 rgba(255,255,255,0.08)",
+            }}
+          >
+            VS
+          </span>
+
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.26rem",
+              color: "#E5E7EB",
+              fontSize: "0.76rem",
+              fontWeight: 900,
+              whiteSpace: "nowrap",
+              lineHeight: 1,
+              background: "rgba(2,6,23,0.48)",
+              border: "1px solid rgba(255,255,255,0.10)",
+              borderRadius: "999px",
+              padding: "0.3rem 0.46rem",
+            }}
+          >
+            ◷ {getTimeLabel(match.matchDate)}
+          </span>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            justifyItems: "center",
+            alignContent: "center",
+            gap: "0.42rem",
+            minWidth: 0,
+          }}
+        >
+          {awayFlag ? (
+            <img
+              src={`/flags/${awayFlag}.png`}
+              alt=""
+              draggable={false}
               style={{
-                background: "#111827",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "14px",
-                padding: "0.9rem",
+                width: "52px",
+                height: "52px",
+                borderRadius: "999px",
+                objectFit: "cover",
+                boxShadow:
+                  "0 0 0 2px rgba(255,255,255,0.76), 0 0 0 4px rgba(59,130,246,0.20), 0 12px 22px rgba(0,0,0,0.28)",
+              }}
+            />
+          ) : null}
+
+          <div
+            style={{
+              width: "100%",
+              textAlign: "center",
+              fontSize: "0.76rem",
+              fontWeight: 950,
+              lineHeight: 1.08,
+              minHeight: "1.65rem",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
+            {awayTeam}
+          </div>
+        </div>
+      </div>
+
+      <div
+        style={{
+          position: "relative",
+          borderTop: "1px solid rgba(96,165,250,0.16)",
+          paddingTop: "0.52rem",
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "0.42rem",
+          alignItems: "center",
+        }}
+      >
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "0.32rem",
+            borderRadius: "10px",
+            padding: "0.38rem 0.42rem",
+            fontSize: "0.76rem",
+            lineHeight: 1,
+            background:
+              "linear-gradient(180deg, rgba(59,130,246,0.30), rgba(29,78,216,0.17))",
+            border: "1px solid rgba(96,165,250,0.36)",
+            color: "#DBEAFE",
+            fontWeight: 950,
+            whiteSpace: "nowrap",
+            boxShadow: "0 0 16px rgba(59,130,246,0.12)",
+          }}
+        >
+          ◎ {countriesCount} Countries
+        </span>
+
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "0.32rem",
+            borderRadius: "10px",
+            padding: "0.38rem 0.42rem",
+            lineHeight: 1,
+            background: hasFree
+              ? "linear-gradient(180deg, rgba(34,197,94,0.26), rgba(21,128,61,0.16))"
+              : "linear-gradient(180deg, rgba(245,158,11,0.22), rgba(146,64,14,0.14))",
+            border: hasFree
+              ? "1px solid rgba(34,197,94,0.38)"
+              : "1px solid rgba(245,158,11,0.34)",
+            color: hasFree ? "#4ADE80" : "#F59E0B",
+            fontSize: "0.76rem",
+            fontWeight: 1000,
+            whiteSpace: "nowrap",
+            boxShadow: hasFree
+              ? "0 0 18px rgba(34,197,94,0.14)"
+              : "0 0 18px rgba(245,158,11,0.12)",
+          }}
+        >
+          ▷ {hasFree ? `${freeCount} Free` : "Paid"}
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+function CountryBroadcastCard({
+  country,
+}: {
+  country: {
+    countryCode: string;
+    countryName: string;
+    broadcasters: string[];
+    accessTypes: ("Free" | "Paid")[];
+  };
+}) {
+  const code = country.countryCode.toLowerCase();
+  const visibleBroadcasters = country.broadcasters.slice(0, 2).join(" / ");
+  const hasFree = country.accessTypes.includes("Free");
+  const hasPaid = country.accessTypes.includes("Paid");
+  const accessLabel =
+    hasFree && hasPaid ? "Free + Paid" : hasFree ? "Free" : "Paid";
+
+  return (
+    <Link
+      href={`/country/${code}`}
+      draggable={false}
+      style={{
+        position: "relative",
+        overflow: "hidden",
+        textDecoration: "none",
+        color: "#FFFFFF",
+        background:
+          "radial-gradient(circle at 50% 0%, rgba(59,130,246,0.26), transparent 44%), linear-gradient(180deg, #10203A 0%, #0B1628 100%)",
+        border: "1px solid rgba(96,165,250,0.36)",
+        borderRadius: "18px",
+        padding: "0.72rem 0.7rem 0.68rem",
+        display: "grid",
+        justifyItems: "center",
+        alignContent: "center",
+        gap: "0.42rem",
+        minHeight: "122px",
+        boxShadow:
+          "0 18px 42px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.06)",
+      }}
+    >
+      <img
+        aria-hidden="true"
+        src={`/flags/${code}.png`}
+        alt=""
+        draggable={false}
+style={{
+  position: "absolute",
+  right: "-52px",
+  top: "-52px",
+  width: "290px",
+  height: "220px",
+  borderRadius: "999px",
+  objectFit: "cover",
+  opacity: 0.08,
+  filter: "saturate(1.15)",
+  transform: "rotate(10deg)",
+  pointerEvents: "none",
+}}
+      />
+
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(135deg, rgba(59,130,246,0.12), transparent 40%, rgba(34,197,94,0.05))",
+          pointerEvents: "none",
+        }}
+      />
+
+      <img
+        src={`/flags/${code}.png`}
+        alt=""
+        draggable={false}
+        style={{
+          position: "relative",
+          width: "54px",
+          height: "54px",
+          borderRadius: "999px",
+          objectFit: "cover",
+          boxShadow:
+            "0 0 0 2px rgba(255,255,255,0.72), 0 0 0 4px rgba(59,130,246,0.16), 0 12px 24px rgba(0,0,0,0.26)",
+        }}
+      />
+
+      <div
+        style={{
+          position: "relative",
+          minWidth: 0,
+          width: "100%",
+          textAlign: "center",
+        }}
+      >
+        <div
+          style={{
+            fontSize: "0.9rem",
+            fontWeight: 950,
+            lineHeight: 1.08,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {country.countryName}
+        </div>
+
+        <div
+          style={{
+            color: "#93C5FD",
+            fontSize: "0.78rem",
+            fontWeight: 850,
+            lineHeight: 1.1,
+            marginTop: "0.26rem",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {visibleBroadcasters || "Official broadcasters"}
+        </div>
+
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: "999px",
+            padding: "0.32rem 0.68rem",
+            marginTop: "0.46rem",
+            lineHeight: 1,
+            background: hasFree
+              ? "linear-gradient(180deg, rgba(34,197,94,0.24), rgba(21,128,61,0.15))"
+              : "linear-gradient(180deg, rgba(245,158,11,0.24), rgba(146,64,14,0.15))",
+            border: hasFree
+              ? "1px solid rgba(34,197,94,0.36)"
+              : "1px solid rgba(245,158,11,0.36)",
+            color: hasFree ? "#4ADE80" : "#FBBF24",
+            fontSize: "0.76rem",
+            fontWeight: 1000,
+            whiteSpace: "nowrap",
+            boxShadow: hasFree
+              ? "0 0 18px rgba(34,197,94,0.14)"
+              : "0 0 18px rgba(245,158,11,0.12)",
+          }}
+        >
+          {accessLabel}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+
+function FreeMatchRow({ match }: { match: Match }) {
+  const homeTeam = getTeamName(match.homeTeam);
+  const awayTeam = getTeamName(match.awayTeam);
+  const homeFlag = getTeamFlagCode(homeTeam);
+  const awayFlag = getTeamFlagCode(awayTeam);
+
+  const freeCountriesCount = new Set(
+    match.broadcasts
+      ?.filter((item) => item.access === "Free")
+      .map((item) => item.countryCode),
+  ).size;
+
+  return (
+    <Link
+      href={`/match/${match.slug}`}
+      className="freeMatchRow"
+      style={{
+        display: "grid",
+        gridTemplateColumns:
+          "82px minmax(150px, 1fr) 44px 40px 44px minmax(150px, 1fr) 82px minmax(190px, auto) 20px",
+        alignItems: "center",
+        gap: "0.62rem",
+        color: "#FFFFFF",
+        textDecoration: "none",
+        padding: "0.72rem 1.15rem",
+        borderTop: "1px solid rgba(96,165,250,0.12)",
+        background:
+          "linear-gradient(90deg, rgba(59,130,246,0.05), transparent 42%, rgba(34,197,94,0.035))",
+      }}
+    >
+      <div style={{ display: "grid", gap: "0.45rem" }}>
+        <div style={{ fontSize: "0.98rem", fontWeight: 950, lineHeight: 1 }}>
+          {getTimeLabel(match.matchDate)}
+        </div>
+        <div
+          style={{
+            color: "#BFDBFE",
+            fontSize: "0.68rem",
+            fontWeight: 850,
+            lineHeight: 1,
+          }}
+        >
+          {getShortDateLabel(match.matchDate)}
+        </div>
+      </div>
+
+      <div
+        style={{
+          fontSize: "0.96rem",
+          fontWeight: 900,
+          lineHeight: 1.08,
+          textAlign: "right",
+          display: "-webkit-box",
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical",
+          overflow: "hidden",
+          minWidth: 0,
+        }}
+      >
+        {homeTeam}
+      </div>
+
+      <div style={{ width: "44px", height: "44px" }}>
+        {homeFlag ? (
+          <img
+            src={`/flags/${homeFlag}.png`}
+            alt=""
+            style={{
+              width: "44px",
+              height: "44px",
+              borderRadius: "999px",
+              objectFit: "cover",
+              display: "block",
+              boxShadow:
+                "0 0 0 2px rgba(96,165,250,0.18), 0 0 16px rgba(59,130,246,0.14)",
+            }}
+          />
+        ) : null}
+      </div>
+
+      <div
+        style={{
+          color: "#E5E7EB",
+          textAlign: "center",
+          fontSize: "0.8rem",
+          fontWeight: 900,
+        }}
+      >
+        VS
+      </div>
+
+      <div style={{ width: "44px", height: "44px" }}>
+        {awayFlag ? (
+          <img
+            src={`/flags/${awayFlag}.png`}
+            alt=""
+            style={{
+              width: "44px",
+              height: "44px",
+              borderRadius: "999px",
+              objectFit: "cover",
+              display: "block",
+              boxShadow:
+                "0 0 0 2px rgba(96,165,250,0.18), 0 0 16px rgba(59,130,246,0.14)",
+            }}
+          />
+        ) : null}
+      </div>
+
+      <div
+        style={{
+          fontSize: "0.94rem",
+          fontWeight: 900,
+          lineHeight: 1.08,
+          textAlign: "left",
+          display: "-webkit-box",
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical",
+          overflow: "hidden",
+          minWidth: 0,
+        }}
+      >
+        {awayTeam}
+      </div>
+
+      <span
+        style={{
+          justifySelf: "center",
+          borderRadius: "999px",
+          padding: "0.34rem 0.62rem",
+          background:
+            "linear-gradient(180deg, rgba(34,197,94,0.22), rgba(21,128,61,0.14))",
+          border: "1px solid rgba(34,197,94,0.38)",
+          color: "#4ADE80",
+          fontSize: "0.82rem",
+          fontWeight: 950,
+          lineHeight: 1,
+          whiteSpace: "nowrap",
+          boxShadow: "0 0 16px rgba(34,197,94,0.12)",
+        }}
+      >
+        Free
+      </span>
+
+      <span
+        style={{
+          justifySelf: "end",
+          color: "#CBD5E1",
+          fontSize: "0.82rem",
+          whiteSpace: "nowrap",
+        }}
+      >
+        Available in {freeCountriesCount} countries
+      </span>
+
+      <div
+        style={{
+          color: "#93C5FD",
+          fontSize: "1.45rem",
+          lineHeight: 1,
+          textAlign: "right",
+        }}
+      >
+        ›
+      </div>
+    </Link>
+  );
+}
+
+export default function HomePage() {
+  const [query, setQuery] = useState("");
+  const upcomingCarouselRef = useRef<HTMLDivElement | null>(null);
+  const isUpcomingDraggingRef = useRef(false);
+  const upcomingDragStartXRef = useRef(0);
+  const upcomingDragScrollLeftRef = useRef(0);
+  const hasUpcomingDraggedRef = useRef(false);
+  const countriesCarouselRef = useRef<HTMLDivElement | null>(null);
+  const isCountriesDraggingRef = useRef(false);
+  const countriesDragStartXRef = useRef(0);
+  const countriesDragScrollLeftRef = useRef(0);
+  const hasCountriesDraggedRef = useRef(false);
+
+  function startUpcomingDrag(event: ReactPointerEvent<HTMLDivElement>) {
+    if (event.button !== 0) return;
+
+    const carousel = event.currentTarget;
+    isUpcomingDraggingRef.current = true;
+    hasUpcomingDraggedRef.current = false;
+    upcomingDragStartXRef.current = event.clientX;
+    upcomingDragScrollLeftRef.current = carousel.scrollLeft;
+    carousel.style.cursor = "grabbing";
+    carousel.setPointerCapture(event.pointerId);
+  }
+
+  function moveUpcomingDrag(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!isUpcomingDraggingRef.current) return;
+
+    const carousel = event.currentTarget;
+    const distance = event.clientX - upcomingDragStartXRef.current;
+
+    if (Math.abs(distance) > 3) {
+      hasUpcomingDraggedRef.current = true;
+    }
+
+    carousel.scrollLeft = upcomingDragScrollLeftRef.current - distance;
+  }
+
+  function stopUpcomingDrag(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!isUpcomingDraggingRef.current) return;
+
+    isUpcomingDraggingRef.current = false;
+    event.currentTarget.style.cursor = "grab";
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  }
+
+  function preventUpcomingNativeDrag(event: ReactDragEvent<HTMLDivElement>) {
+    event.preventDefault();
+  }
+
+  function preventUpcomingClickAfterDrag(
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) {
+    if (!hasUpcomingDraggedRef.current) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    hasUpcomingDraggedRef.current = false;
+  }
+
+  function startCountriesDrag(event: ReactPointerEvent<HTMLDivElement>) {
+    if (event.button !== 0) return;
+
+    const carousel = event.currentTarget;
+    isCountriesDraggingRef.current = true;
+    hasCountriesDraggedRef.current = false;
+    countriesDragStartXRef.current = event.clientX;
+    countriesDragScrollLeftRef.current = carousel.scrollLeft;
+    carousel.style.cursor = "grabbing";
+    carousel.setPointerCapture(event.pointerId);
+  }
+
+  function moveCountriesDrag(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!isCountriesDraggingRef.current) return;
+
+    const carousel = event.currentTarget;
+    const distance = event.clientX - countriesDragStartXRef.current;
+
+    if (Math.abs(distance) > 3) {
+      hasCountriesDraggedRef.current = true;
+    }
+
+    carousel.scrollLeft = countriesDragScrollLeftRef.current - distance;
+  }
+
+  function stopCountriesDrag(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!isCountriesDraggingRef.current) return;
+
+    isCountriesDraggingRef.current = false;
+    event.currentTarget.style.cursor = "grab";
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  }
+
+  function preventCountriesNativeDrag(event: ReactDragEvent<HTMLDivElement>) {
+    event.preventDefault();
+  }
+
+  function preventCountriesClickAfterDrag(
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) {
+    if (!hasCountriesDraggedRef.current) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    hasCountriesDraggedRef.current = false;
+  }
+
+  const sortedMatches = useMemo(() => {
+    return [...matches].sort((a, b) => {
+      const aTime = a.matchDate
+        ? new Date(a.matchDate).getTime()
+        : Number.MAX_SAFE_INTEGER;
+      const bTime = b.matchDate
+        ? new Date(b.matchDate).getTime()
+        : Number.MAX_SAFE_INTEGER;
+      return aTime - bTime;
+    });
+  }, []);
+
+  const featuredMatch = sortedMatches[0];
+  const featuredHomeTeam = getTeamName(featuredMatch.homeTeam);
+  const featuredAwayTeam = getTeamName(featuredMatch.awayTeam);
+  const featuredHomeFlag = getTeamFlagCode(featuredHomeTeam);
+  const featuredAwayFlag = getTeamFlagCode(featuredAwayTeam);
+  const upcomingMatches = sortedMatches;
+  const visibleUpcomingMatches = upcomingMatches;
+
+  const countryBroadcasts = useMemo(() => {
+    const priorityCountries = [
+      "us",
+      "ca",
+      "gb",
+      "fr",
+      "be",
+      "ch",
+      "au",
+      "mx",
+      "br",
+      "ar",
+      "de",
+      "es",
+      "nl",
+      "pt",
+    ];
+
+    const byCountry = new Map<
+      string,
+      {
+        countryCode: string;
+        countryName: string;
+        broadcasters: Set<string>;
+        accessTypes: Set<"Free" | "Paid">;
+      }
+    >();
+
+    sortedMatches.forEach((match) => {
+      match.broadcasts?.forEach((broadcast) => {
+        const code = broadcast.countryCode.toLowerCase();
+        const existing = byCountry.get(code);
+
+        if (existing) {
+          existing.broadcasters.add(broadcast.broadcaster);
+          existing.accessTypes.add(broadcast.access);
+          return;
+        }
+
+        byCountry.set(code, {
+          countryCode: code,
+          countryName: broadcast.countryName,
+          broadcasters: new Set([broadcast.broadcaster]),
+          accessTypes: new Set([broadcast.access]),
+        });
+      });
+    });
+
+    return Array.from(byCountry.values())
+      .map((country) => ({
+        countryCode: country.countryCode,
+        countryName: country.countryName,
+        broadcasters: Array.from(country.broadcasters),
+        accessTypes: Array.from(country.accessTypes),
+      }))
+      .sort((a, b) => {
+        const aPriority = priorityCountries.indexOf(a.countryCode);
+        const bPriority = priorityCountries.indexOf(b.countryCode);
+
+        if (aPriority !== -1 || bPriority !== -1) {
+          return (
+            (aPriority === -1 ? 999 : aPriority) -
+            (bPriority === -1 ? 999 : bPriority)
+          );
+        }
+
+        return a.countryName.localeCompare(b.countryName);
+      });
+  }, [sortedMatches]);
+
+  const freeMatches = sortedMatches
+    .filter((match) => match.broadcasts?.some((item) => item.access === "Free"))
+    .slice(0, 4);
+
+  const suggestions = useMemo(() => {
+    const cleanQuery = query.trim().toLowerCase();
+    if (!cleanQuery) return [];
+
+    return sortedMatches
+      .filter((match) => {
+        const homeTeam = getTeamName(match.homeTeam).toLowerCase();
+        const awayTeam = getTeamName(match.awayTeam).toLowerCase();
+        return homeTeam.includes(cleanQuery) || awayTeam.includes(cleanQuery);
+      })
+      .slice(0, 5);
+  }, [query, sortedMatches]);
+
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        background:
+          "radial-gradient(circle at top left, rgba(59,130,246,0.12), transparent 28%), radial-gradient(circle at top right, rgba(15,23,42,0.92), transparent 34%), #050B16",
+        color: "#FFFFFF",
+      }}
+    >
+      <section
+        style={{
+          padding: "1.6rem 1rem 0.75rem",
+          marginBottom: "0.75rem",
+        }}
+      >
+        <div style={{ maxWidth: "1360px", margin: "0 auto" }}>
+          <div
+            className="homepageHeroGrid"
+            style={{
+              display: "grid",
+gridTemplateColumns: "1fr 1fr",
+              gap: "1.65rem",
+              alignItems: "stretch",
+            }}
+          >
+            <div
+              style={{
+                border: "0",
+                borderRadius: "0",
+                padding: "0.35rem 0 0",
+                background: "transparent",
               }}
             >
-              <h3 style={{ marginTop: 0, marginBottom: "0.45rem", fontSize: "1rem" }}>
-                {item.title}
-              </h3>
+
+              <h1
+                className="homepageHeroTitle"
+                style={{
+                  margin: 0,
+                  fontSize: "2.82rem",
+                  lineHeight: 1.02,
+                  letterSpacing: "-0.04em",
+                }}
+              >
+                Find where to watch World Cup matches{" "}
+                <span style={{ color: "#3B82F6" }}>legally worldwide</span>
+              </h1>
+
               <p
                 style={{
                   color: "#CBD5E1",
-                  marginBottom: 0,
-                  lineHeight: 1.6,
-                  fontSize: "0.92rem",
+                  fontSize: "0.88rem",
+                  lineHeight: 1.42,
+                  maxWidth: "520px",
+                  margin: "0.82rem 0 0",
                 }}
               >
-                {item.text}
+                Compare official broadcasters by country, discover free and paid
+                viewing options, and open detailed match pages for legal TV
+                coverage.
               </p>
-            </div>
-          ))}
-        </div>
 
-        <p
-          style={{
-            color: "#CBD5E1",
-            fontSize: "0.9rem",
-            lineHeight: 1.6,
-            maxWidth: "900px",
-            margin: "1.6rem auto 0",
-            textAlign: "center",
-          }}
-        >
-          WatchTVSport helps you find where to watch FIFA World Cup 2026 matches on
-          official TV channels and broadcasters by country. Compare legal viewing
-          options worldwide, discover whether coverage is free or paid, and access
-          match pages to see official broadcasters for each game.
-        </p>
+              <Link
+                href="/schedule"
+                style={{
+                  display: "inline-flex",
+                  marginTop: "1rem",
+                  padding: "0.68rem 0.95rem",
+                  borderRadius: "10px",
+                  background: "#3B82F6",
+                  color: "#FFFFFF",
+                  textDecoration: "none",
+                  fontWeight: 800,
+                }}
+              >
+                View full schedule
+              </Link>
 
         <div
+  className="homepageHeroStats"
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+    gap: "0.55rem",
+    marginTop: "1.25rem",
+    maxWidth: "620px",
+    fontSize: "0.78rem",
+  }}
+              >
+                {[
+                  { icon: "calendar" as const, value: "104", label: "Matches" },
+                  { icon: "globe" as const, value: "81", label: "Countries" },
+                  { icon: "screen" as const, value: "Free options", label: "Available" },
+                  { icon: "shield" as const, value: "100%", label: "Official" },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.9rem",
+                      minWidth: 0,
+                    }}
+                  >
+                    <PremiumStatIcon name={item.icon} />
+                    <div style={{ minWidth: 0 }}>
+                      <div
+                        style={{
+                          color: "#FFFFFF",
+                          fontSize: item.value === "Free options" ? "0.88rem" : "1.08rem",
+                          fontWeight: 850,
+                          lineHeight: 1.05,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {item.value}
+                      </div>
+                      <div
+                        style={{
+                          color: "#CBD5E1",
+                          fontSize: "0.78rem",
+                          lineHeight: 1.15,
+                          marginTop: "0.18rem",
+                        }}
+                      >
+                        {item.label}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+           <aside
+  style={{
+    position: "relative",
+    overflow: "hidden",
+    border: "1px solid rgba(96,165,250,0.42)",
+    borderRadius: "24px",
+    padding: "0.95rem 1.55rem 0.78rem",
+    backgroundImage:
+      "linear-gradient(180deg, rgba(2,6,23,0.18) 0%, rgba(2,6,23,0.54) 48%, rgba(6,78,59,0.36) 100%), url('/hero-stadium-bg.png')",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+    boxShadow:
+      "0 28px 90px rgba(0,0,0,0.50), 0 0 0 1px rgba(255,255,255,0.035), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 50px rgba(59,130,246,0.16)",
+  }}
+>
+  <div
+    aria-hidden="true"
+    style={{
+      position: "absolute",
+      inset: 0,
+      background:
+        "radial-gradient(circle at 50% 16%, rgba(59,130,246,0.28), transparent 34%), linear-gradient(90deg, rgba(59,130,246,0.10), transparent 32%, rgba(34,197,94,0.08))",
+      pointerEvents: "none",
+      zIndex: 0,
+    }}
+  />
+
+  {featuredHomeFlag ? (
+    <img
+      aria-hidden="true"
+      src={`/flags/${featuredHomeFlag}.png`}
+      alt=""
+      draggable={false}
+      style={{
+        position: "absolute",
+        left: "-62px",
+        top: "-54px",
+        width: "215px",
+        height: "215px",
+        borderRadius: "999px",
+        objectFit: "cover",
+        opacity: 0.18,
+        filter: "blur(0.2px) saturate(1.2)",
+        transform: "rotate(-14deg)",
+        zIndex: 0,
+        pointerEvents: "none",
+      }}
+    />
+  ) : null}
+
+  {featuredAwayFlag ? (
+    <img
+      aria-hidden="true"
+      src={`/flags/${featuredAwayFlag}.png`}
+      alt=""
+      draggable={false}
+      style={{
+        position: "absolute",
+        right: "-58px",
+        top: "-50px",
+        width: "215px",
+        height: "215px",
+        borderRadius: "999px",
+        objectFit: "cover",
+        opacity: 0.18,
+        filter: "blur(0.2px) saturate(1.2)",
+        transform: "rotate(14deg)",
+        zIndex: 0,
+        pointerEvents: "none",
+      }}
+    />
+  ) : null}
+
+  <div
+    aria-hidden="true"
+    style={{
+      position: "absolute",
+      left: "10%",
+      right: "10%",
+      top: "43%",
+      height: "1px",
+      background:
+        "linear-gradient(90deg, transparent, rgba(147,197,253,0.42), transparent)",
+      zIndex: 0,
+    }}
+  />
+
+
+  <div style={{ position: "relative", zIndex: 3 }}>
+
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "1fr auto 1fr",
+        alignItems: "center",
+        gap: "1rem",
+        marginBottom: "0.58rem",
+      }}
+    >
+      <div
+        style={{
+          display: "grid",
+          justifyItems: "center",
+          gap: "0.5rem",
+        }}
+      >
+        <img
+          src={featuredHomeFlag ? `/flags/${featuredHomeFlag}.png` : "/flags/mx.png"}
+          alt={`${featuredHomeTeam} flag`}
           style={{
-            marginTop: "1.6rem",
-            background: "#111827",
-            border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: "14px",
-            padding: "0.9rem",
-            color: "#CBD5E1",
-            lineHeight: 1.55,
-            fontSize: "0.9rem",
+            width: "78px",
+            height: "78px",
+            borderRadius: "999px",
+            objectFit: "cover",
+            border: "2px solid rgba(255,255,255,0.24)",
+            boxShadow:
+              "0 0 0 5px rgba(59,130,246,0.14), 0 18px 42px rgba(0,0,0,0.42), 0 0 34px rgba(59,130,246,0.20)",
+          }}
+        />
+        <div
+          style={{
+            fontSize: "1.08rem",
+            fontWeight: 950,
+            lineHeight: 1,
+            textShadow: "0 8px 22px rgba(0,0,0,0.48)",
           }}
         >
-          WatchTVSport only lists official broadcasters. No illegal streams. No VPN
-          recommendations. Information is provided for legal viewing options only.
+          {featuredHomeTeam}
         </div>
       </div>
+
+      <div
+        style={{
+          display: "grid",
+          justifyItems: "center",
+          gap: "0.28rem",
+        }}
+      >
+        <div
+          style={{
+            fontSize: "2.65rem",
+            fontWeight: 1000,
+            letterSpacing: "-0.05em",
+            color: "#FFFFFF",
+            lineHeight: 1,
+            textShadow:
+              "0 0 28px rgba(96,165,250,0.48), 0 12px 30px rgba(0,0,0,0.55)",
+          }}
+        >
+          VS
+        </div>
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          justifyItems: "center",
+          gap: "0.5rem",
+        }}
+      >
+        <img
+          src={featuredAwayFlag ? `/flags/${featuredAwayFlag}.png` : "/flags/za.png"}
+          alt={`${featuredAwayTeam} flag`}
+          style={{
+            width: "78px",
+            height: "78px",
+            borderRadius: "999px",
+            objectFit: "cover",
+            border: "2px solid rgba(255,255,255,0.24)",
+            boxShadow:
+              "0 0 0 5px rgba(59,130,246,0.14), 0 18px 42px rgba(0,0,0,0.42), 0 0 34px rgba(59,130,246,0.20)",
+          }}
+        />
+        <div
+          style={{
+            fontSize: "1.08rem",
+            fontWeight: 950,
+            lineHeight: 1,
+            textShadow: "0 8px 22px rgba(0,0,0,0.48)",
+          }}
+        >
+          {featuredAwayTeam}
+        </div>
+      </div>
+    </div>
+
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+        alignItems: "center",
+        maxWidth: "560px",
+        margin: "0 auto 0.5rem",
+        border: "1px solid rgba(255,255,255,0.13)",
+        borderRadius: "14px",
+        background: "rgba(15,23,42,0.62)",
+        backdropFilter: "blur(10px)",
+        boxShadow:
+          "0 16px 34px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.06)",
+      }}
+    >
+      {[
+        ["Thu, 11 Jun 2026", "15:00"],
+        ["Mexico City Stadium", "Mexico City"],
+        ["Group A", "Matchday 1"],
+      ].map(([top, bottom], index) => (
+        <div
+          key={top}
+          style={{
+            padding: "0.5rem 0.78rem",
+            textAlign: "center",
+            borderLeft:
+              index === 0 ? "none" : "1px solid rgba(255,255,255,0.10)",
+          }}
+        >
+          <div
+            style={{
+              color: "#FFFFFF",
+              fontSize: "0.86rem",
+              fontWeight: 900,
+              lineHeight: 1.15,
+            }}
+          >
+            {top}
+          </div>
+          <div
+            style={{
+              marginTop: "0.25rem",
+              color: "#94A3B8",
+              fontSize: "0.78rem",
+              fontWeight: 750,
+              lineHeight: 1.1,
+            }}
+          >
+            {bottom}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+        gap: "0.55rem",
+        marginBottom: "0.58rem",
+      }}
+    >
+      {[
+        ["🌍", "31 Countries", "#BFDBFE", "rgba(59,130,246,0.18)"],
+        ["▣", "11 Free", "#4ADE80", "rgba(34,197,94,0.16)"],
+        ["◉", "20 Paid", "#FBBF24", "rgba(245,158,11,0.16)"],
+      ].map(([icon, label, color, bg]) => (
+        <div
+          key={label}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "0.42rem",
+            border: "1px solid rgba(255,255,255,0.13)",
+            borderRadius: "999px",
+            background: "rgba(15,23,42,0.66)",
+            backdropFilter: "blur(10px)",
+            padding: "0.42rem 0.5rem",
+            color,
+            fontSize: "0.84rem",
+            fontWeight: 950,
+            boxShadow: "0 12px 28px rgba(0,0,0,0.22)",
+          }}
+        >
+          <span
+            style={{
+              width: "22px",
+              height: "22px",
+              borderRadius: "999px",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: bg,
+              fontSize: "0.72rem",
+              lineHeight: 1,
+            }}
+          >
+            {icon}
+          </span>
+          {label}
+        </div>
+      ))}
+    </div>
+
+<div
+  style={{
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  gap: "1rem",
+  marginTop: "0.2rem",
+}}
+>
+  <Link
+    href={`/match/${featuredMatch.slug}`}
+    style={{
+      textDecoration: "none",
+      background: "linear-gradient(180deg, #3B82F6, #2563EB)",
+      color: "#FFFFFF",
+      borderRadius: "14px",
+      minHeight: "30px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontWeight: 900,
+      fontSize: "0.96rem",
+      boxShadow:
+        "0 14px 30px rgba(37,99,235,0.32), inset 0 1px 0 rgba(255,255,255,0.10)",
+      border: "1px solid rgba(255,255,255,0.08)",
+      width: "48%",
+    }}
+  >
+    Watch match
+  </Link>
+
+  <Link
+    href="/schedule"
+    style={{
+      textDecoration: "none",
+      background: "rgba(15,23,42,0.88)",
+      color: "#FFFFFF",
+      borderRadius: "14px",
+      minHeight: "30px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontWeight: 800,
+      fontSize: "0.92rem",
+      border: "1px solid rgba(255,255,255,0.10)",
+      width: "48%",
+    }}
+  >
+    Full schedule
+  </Link>
+</div>
+  </div>
+</aside>
+          </div>
+        </div>
+      </section>
+
+      <section style={{ padding: "0 1rem 1.1rem" }}>
+        <div style={{ maxWidth: "1360px", margin: "0 auto" }}>
+          <div
+            className="homepageSectionHeaderInline"
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              gap: "0.7rem",
+              marginBottom: "0.55rem",
+              flexWrap: "wrap",
+            }}
+          >
+            <h2 style={{ fontSize: "1.35rem", margin: 0 }}>
+              Upcoming matches
+            </h2>
+            <p style={{ color: "#94A3B8", margin: 0 }}>
+              Selected upcoming fixtures. Use Schedule for the full list.
+            </p>
+          </div>
+
+          <div style={{ position: "relative" }}>
+   <div
+  ref={upcomingCarouselRef}
+  className="homepageMatchesCarousel"
+  onPointerDown={startUpcomingDrag}
+  onPointerMove={moveUpcomingDrag}
+  onPointerUp={stopUpcomingDrag}
+  onPointerCancel={stopUpcomingDrag}
+  onLostPointerCapture={stopUpcomingDrag}
+  onClickCapture={preventUpcomingClickAfterDrag}
+  onDragStart={preventUpcomingNativeDrag}
+     style={{
+  display: "flex",
+  gap: "0.75rem",
+  overflowX: "auto",
+  scrollBehavior: "auto",
+  paddingBottom: "0.35rem",
+  paddingRight: "1rem",
+  scrollbarWidth: "none",
+  msOverflowStyle: "none",
+  cursor: "grab",
+  userSelect: "none",
+  touchAction: "pan-y",
+  maskImage:
+    "linear-gradient(to right, transparent 0px, black 38px, black calc(100% - 38px), transparent 100%)",
+  WebkitMaskImage:
+    "linear-gradient(to right, transparent 0px, black 38px, black calc(100% - 38px), transparent 100%)",
+}}
+            >
+              {visibleUpcomingMatches.map((match) => (
+                <div
+                  key={match.slug}
+                  style={{
+                    flexGrow: 0,
+                    flexShrink: 0,
+                    flexBasis: "calc((100% - 2.25rem) / 4)",
+                    minWidth: "0",
+                    maxWidth: "calc((100% - 2.25rem) / 4)",
+                  }}
+                >
+                  <SmallMatchCard match={match} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section style={{ padding: "0 1rem 1.05rem" }}>
+        <div style={{ maxWidth: "1360px", margin: "0 auto" }}>
+          <div
+            className="homepageSectionHeaderInline"
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              gap: "0.7rem",
+              marginBottom: "0.45rem",
+              flexWrap: "wrap",
+            }}
+          >
+            <h2 style={{ fontSize: "1.35rem", margin: 0 }}>
+              Broadcasters by country
+            </h2>
+            <p style={{ color: "#94A3B8", margin: 0 }}>
+              Quick access to official broadcast information by country.
+            </p>
+          </div>
+
+          <div style={{ position: "relative" }}>
+<div
+  ref={countriesCarouselRef}
+  className="homepageCountriesCarousel"
+  onPointerDown={startCountriesDrag}
+  onPointerMove={moveCountriesDrag}
+  onPointerUp={stopCountriesDrag}
+  onPointerCancel={stopCountriesDrag}
+  onLostPointerCapture={stopCountriesDrag}
+  onClickCapture={preventCountriesClickAfterDrag}
+  onDragStart={preventCountriesNativeDrag}
+style={{
+  display: "flex",
+  gap: "0.75rem",
+  overflowX: "auto",
+  scrollBehavior: "auto",
+  paddingBottom: "0.35rem",
+  paddingRight: "1rem",
+  scrollbarWidth: "none",
+  msOverflowStyle: "none",
+  cursor: "grab",
+  userSelect: "none",
+  touchAction: "pan-y",
+  maskImage:
+    "linear-gradient(to right, transparent 0px, black 38px, black calc(100% - 38px), transparent 100%)",
+  WebkitMaskImage:
+    "linear-gradient(to right, transparent 0px, black 38px, black calc(100% - 38px), transparent 100%)",
+}}
+            >
+              {countryBroadcasts.map((country) => (
+                <div
+                  key={country.countryCode}
+                  style={{
+                    flexGrow: 0,
+                    flexShrink: 0,
+                    flexBasis: "calc((100% - 3.25rem) / 6)",
+                    minWidth: "0",
+                    maxWidth: "calc((100% - 3.25rem) / 6)",
+                  }}
+                >
+                  <CountryBroadcastCard country={country} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        className="homepageFreeMatchesTodaySection"
+        style={{ padding: "0 1rem 1.35rem" }}
+      >
+        <div style={{ maxWidth: "1360px", margin: "0 auto" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "1rem",
+              marginBottom: "0.55rem",
+            }}
+          >
+            <div
+              style={{ display: "flex", alignItems: "center", gap: "0.65rem" }}
+            >
+              <span
+                style={{
+                  width: "22px",
+                  height: "22px",
+                  borderRadius: "999px",
+                  border: "1px solid rgba(34,197,94,0.36)",
+                  background: "rgba(34,197,94,0.12)",
+                  color: "#22C55E",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "0.78rem",
+                  fontWeight: 900,
+                }}
+              >
+                ⊞
+              </span>
+              <h2 style={{ fontSize: "1.35rem", margin: 0 }}>
+                Free matches today
+              </h2>
+            </div>
+
+            <Link
+              href="/schedule"
+              style={{
+                color: "#3B82F6",
+                textDecoration: "none",
+                fontSize: "0.82rem",
+                fontWeight: 850,
+                whiteSpace: "nowrap",
+              }}
+            >
+              See all free matches →
+            </Link>
+          </div>
+
+          <div
+            className="homepageFreeMatchesToday"
+            style={{
+              borderRadius: "10px",
+              border: "1px solid rgba(59,130,246,0.18)",
+              background: "rgba(15,23,42,0.52)",
+overflow: "visible",
+            }}
+          >
+            {freeMatches.slice(0, 3).map((match, index) => (
+              <div
+                key={match.slug}
+                style={{ marginTop: index === 0 ? "-1px" : 0 }}
+              >
+                <FreeMatchRow match={match} />
+              </div>
+            ))}
+          </div>
+
+          <div
+            className="homepageTrustCapsules"
+            style={{
+              marginTop: "0.8rem",
+              background:
+                "linear-gradient(90deg, rgba(15,23,42,0.98) 0%, rgba(9,18,40,0.98) 100%)",
+              border: "1px solid rgba(59,130,246,0.18)",
+              borderRadius: "18px",
+              padding: "1.1rem 1.15rem",
+              display: "grid",
+              gridTemplateColumns: "repeat(4,minmax(0,1fr))",
+              gap: "1rem",
+              alignItems: "stretch",
+            }}
+          >
+            {[
+              {
+                icon: "shield" as const,
+                title: "100% Official",
+                text: "We only list official broadcasters and legal viewing options.",
+              },
+              {
+                icon: "globe" as const,
+                title: "Worldwide Coverage",
+                text: "Compare broadcasters by country worldwide.",
+              },
+              {
+                icon: "lock" as const,
+                title: "Legal & Safe",
+                text: "No illegal streams. No VPN recommendations.",
+              },
+              {
+                icon: "users" as const,
+                title: "Made for Fans",
+                text: "Simple, fast and built for sports fans everywhere.",
+              },
+            ].map((item, index) => (
+              <div
+                key={item.title}
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "0.75rem",
+                  paddingRight: index !== 3 ? "0.9rem" : undefined,
+                  borderRight:
+                    index !== 3
+                      ? "1px solid rgba(255,255,255,0.08)"
+                      : undefined,
+                }}
+              >
+                <TrustIcon name={item.icon} />
+
+                <div>
+                  <div
+                    style={{
+                      color: "#FFFFFF",
+                      fontWeight: 850,
+                      fontSize: "0.92rem",
+                      marginBottom: "0.25rem",
+                      lineHeight: 1.1,
+                    }}
+                  >
+                    {item.title}
+                  </div>
+
+                  <div
+                    style={{
+                      color: "#CBD5E1",
+                      fontSize: "0.76rem",
+                      lineHeight: 1.35,
+                    }}
+                  >
+                    {item.text}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section style={{ padding: "0 1rem 2rem" }}>
+        <div
+          style={{
+            maxWidth: "1360px",
+            margin: "0 auto",
+            minHeight: "110px",
+            borderRadius: "22px",
+            border: "1px dashed rgba(255,255,255,0.14)",
+            background: "rgba(255,255,255,0.025)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#64748B",
+          }}
+        >
+          Future premium sponsor placement
+        </div>
+      </section>
+
+      <section style={{ padding: "0 1rem 3rem" }}></section>
+
+      <style jsx>{`
+      
+        .homepageMatchesCarousel {
+          margin-right: -1rem;
+          padding-right: 1rem;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+
+        .homepageMatchesCarousel::-webkit-scrollbar {
+          display: none;
+        }
+
+        .homepageCountriesCarousel {
+          margin-right: -1rem;
+          padding-right: 1rem;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+
+        .homepageCountriesCarousel::-webkit-scrollbar {
+          display: none;
+        }
+
+        .homepageFreeMatchesToday a:hover {
+          background: rgba(59, 130, 246, 0.06);
+        }
+
+
+        @media (max-width: 980px) {
+          .homepageTrustCapsules {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          }
+
+          .homepageTrustCapsules > div {
+            border-right: 0 !important;
+            padding-right: 0 !important;
+          }
+
+          .homepageMatchesCarousel > div {
+            flex-basis: calc((100% - 0.75rem) / 2) !important;
+            max-width: calc((100% - 0.75rem) / 2) !important;
+          }
+
+          .homepageCountriesCarousel > div {
+            flex-basis: calc((100% - 1.3rem) / 3) !important;
+            max-width: calc((100% - 1.3rem) / 3) !important;
+          }
+        }
+
+        @media (max-width: 980px) {
+          .homepageFreeMatchesToday a {
+            grid-template-columns: 62px minmax(115px, 1fr) 28px minmax(
+                115px,
+                1fr
+              ) 62px !important;
+gap: 0.28rem !important;
+            padding: 0.6rem 0.7rem !important;
+          }
+
+          .homepageFreeMatchesToday a > span:nth-child(6),
+          .homepageFreeMatchesToday a > div:nth-child(7) {
+            display: none !important;
+          }
+.homepageHeroStats > div {
+  column-gap: 0.38rem !important;
+}
+          .homepageHeader {
+            grid-template-columns: 1fr !important;
+          }
+
+          .homepageHeroGrid {
+            grid-template-columns: 1fr !important;
+          }
+
+          .homepageMatchGrid {
+            grid-template-columns: 1fr !important;
+          }
+
+          .homepageHeroTitle {
+            font-size: 2.2rem !important;
+          }
+        }
+
+
+@media (max-width: 767px) {
+  .homepageFreeMatchesTodaySection {
+    display: none !important;
+  }
+.homepageHeroStats {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 0.45rem !important;
+}
+
+.homepageHeroStats > div {
+  min-width: 0 !important;
+}
+
+.homepageHeroStats span,
+.homepageHeroStats div {
+  font-size: clamp(0.68rem, 2vw, 0.82rem) !important;
+}
+  .homepageHeroStats > div:nth-child(3) {
+  letter-spacing: -0.03em;
+}
+  .homepageHeroStats svg {
+  width: 16px !important;
+  height: 16px !important;
+  flex-shrink: 0 !important;
+}
+}
+
+        @media (max-width: 640px) {
+          .homepageHeroTitle {
+            font-size: 1.85rem !important;
+          }
+        }
+      `}</style>
     </main>
   );
 }

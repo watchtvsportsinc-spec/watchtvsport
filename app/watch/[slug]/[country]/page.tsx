@@ -306,17 +306,23 @@ export default async function WatchCountryPage({ params, searchParams }: PagePro
       >
         <div
           style={{
-            background: "#071632",
-            border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: "18px",
-            padding: "1rem 1.1rem 0.95rem",
-            marginBottom: "1.1rem",
+            position: "relative",
+            overflow: "hidden",
+            background:
+              "linear-gradient(180deg, rgba(2,6,23,0.74), rgba(2,6,23,0.92)), radial-gradient(circle at 50% 15%, rgba(59,130,246,0.24), transparent 42%), url('/stadium-bg.jpg') center/cover no-repeat",
+            border: "1px solid rgba(255,255,255,0.10)",
+            borderRadius: "24px",
+            backdropFilter: "blur(10px)",
+            padding: "1rem 1rem 0.85rem",
+            marginBottom: "0.75rem",
+            boxShadow:
+              "0 18px 40px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.04)",
           }}
         >
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr auto 1fr",
+gridTemplateColumns: "160px 120px 160px",
               alignItems: "start",
               gap: "10px",
               marginBottom: "0.45rem",
@@ -444,7 +450,7 @@ export default async function WatchCountryPage({ params, searchParams }: PagePro
             <div
               style={{
                 display: "flex",
-                justifyContent: "flex-start",
+      justifyContent: "center",
                 paddingTop: "18px",
               }}
             >
@@ -465,7 +471,7 @@ export default async function WatchCountryPage({ params, searchParams }: PagePro
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  minWidth: "110px",
+minWidth: "160px",
                 }}
                 flagStyle={{
                   width: "62px",

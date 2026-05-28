@@ -85,7 +85,7 @@ if (!countryCode) {
       >
         <img
           src={`/flags/${code}.png`}
-          alt={teamName}
+          alt={`${teamName} flag`}
           width={size}
           height={size}
           style={{

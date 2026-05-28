@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://watchtvsport.com"),
@@ -161,12 +162,15 @@ padding: "0 1rem",
         Home
       </Link>
 
-      <a href="#faq" style={{ textDecoration: "none", color: "#CBD5E1", fontWeight: 600 }}>
-        FAQ
-      </a>
+<Link
+  href="/schedule#faq"
+  style={{ textDecoration: "none", color: "#CBD5E1", fontWeight: 600 }}
+>
+  FAQ
+</Link>
 
-      <Link
-        href="/#team-finder"
+<Link
+  href="/schedule"
         style={{
           textDecoration: "none",
           color: "#FFFFFF",
@@ -315,10 +319,26 @@ padding: "0 1rem",
                 <span>© 2026 WatchTVSport</span>
                 <span>Legal viewing information only</span>
               </div>
-            </div>
-          </footer>
-        </div>
-        <Analytics />
+                    </div>
+      </footer>
+    </div>
+
+                   <Analytics />
+
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-2V9H3M35PT"
+          strategy="afterInteractive"
+        />
+
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-2V9H3M35PT');
+          `}
+        </Script>
       </body>
     </html>
   );

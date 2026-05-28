@@ -29,6 +29,7 @@ type PageProps = {
     languages?: string;
     country?: string;
     countries?: string;
+    search?: string;
   }>;
 };
 
@@ -86,11 +87,13 @@ function buildFilterHref({
   access,
   countries,
   languages,
+  search,
 }: {
   slug: string;
   access: string[];
   countries: string[];
   languages: string[];
+  search?: string;
 }) {
   const params = new URLSearchParams();
 
@@ -106,6 +109,10 @@ function buildFilterHref({
     params.set("languages", languages.join(","));
   }
 
+  if (search && search.trim().length > 0) {
+    params.set("search", search.trim());
+  }
+
   const query = params.toString();
 
   return query ? `/match/${slug}?${query}` : `/match/${slug}`;
@@ -115,6 +122,15 @@ function toggleFilterValue(values: string[], value: string): string[] {
   return values.includes(value)
     ? values.filter((item) => item !== value)
     : [...values, value];
+}
+
+function getBroadcasterShortName(broadcaster: string) {
+  return broadcaster
+    .split(/\s+|\//)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "TV";
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -174,6 +190,7 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
   const selectedLanguages = parseMultiFilter(
     resolvedSearchParams.languages ?? resolvedSearchParams.language
   );
+  const selectedSearch = (resolvedSearchParams.search || "").trim();
 
   const { slug } = await params;
   const normalizedSlug = normalizeSlug(slug);
@@ -204,9 +221,9 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
       : formatStage(safeMatch.group);
 
   const freeBroadcasts = broadcasts.filter((item) => item.access === "Free");
+  const paidBroadcasts = broadcasts.filter((item) => item.access === "Paid");
   const uniqueCountries = getOtherCountryOptions(broadcasts, "__none__");
   const otherMatches = getOtherMatches(safeMatch.slug, 6);
-  const paidBroadcasts = broadcasts.filter((item) => item.access === "Paid");
   const countryCount = new Set(broadcasts.map((item) => item.countryCode)).size;
   const availableLanguages = Array.from(
     new Set(broadcasts.flatMap((item) => item.commentaryLanguages ?? []))
@@ -230,7 +247,22 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
             selectedLanguages.includes(language)
           );
 
-    return matchesAccess && matchesCountry && matchesLanguage;
+    const normalizedSearch = selectedSearch.toLowerCase();
+    const matchesSearch =
+      normalizedSearch.length === 0
+        ? true
+        : [
+            item.countryName,
+            item.countryCode,
+            item.broadcaster,
+            item.access,
+            ...(item.commentaryLanguages ?? []),
+          ]
+            .join(" ")
+            .toLowerCase()
+            .includes(normalizedSearch);
+
+    return matchesAccess && matchesCountry && matchesLanguage && matchesSearch;
   });
 
   const sortedBroadcasts = [...filteredBroadcasts].sort((a, b) => {
@@ -242,7 +274,8 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
   const hasActiveFilters =
     selectedAccess.length > 0 ||
     selectedCountries.length > 0 ||
-    selectedLanguages.length > 0;
+    selectedLanguages.length > 0 ||
+    selectedSearch.length > 0;
 
   const faqItems = [
     {
@@ -269,6 +302,160 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
       answer: `No. WatchTVSport only lists official broadcasters and legal viewing options by country.`,
     },
   ];
+
+
+ const renderPremiumBroadcasterCard = (
+  item: (typeof broadcasts)[number],
+  options?: {
+    featured?: boolean;
+    compact?: boolean;
+  }
+) => {
+  const broadcasterLabel = getWatchButtonLabel(item.countryCode, item.broadcaster);
+  const languages = item.commentaryLanguages?.length
+    ? item.commentaryLanguages.join(", ")
+    : "Official coverage";
+
+  return (
+    <div
+      key={`${item.countryCode}-${item.broadcaster}-${item.access}-${options?.featured ? "featured" : "card"}`}
+      className={options?.featured ? "premiumBroadcastCard featured" : "premiumBroadcastCard"}
+      style={{
+        position: "relative",
+        overflow: "hidden",
+minHeight: "unset",
+        background: options?.featured
+          ? "radial-gradient(circle at 0% 0%, rgba(59,130,246,0.26), transparent 44%), linear-gradient(180deg, rgba(15,32,62,0.98), rgba(8,17,34,0.98))"
+          : "linear-gradient(180deg, rgba(17,30,52,0.96), rgba(12,22,39,0.98))",
+        border: options?.featured
+          ? "1px solid rgba(59,130,246,0.72)"
+          : item.access === "Free"
+            ? "1px solid rgba(34,197,94,0.18)"
+            : "1px solid rgba(245,158,11,0.20)",
+        borderRadius: "16px",
+padding: "0.48rem 0.62rem",
+        boxShadow: options?.featured
+          ? "0 24px 56px rgba(0,0,0,0.34), 0 0 34px rgba(59,130,246,0.14), inset 0 1px 0 rgba(255,255,255,0.08)"
+          : "0 18px 38px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.05)",
+      }}
+    >
+
+      <div
+        style={{
+          position: "relative",
+          zIndex: 1,
+          display: "grid",
+          gap: "0.18rem",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: "0.55rem",
+          }}
+        >
+          <div style={{ minWidth: 0, flex: "1 1 auto" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.35rem",
+                color: "#94A3B8",
+                fontSize: "0.72rem",
+                fontWeight: 800,
+                marginBottom: "0.28rem",
+              }}
+            >
+              <Image
+                src={`/flags/${item.countryCode}.png`}
+                alt={getCountryDisplayName(broadcasts, item.countryCode)}
+                width={18}
+                height={13}
+                style={{ objectFit: "contain", borderRadius: "2px" }}
+              />
+              <span>{item.countryName}</span>
+            </div>
+
+            <div
+              style={{
+                fontSize: options?.featured ? "1.08rem" : "0.96rem",
+                fontWeight: 950,
+                color: "#FFFFFF",
+                lineHeight: 1.15,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                maxWidth: "100%",
+              }}
+            >
+              {item.broadcaster}
+            </div>
+
+            <div
+              style={{
+                color: "#CBD5E1",
+                fontSize: "0.76rem",
+                marginTop: "0.2rem",
+                lineHeight: 1.25,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {languages}
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              justifyItems: "end",
+              gap: "0.42rem",
+              flexShrink: 0,
+            }}
+          >
+            <AccessBadge access={item.access} />
+
+            <a
+              href={item.affiliateUrl || item.url}
+              target="_blank"
+              rel="nofollow sponsored noopener noreferrer"
+aria-label="Watch"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.36rem",
+                height: "28px",
+                padding: "0 0.65rem",
+                borderRadius: "10px",
+                background: options?.featured
+                  ? "linear-gradient(180deg, #3B82F6 0%, #1D4ED8 100%)"
+                  : "linear-gradient(180deg, rgba(30,41,59,0.96), rgba(15,23,42,0.98))",
+                border: options?.featured
+                  ? "1px solid rgba(147,197,253,0.32)"
+                  : "1px solid rgba(255,255,255,0.08)",
+                color: "#FFFFFF",
+                textDecoration: "none",
+                fontSize: "0.76rem",
+                fontWeight: 900,
+                whiteSpace: "nowrap",
+                boxShadow: options?.featured
+                  ? "0 14px 26px rgba(29,78,216,0.32), inset 0 1px 0 rgba(255,255,255,0.18)"
+                  : "inset 0 1px 0 rgba(255,255,255,0.08)",
+              }}
+            >
+              Watch
+              <span aria-hidden="true">→</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const sportsEventSchema = {
   "@context": "https://schema.org",
@@ -405,77 +592,95 @@ const sportsEventSchema = {
       <style
         dangerouslySetInnerHTML={{
           __html: `
-            @media (max-width: 767px) {
+@media (min-width: 768px) {
+  .premiumOptionsGrid {
+    grid-template-columns: minmax(300px, 0.95fr) minmax(0, 1.65fr);
+  }
+
+  .premiumOtherFreeGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .premiumPaidGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .premiumBroadcasterGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
   .matchHeroCard {
-    --hero-card-padding: 0.5rem 0.45rem 0.55rem;
+    --hero-card-padding: 0.82rem 0.62rem 0.75rem;
     --hero-grid-gap: 0px;
     --hero-grid-max-width: 100%;
-    --hero-team-min-width: 96px;
-    --hero-flag-size: 46px;
+    --hero-team-min-width: 86px;
+    --hero-flag-size: 42px;
     --hero-team-font-size: 0.78rem;
     --hero-team-margin-bottom: 0.28rem;
-    --hero-center-min-width: 86px;
+    --hero-center-min-width: 78px;
     --hero-pill-padding: 0.22rem 0.42rem;
     --hero-pill-font-size: 0.62rem;
-    --hero-pill-gap: 0.28rem;
+    --hero-pill-gap: 0.26rem;
     --hero-stage-gap: 0.42rem;
     --hero-vs-font-size: 13px;
     --hero-vs-gap: 0.25rem;
     --hero-meta-font-size: 0.65rem;
     --hero-stats-gap: 0.34rem;
     --hero-stats-font-size: 0.64rem;
-    --hero-stats-margin-bottom: 0.35rem;
+    --hero-stats-margin-bottom: 0.1rem;
   }
 
   .matchHeroGrid {
-    align-items: start !important;
+    align-items: center !important;
   }
 
   .matchHeroStats {
     line-height: 1.15 !important;
+    padding: 0.55rem 0.45rem !important;
   }
 
-  .broadcasterCard {
-    --broadcaster-card-columns: minmax(0, 1fr);
-    --broadcaster-card-padding: 0.65rem;
-    --broadcaster-card-gap: 0.5rem;
+  .premiumFiltersGrid,
+  .premiumOptionsGrid,
+  .premiumOtherFreeGrid,
+  .premiumPaidGrid,
+  .premiumBroadcasterGrid {
+    grid-template-columns: minmax(0, 1fr) !important;
   }
 
-  .broadcasterCard .broadcasterInfo {
-    font-size: 0.82rem !important;
-    gap: 0.38rem !important;
-    line-height: 1.2 !important;
-    justify-content: center !important;
-    text-align: center !important;
+  .premiumSectionHeader {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+    gap: 0.35rem !important;
   }
 
-  .broadcasterActions {
-    width: 100% !important;
-    justify-content: center !important;
+  .premiumBroadcastCard {
+    min-height: auto !important;
+  }
+
+  .premiumFilterChipWrap {
     flex-wrap: nowrap !important;
-    gap: 0.45rem !important;
+    overflow-x: auto !important;
+    padding-bottom: 0.15rem !important;
+    scrollbar-width: none !important;
   }
 
-  .broadcasterActions a {
-    max-width: none !important;
-    overflow: visible !important;
-  }
-
-  .broadcasterActions a span:last-child {
-    overflow: visible !important;
-    text-overflow: clip !important;
-    white-space: nowrap !important;
-  }
-
-  .broadcasterCountryLink {
-    width: auto !important;
-    justify-content: center !important;
-    margin-top: 0 !important;
-    white-space: nowrap !important;
-  }
-
-  .broadcasterCountryLink img {
+  .premiumFilterChipWrap::-webkit-scrollbar {
     display: none !important;
+  }
+
+  .matchUpdateNotice {
+    --match-update-margin-top: 0.65rem;
+    --match-update-margin-bottom: 0.95rem;
+    --match-update-padding: 0.62rem 0.7rem;
+    --match-update-radius: 12px;
+    --match-update-gap: 0.55rem;
+    --match-update-icon-size: 18px;
+    --match-update-icon-font-size: 0.68rem;
+    --match-update-text-size: 0.76rem;
+    --match-update-subtext-size: 0.72rem;
+    --match-update-line-height: 1.45;
   }
 }
   
@@ -485,29 +690,50 @@ const sportsEventSchema = {
 
       <div
         style={{
-          maxWidth: "1100px",
+          maxWidth: "1180px",
           margin: "0 auto",
         }}
       >
         <div
           className="matchHeroCard"
           style={{
-            background: "#071632",
-            border: "1px solid rgba(255,255,255,0.08)",
+            position: "relative",
+            overflow: "hidden",
+            background: `
+              linear-gradient(180deg, rgba(4,10,24,0.20) 0%, rgba(4,10,24,0.78) 100%),
+              radial-gradient(circle at 50% 15%, rgba(59,130,246,0.22), transparent 42%),
+              url("/stadium-bg.jpg") center/cover no-repeat
+            `,
+            border: "1px solid rgba(59,130,246,0.28)",
             borderRadius: "18px",
-padding: "var(--hero-card-padding, 0.7rem 0.7rem 0.8rem)",
-marginBottom: "0.9rem",
+            padding: "var(--hero-card-padding, 1rem 1rem 0.85rem)",
+            marginBottom: "0.75rem",
+            boxShadow:
+              "0 24px 60px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.06)",
           }}
         >
           <div
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "linear-gradient(90deg, rgba(11,18,32,0.76) 0%, rgba(11,18,32,0.10) 45%, rgba(11,18,32,0.76) 100%)",
+              pointerEvents: "none",
+            }}
+          />
+
+          <div
             className="matchHeroGrid"
             style={{
+              position: "relative",
+              zIndex: 1,
               display: "grid",
               gridTemplateColumns: "1fr auto 1fr",
-alignItems: "center",
-gap: "var(--hero-grid-gap, 4px)",
-marginBottom: "0.2rem",
-maxWidth: "var(--hero-grid-max-width, 520px)",
+              alignItems: "center",
+              gap: "var(--hero-grid-gap, 4px)",
+              marginBottom: "0.72rem",
+              maxWidth: "var(--hero-grid-max-width, 640px)",
               marginLeft: "auto",
               marginRight: "auto",
             }}
@@ -525,11 +751,12 @@ maxWidth: "var(--hero-grid-max-width, 520px)",
                 size={62}
                 teamNameStyle={{
                   fontSize: "var(--hero-team-font-size, 1.05rem)",
-                  fontWeight: 800,
+                  fontWeight: 900,
                   lineHeight: 1.15,
                   textAlign: "center",
                   color: "#FFFFFF",
                   marginBottom: "var(--hero-team-margin-bottom, 0.75rem)",
+                  textShadow: "0 2px 14px rgba(0,0,0,0.45)",
                 }}
                 wrapperStyle={{
                   display: "flex",
@@ -546,8 +773,8 @@ maxWidth: "var(--hero-grid-max-width, 520px)",
                   borderRadius: "999px",
                   objectFit: "cover",
                   background: "#071632",
-                  border: "1px solid rgba(255,255,255,0.14)",
-                  boxShadow: "0 2px 10px rgba(0,0,0,0.28)",
+                  border: "2px solid rgba(255,255,255,0.78)",
+                  boxShadow: "0 16px 34px rgba(0,0,0,0.34), 0 0 34px rgba(59,130,246,0.18)",
                 }}
               />
             </div>
@@ -558,18 +785,19 @@ maxWidth: "var(--hero-grid-max-width, 520px)",
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                minWidth: "var(--hero-center-min-width, 120px)",
+                minWidth: "var(--hero-center-min-width, 138px)",
                 textAlign: "center",
               }}
             >
               <span
                 style={{
-                  padding: "var(--hero-pill-padding, 0.28rem 0.55rem)",
+                  padding: "var(--hero-pill-padding, 0.32rem 0.68rem)",
                   borderRadius: "999px",
-                  background: "rgba(59,130,246,0.15)",
-                  color: "#BFDBFE",
+                  background: "rgba(59,130,246,0.20)",
+                  color: "#DBEAFE",
+                  border: "1px solid rgba(147,197,253,0.16)",
                   fontSize: "var(--hero-pill-font-size, 0.74rem)",
-                  fontWeight: 700,
+                  fontWeight: 900,
                   lineHeight: 1,
                   marginBottom: "var(--hero-pill-gap, 0.45rem)",
                 }}
@@ -581,12 +809,12 @@ maxWidth: "var(--hero-grid-max-width, 520px)",
                 style={{
                   padding: "var(--hero-pill-padding, 0.28rem 0.55rem)",
                   borderRadius: "999px",
-                  background: "rgba(255,255,255,0.06)",
+                  background: "rgba(255,255,255,0.07)",
                   color: "#CBD5E1",
-                  fontSize: "var(--hero-pill-font-size, 0.74rem)",
-                  fontWeight: 700,
+                  fontSize: "var(--hero-pill-font-size, 0.72rem)",
+                  fontWeight: 800,
                   lineHeight: 1,
-                  marginBottom: "var(--hero-stage-gap, 0.8rem)",
+                  marginBottom: "var(--hero-stage-gap, 0.72rem)",
                 }}
               >
                 {stageLabel}
@@ -594,12 +822,13 @@ maxWidth: "var(--hero-grid-max-width, 520px)",
 
               <div
                 style={{
-                  fontSize: "var(--hero-vs-font-size, 16px)",
-                  fontWeight: 800,
-                  color: "#94A3B8",
+                  fontSize: "var(--hero-vs-font-size, 24px)",
+                  fontWeight: 1000,
+                  color: "#BFDBFE",
                   letterSpacing: "0.08em",
                   textAlign: "center",
-                  marginBottom: "var(--hero-vs-gap, 0.45rem)",
+                  marginBottom: "var(--hero-vs-gap, 0.55rem)",
+                  textShadow: "0 0 26px rgba(59,130,246,0.72)",
                 }}
               >
                 VS
@@ -607,15 +836,16 @@ maxWidth: "var(--hero-grid-max-width, 520px)",
 
               <div
                 style={{
-                  color: "#94A3B8",
-                  fontSize: "var(--hero-meta-font-size, 0.76rem)",
-                  lineHeight: 1.5,
+                  color: "#CBD5E1",
+                  fontSize: "var(--hero-meta-font-size, 0.8rem)",
+                  lineHeight: 1.55,
                   textAlign: "center",
+                  textShadow: "0 2px 12px rgba(0,0,0,0.55)",
                 }}
               >
                 <div>
                   <LocalTime date={safeMatch.matchDate} />{" "}
-                  <span style={{ color: "#64748B", fontSize: "0.75rem" }}>
+                  <span style={{ color: "#94A3B8", fontSize: "0.75rem" }}>
                     (local time)
                   </span>
                 </div>
@@ -640,12 +870,13 @@ maxWidth: "var(--hero-grid-max-width, 520px)",
                 countryCode={fifaCodeToIso2(safeMatch.awayTeam.code)}
                 size={62}
                 teamNameStyle={{
-                  fontSize: "var(--hero-team-font-size, 0.88rem)",
-                  fontWeight: 800,
+                  fontSize: "var(--hero-team-font-size, 0.95rem)",
+                  fontWeight: 900,
                   lineHeight: 1.15,
                   textAlign: "center",
                   color: "#FFFFFF",
                   marginBottom: "var(--hero-team-margin-bottom, 0.35rem)",
+                  textShadow: "0 2px 14px rgba(0,0,0,0.45)",
                 }}
                 wrapperStyle={{
                   display: "flex",
@@ -662,8 +893,8 @@ maxWidth: "var(--hero-grid-max-width, 520px)",
                   borderRadius: "999px",
                   objectFit: "cover",
                   background: "#071632",
-                  border: "1px solid rgba(255,255,255,0.14)",
-                  boxShadow: "0 2px 10px rgba(0,0,0,0.28)",
+                  border: "2px solid rgba(255,255,255,0.78)",
+                  boxShadow: "0 16px 34px rgba(0,0,0,0.34), 0 0 34px rgba(59,130,246,0.18)",
                 }}
               />
             </div>
@@ -672,184 +903,175 @@ maxWidth: "var(--hero-grid-max-width, 520px)",
           <div
             className="matchHeroStats"
             style={{
+              position: "relative",
+              zIndex: 1,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: "var(--hero-stats-gap, 0.55rem)",
+              gap: "var(--hero-stats-gap, 0.85rem)",
               flexWrap: "wrap",
-              marginTop: "0.2rem",
-              marginBottom: "var(--hero-stats-margin-bottom, 0.75rem)",
+              maxWidth: "620px",
+              margin: "0 auto var(--hero-stats-margin-bottom, 0.2rem)",
+              padding: "0.65rem 0.9rem",
+              borderRadius: "999px",
+              background: "rgba(15,23,42,0.68)",
+              border: "1px solid rgba(255,255,255,0.08)",
               color: "#CBD5E1",
-              fontSize: "var(--hero-stats-font-size, 0.74rem)",
-              fontWeight: 700,
+              fontSize: "var(--hero-stats-font-size, 0.78rem)",
+              fontWeight: 800,
               lineHeight: 1,
+              backdropFilter: "blur(10px)",
             }}
           >
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
-              <span style={{ color: "#94A3B8", fontSize: "0.82rem" }}>⊚</span>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+              <span style={{ color: "#93C5FD", fontSize: "0.88rem" }}>⊚</span>
               <span>{countryCount} Countries</span>
             </div>
 
-            <span style={{ color: "rgba(255,255,255,0.16)" }}>|</span>
-
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
-              <span style={{ color: "#94A3B8", fontSize: "0.82rem" }}>✦</span>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+              <span style={{ color: "#22C55E", fontSize: "0.88rem" }}>▣</span>
               <span>{freeBroadcasts.length} Free</span>
             </div>
 
-            <span style={{ color: "rgba(255,255,255,0.16)" }}>|</span>
-
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
-              <span style={{ color: "#94A3B8", fontSize: "0.82rem" }}>◼</span>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+              <span style={{ color: "#F59E0B", fontSize: "0.88rem" }}>▣</span>
               <span>{paidBroadcasts.length} Paid</span>
             </div>
 
-            <span style={{ color: "rgba(255,255,255,0.16)" }}>|</span>
-
             <Link
-  href={`#watch-by-country`}
-  style={{
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "0.25rem",
-    color: "#60A5FA",
-    textDecoration: "none",
-    fontWeight: 800,
-    whiteSpace: "nowrap",
-  }}
->
-  View all countries
-  <span style={{ fontSize: "0.9rem" }}>→</span>
-</Link>
+              href={`#watch-by-country`}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.25rem",
+                color: "#60A5FA",
+                textDecoration: "none",
+                fontWeight: 900,
+                whiteSpace: "nowrap",
+              }}
+            >
+              View all countries
+              <span style={{ fontSize: "0.9rem" }}>→</span>
+            </Link>
           </div>
         </div>
 
         <div
+          className="matchUpdateNotice"
           style={{
-            display: "grid",
-            gap: "0.55rem",
-            marginBottom: "1rem",
+            marginTop: "0.65rem",
+            marginBottom: "0.9rem",
+            padding: "0.30rem 0.95rem",
+            background: "linear-gradient(180deg, rgba(16, 248, 27, 0.69), rgba(13,25,45,0.94))",
+            border: "1px solid rgba(18, 114, 23, 0.84)",
+            borderRadius: "14px",
+            color: "#E5E7EB",
+            fontSize: "0.9rem",
+            lineHeight: 1.4,
+            display: "flex",
+            alignItems: "center",
+            gap: "0.65rem",
+            boxShadow: "0 14px 34px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.05)",
           }}
         >
-          <div
-            style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: "14px",
-              padding: "0.5rem",
-              display: "grid",
-              gap: "0.5rem",
-            }}
-          >
+
+          <span>
+            Official broadcaster links are verified before matchday; some match pages may appear only a few hours before kickoff.
+          </span>
+        </div>
+
+        <form
+          className="premiumFiltersGrid"
+          action={`/match/${safeMatch.slug}`}
+          style={{
+            display: "grid",
+            gridTemplateColumns: "0.95fr 1.25fr 1.25fr 1.45fr auto auto",
+            gap: "0.75rem",
+            alignItems: "end",
+            marginBottom: "1rem",
+            background:
+              "linear-gradient(180deg, rgba(17,24,39,0.88), rgba(15,23,42,0.92))",
+            border: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: "16px",
+            padding: "0.75rem",
+            boxShadow:
+              "0 18px 42px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.04)",
+          }}
+        >
+          <div style={{ display: "grid", gap: "0.48rem" }}>
             <div
               style={{
-                display: "flex",
-              justifyContent: "flex-start",
-                alignItems: "center",
-                gap: "0.45rem",
-                flexWrap: "wrap",
+                color: "#CBD5E1",
+                fontSize: "0.72rem",
+                fontWeight: 900,
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.45rem",
-                  flexWrap: "wrap",
-                }}
-              >
-                <div
-                  style={{
-                    color: "#FFFFFF",
-                    fontSize: "0.82rem",
-                    fontWeight: 800,
-                    lineHeight: 1,
-                  }}
-                >
-                  1. Access
-                </div>
-                <div
-                  style={{
-                    color: "#94A3B8",
-                    fontSize: "0.72rem",
-                    lineHeight: 1,
-                  }}
-                >
-                  Choose free, paid, or both.
-                </div>
-              </div>
-
-              {hasActiveFilters ? (
-                <Link
-                  href={`/match/${safeMatch.slug}`}
-                  style={{
-                    textDecoration: "none",
-                    padding: "0.28rem 0.52rem",
-                    borderRadius: "999px",
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    color: "#CBD5E1",
-                    fontSize: "0.72rem",
-                    fontWeight: 700,
-                    lineHeight: 1,
-                  }}
-                >
-                  Clear filters
-                </Link>
-              ) : null}
+              Access
             </div>
 
             <div
               style={{
-                display: "flex",
-                gap: "0.35rem",
-                flexWrap: "wrap",
-                alignItems: "center",
+                display: "grid",
+                gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                gap: "0.4rem",
               }}
             >
               {[
+                { value: "all", label: "All" },
                 { value: "free", label: "Free" },
                 { value: "paid", label: "Paid" },
               ].map((filter) => {
-                const isActive = selectedAccess.includes(filter.value);
-                const nextAccess = toggleFilterValue(selectedAccess, filter.value);
+                const isActive =
+                  filter.value === "all"
+                    ? selectedAccess.length === 0
+                    : selectedAccess.includes(filter.value);
 
                 return (
                   <Link
                     key={filter.value}
                     href={buildFilterHref({
                       slug: safeMatch.slug,
-                      access: nextAccess,
+                      access: filter.value === "all" ? [] : [filter.value],
                       countries: selectedCountries,
                       languages: selectedLanguages,
+                      search: selectedSearch,
                     })}
                     style={{
                       textDecoration: "none",
-                      padding: "0.28rem 0.52rem",
-                      borderRadius: "999px",
+                      textAlign: "center",
+                      padding: "0.56rem 0.68rem",
+                      borderRadius: "10px",
                       background: isActive
                         ? filter.value === "free"
-                          ? "rgba(34,197,94,0.16)"
-                          : "rgba(245,158,11,0.16)"
-                        : filter.value === "free"
-                          ? "rgba(34,197,94,0.06)"
-                          : "rgba(245,158,11,0.06)",
+                          ? "rgba(34,197,94,0.18)"
+                          : filter.value === "paid"
+                            ? "rgba(245,158,11,0.18)"
+                            : "linear-gradient(180deg, #3B82F6, #1D4ED8)"
+                        : "rgba(15,23,42,0.74)",
                       border: isActive
                         ? filter.value === "free"
-                          ? "1px solid rgba(34,197,94,0.38)"
-                          : "1px solid rgba(245,158,11,0.38)"
-                        : filter.value === "free"
-                          ? "1px solid rgba(34,197,94,0.16)"
-                          : "1px solid rgba(245,158,11,0.16)",
+                          ? "1px solid rgba(34,197,94,0.44)"
+                          : filter.value === "paid"
+                            ? "1px solid rgba(245,158,11,0.44)"
+                            : "1px solid rgba(147,197,253,0.32)"
+                        : "1px solid rgba(255,255,255,0.08)",
                       color: isActive
                         ? filter.value === "free"
-                          ? "#22C55E"
-                          : "#F59E0B"
+                          ? "#4ADE80"
+                          : filter.value === "paid"
+                            ? "#FBBF24"
+                            : "#FFFFFF"
                         : "#CBD5E1",
-                      fontSize: "0.74rem",
-                      fontWeight: 800,
+                      fontSize: "0.78rem",
+                      fontWeight: 900,
                       lineHeight: 1,
                       whiteSpace: "nowrap",
+                      boxShadow:
+                        isActive && filter.value === "all"
+                          ? "0 10px 22px rgba(29,78,216,0.26)"
+                          : "none",
                     }}
                   >
                     {filter.label}
@@ -859,354 +1081,208 @@ maxWidth: "var(--hero-grid-max-width, 520px)",
             </div>
           </div>
 
-          <div
-            style={{
-              background: "rgba(59,130,246,0.055)",
-              border: "1px solid rgba(59,130,246,0.16)",
-              borderRadius: "14px",
-              padding: "0.65rem",
-              display: "grid",
-              gap: "0.5rem",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.45rem",
-                flexWrap: "wrap",
-              }}
-            >
-              <div
-                style={{
-                  color: "#BFDBFE",
-                  fontSize: "0.82rem",
-                  fontWeight: 800,
-                  lineHeight: 1,
-                }}
-              >
-                2. Countries
-              </div>
-              <div
-                style={{
-                  color: "#94A3B8",
-                  fontSize: "0.72rem",
-                  lineHeight: 1,
-                }}
-              >
-                Select one or several countries.
-              </div>
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                gap: "0.35rem",
-                flexWrap: "wrap",
-                alignItems: "center",
-              }}
-            >
-              {uniqueCountries.map((country) => {
-                const isActive = selectedCountries.includes(country.countryCode);
-                const nextCountries = toggleFilterValue(
-                  selectedCountries,
-                  country.countryCode
-                );
-
-                return (
-                  <Link
-                    key={`country-filter-${country.countryCode}`}
-                    href={buildFilterHref({
-                      slug: safeMatch.slug,
-                      access: selectedAccess,
-                      countries: nextCountries,
-                      languages: selectedLanguages,
-                    })}
-                    style={{
-                      textDecoration: "none",
-                      padding: "0.28rem 0.5rem",
-                      borderRadius: "999px",
-                      background: isActive
-                        ? "rgba(59,130,246,0.18)"
-                        : "rgba(59,130,246,0.06)",
-                      border: isActive
-                        ? "1px solid rgba(59,130,246,0.42)"
-                        : "1px solid rgba(59,130,246,0.14)",
-                      color: isActive ? "#BFDBFE" : "#CBD5E1",
-                      fontSize: "0.72rem",
-                      fontWeight: 700,
-                      lineHeight: 1,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {country.countryName}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-
-          {availableLanguages.length > 0 ? (
-            <div
-              style={{
-                background: "rgba(168,85,247,0.055)",
-                border: "1px solid rgba(168,85,247,0.16)",
-                borderRadius: "14px",
-                padding: "0.65rem",
-                display: "grid",
-                gap: "0.5rem",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.45rem",
-                  flexWrap: "wrap",
-                }}
-              >
-                <div
-                  style={{
-                    color: "#E9D5FF",
-                    fontSize: "0.82rem",
-                    fontWeight: 800,
-                    lineHeight: 1,
-                  }}
-                >
-                  3. Commentary languages
-                </div>
-                <div
-                  style={{
-                    color: "#94A3B8",
-                    fontSize: "0.72rem",
-                    lineHeight: 1,
-                  }}
-                >
-                  Select one or several languages.
-                </div>
-              </div>
-
-              <div
-                style={{
-                  display: "flex",
-                  gap: "0.35rem",
-                  flexWrap: "wrap",
-                  alignItems: "center",
-                }}
-              >
-                {availableLanguages.map((lang) => {
-                  const isActive = selectedLanguages.includes(lang);
-                  const nextLanguages = toggleFilterValue(selectedLanguages, lang);
-
-                  return (
-                    <Link
-                      key={`language-filter-${lang}`}
-                      href={buildFilterHref({
-                        slug: safeMatch.slug,
-                        access: selectedAccess,
-                        countries: selectedCountries,
-                        languages: nextLanguages,
-                      })}
-                      style={{
-                        textDecoration: "none",
-                        padding: "0.28rem 0.5rem",
-                        borderRadius: "999px",
-                        background: isActive
-                          ? "rgba(168,85,247,0.18)"
-                          : "rgba(168,85,247,0.06)",
-                        border: isActive
-                          ? "1px solid rgba(168,85,247,0.42)"
-                          : "1px solid rgba(168,85,247,0.14)",
-                        color: isActive ? "#E9D5FF" : "#CBD5E1",
-                        fontSize: "0.72rem",
-                        fontWeight: 700,
-                        lineHeight: 1,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {lang}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          ) : null}
-        </div>
-
-<SectionTitle>All viewing options</SectionTitle>
-
-<div
-  style={{
-    display: "grid",
-    gap: "0.5rem",
-  }}
->
-  {sortedBroadcasts.length > 0 ? (
-    sortedBroadcasts.map((item) => (
-      <div
-        key={`${item.countryCode}-${item.broadcaster}-${item.access}`}
-        className="broadcasterCard"
-        style={{
-          background: "#111827",
-          border: "1px solid rgba(255,255,255,0.08)",
-          borderRadius: "12px",
-          padding: "var(--broadcaster-card-padding, 0.28rem 0.45rem)",
-          display: "grid",
-          gridTemplateColumns: "var(--broadcaster-card-columns, minmax(0, 1fr) auto auto)",
-          alignItems: "center",
-          gap: "var(--broadcaster-card-gap, 0.75rem)",
-        }}
-      >
-        <div
-          className="broadcasterInfo"
-          style={{
-            minWidth: 0,
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            flexWrap: "wrap",
-            fontSize: "0.8rem",
-            lineHeight: 1.1,
-          }}
-        >
-          <Image
-            src={`/flags/${item.countryCode}.png`}
-            alt={getCountryDisplayName(broadcasts, item.countryCode)}
-            width={20}
-            height={14}
-            style={{ objectFit: "contain", flexShrink: 0 }}
-          />
-
-          <span style={{ color: "#64748B" }}>•</span>
-
-          <span style={{ fontWeight: 700, whiteSpace: "nowrap" }}>
-            {item.broadcaster}
-          </span>
-
-          {item.commentaryLanguages?.length ? (
-            <>
-              <span style={{ color: "#64748B" }}>•</span>
-              <span style={{ color: "#CBD5E1" }}>
-                {item.commentaryLanguages.join(", ")}
-              </span>
-            </>
-          ) : null}
-        </div>
-
-        <div
-          className="broadcasterActions"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "var(--broadcaster-actions-justify, flex-end)",
-            gap: "0.35rem",
-            minWidth: "fit-content",
-          }}
-        >
-          <a
-            href={item.affiliateUrl || item.url}
-            target="_blank"
-            rel="nofollow sponsored noopener noreferrer"
-            aria-label={getWatchButtonLabel(item.countryCode, item.broadcaster)}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.48rem",
-              background: "linear-gradient(180deg, #02091a 0%, #0f245e 100%)",
-              color: "#FFFFFF",
-              textDecoration: "none",
-              padding: "0.18rem 0.45rem",
-              fontWeight: 700,
-              fontSize: "0.8rem",
-              lineHeight: 1,
-              whiteSpace: "nowrap",
-              boxShadow:
-                "inset 0 1px 0 rgba(255,255,255,0.14), 0 4px 10px rgba(29,78,216,0.22)",
-              border: "1px solid rgba(255,255,255,0.08)",
-            }}
-          >
+          <label style={{ display: "grid", gap: "0.48rem", minWidth: 0 }}>
             <span
-              aria-hidden="true"
               style={{
-                width: "14px",
-                height: "14px",
-                borderRadius: "999px",
-                background: "rgba(255,255,255,0.14)",
+                color: "#CBD5E1",
+                fontSize: "0.72rem",
+                fontWeight: 900,
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+              }}
+            >
+              Country
+            </span>
+            <select
+              name="countries"
+              defaultValue={selectedCountries[0] || "all"}
+              style={{
+                width: "100%",
+                minHeight: "40px",
+                borderRadius: "10px",
+                background: "rgba(15,23,42,0.86)",
+                border: "1px solid rgba(255,255,255,0.10)",
+                color: "#E5E7EB",
+                padding: "0 0.72rem",
+                fontSize: "0.82rem",
+                fontWeight: 850,
+                outline: "none",
+              }}
+            >
+              <option value="all">All countries</option>
+              {uniqueCountries.map((country) => (
+                <option key={`country-select-${country.countryCode}`} value={country.countryCode}>
+                  {country.countryName}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label style={{ display: "grid", gap: "0.48rem", minWidth: 0 }}>
+            <span
+              style={{
+                color: "#CBD5E1",
+                fontSize: "0.72rem",
+                fontWeight: 900,
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+              }}
+            >
+              Language
+            </span>
+            <select
+              name="languages"
+              defaultValue={selectedLanguages[0] || "all"}
+              style={{
+                width: "100%",
+                minHeight: "40px",
+                borderRadius: "10px",
+                background: "rgba(15,23,42,0.86)",
+                border: "1px solid rgba(255,255,255,0.10)",
+                color: "#E5E7EB",
+                padding: "0 0.72rem",
+                fontSize: "0.82rem",
+                fontWeight: 850,
+                outline: "none",
+              }}
+            >
+              <option value="all">All languages</option>
+              {availableLanguages.map((lang) => (
+                <option key={`language-select-${lang}`} value={lang}>
+                  {lang}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label style={{ display: "grid", gap: "0.48rem", minWidth: 0 }}>
+            <span
+              style={{
+                color: "#CBD5E1",
+                fontSize: "0.72rem",
+                fontWeight: 900,
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+              }}
+            >
+              Search
+            </span>
+            <input
+              name="search"
+              defaultValue={selectedSearch}
+              placeholder="Search broadcaster..."
+              style={{
+                width: "100%",
+                minHeight: "40px",
+                borderRadius: "10px",
+                background: "rgba(15,23,42,0.86)",
+                border: "1px solid rgba(255,255,255,0.10)",
+                color: "#E5E7EB",
+                padding: "0 0.72rem",
+                fontSize: "0.82rem",
+                fontWeight: 800,
+                outline: "none",
+              }}
+            />
+          </label>
+
+          <button
+            type="submit"
+            style={{
+              minHeight: "40px",
+              borderRadius: "10px",
+              background: "linear-gradient(180deg, #3B82F6, #1D4ED8)",
+              border: "1px solid rgba(147,197,253,0.32)",
+              color: "#FFFFFF",
+              padding: "0 0.95rem",
+              fontSize: "0.78rem",
+              fontWeight: 950,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              boxShadow: "0 12px 24px rgba(29,78,216,0.28)",
+            }}
+          >
+            Apply
+          </button>
+
+          {hasActiveFilters ? (
+            <Link
+              href={`/match/${safeMatch.slug}`}
+              style={{
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
-                flexShrink: 0,
+                minHeight: "40px",
+                textDecoration: "none",
+                padding: "0 0.82rem",
+                borderRadius: "10px",
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                color: "#CBD5E1",
+                fontSize: "0.76rem",
+                fontWeight: 900,
+                lineHeight: 1,
+                whiteSpace: "nowrap",
               }}
             >
-              <span
-                style={{
-                  width: 0,
-                  height: 0,
-                  borderTop: "4px solid transparent",
-                  borderBottom: "4px solid transparent",
-                  borderLeft: "6px solid #FFFFFF",
-                  marginLeft: "1px",
-                }}
-              />
-            </span>
+              Reset
+            </Link>
+          ) : null}
+        </form>
 
-<span className="watchButtonText">
-  Watch
-</span>
-          </a>
-
-          <AccessBadge access={item.access} />
-
-          <Link
-            href={`/watch/${safeMatch.slug}/${item.countryCode.toLowerCase()}`}
-            className="broadcasterCountryLink"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "flex-end",
-              gap: "0.42rem",
-              color: "#BFDBFE",
-              textDecoration: "none",
-              fontSize: "0.78rem",
-              fontWeight: 700,
-              whiteSpace: "nowrap",
-            }}
-          >
-            <Image
-              src={`/flags/${item.countryCode}.png`}
-              alt={getCountryDisplayName(broadcasts, item.countryCode)}
-              width={16}
-              height={16}
+        
+        <div
+          style={{
+            marginBottom: "1rem",
+            padding: "0.9rem",
+            borderRadius: "16px",
+            background: "linear-gradient(180deg, rgba(17,24,39,0.90), rgba(15,23,42,0.96))",
+            border: "1px solid rgba(255,255,255,0.08)",
+            boxShadow: "0 18px 42px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.04)",
+          }}
+        >
+          <div className="premiumSectionHeader" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem", marginBottom: "0.85rem" }}>
+            <h2
               style={{
-                width: "16px",
-                height: "16px",
-                borderRadius: "3px",
-                objectFit: "contain",
-                flexShrink: 0,
+                margin: 0,
+                color: "#FFFFFF",
+                fontSize: "1.05rem",
+                lineHeight: 1.1,
+                fontWeight: 1000,
+                textTransform: "uppercase",
+                letterSpacing: "0.02em",
               }}
-            />
+            >
+              All broadcasters by country
+            </h2>
+            <div style={{ color: "#94A3B8", fontSize: "0.8rem", fontWeight: 700 }}>
+              {sortedBroadcasts.length} option{sortedBroadcasts.length > 1 ? "s" : ""} shown
+            </div>
+          </div>
 
-            <span>All TV</span>
-          </Link>
+          <div className="premiumBroadcasterGrid" style={{ display: "grid", gap: "0.75rem" }}>
+            {sortedBroadcasts.length > 0 ? (
+              sortedBroadcasts.map((item) => renderPremiumBroadcasterCard(item, { compact: true }))
+            ) : (
+              <div
+                style={{
+                  gridColumn: "1 / -1",
+                  background:
+                    "linear-gradient(180deg, rgba(15,23,42,0.92), rgba(11,18,32,0.96))",
+                  border: "1px solid rgba(96,165,250,0.18)",
+                  borderRadius: "16px",
+                  padding: "1rem",
+                  color: "#CBD5E1",
+                  fontSize: "0.92rem",
+                  lineHeight: 1.5,
+                }}
+              >
+                No official broadcaster currently matches these filters.
+                Broadcast details are reviewed and updated regularly before matchday, so additional legal viewing options may appear later.
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    ))
-  ) : (
-    <div
-      style={{
-        background: "#111827",
-        border: "1px solid rgba(255,255,255,0.08)",
-        borderRadius: "12px",
-        padding: "0.9rem",
-        color: "#CBD5E1",
-        fontSize: "0.9rem",
-        lineHeight: 1.55,
-      }}
-    >
-      No official viewing option matches the selected filters.
-    </div>
-  )}
-</div>
 
       <div id="watch-by-country">
   <SectionTitle>Watch this match by country</SectionTitle>
