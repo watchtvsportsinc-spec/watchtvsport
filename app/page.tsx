@@ -1,13 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  useMemo,
-  useRef,
-  useState,
-  type DragEvent as ReactDragEvent,
-  type PointerEvent as ReactPointerEvent,
-} from "react";
+import { useMemo } from "react";
 import { matches } from "@/lib/matches";
 import { getTeamName } from "@/lib/utils";
 
@@ -374,8 +368,8 @@ function SmallMatchCard({ match }: { match: Match }) {
               alt=""
               draggable={false}
               style={{
-                width: "52px",
-                height: "52px",
+                width: "44px",
+                height: "44px",
                 borderRadius: "999px",
                 objectFit: "cover",
                 boxShadow:
@@ -467,8 +461,8 @@ function SmallMatchCard({ match }: { match: Match }) {
               alt=""
               draggable={false}
               style={{
-                width: "52px",
-                height: "52px",
+                width: "44px",
+                height: "44px",
                 borderRadius: "999px",
                 objectFit: "cover",
                 boxShadow:
@@ -637,8 +631,8 @@ style={{
         draggable={false}
         style={{
           position: "relative",
-          width: "54px",
-          height: "54px",
+          width: "40px",
+          height: "40px",
           borderRadius: "999px",
           objectFit: "cover",
           boxShadow:
@@ -776,14 +770,14 @@ function FreeMatchRow({ match }: { match: Match }) {
         {homeTeam}
       </div>
 
-      <div style={{ width: "44px", height: "44px" }}>
+      <div style={{ width: "32px", height: "32px" }}>
         {homeFlag ? (
           <img
             src={`/flags/${homeFlag}.png`}
             alt=""
             style={{
-              width: "44px",
-              height: "44px",
+              width: "32px",
+              height: "32px",
               borderRadius: "999px",
               objectFit: "cover",
               display: "block",
@@ -805,14 +799,14 @@ function FreeMatchRow({ match }: { match: Match }) {
         VS
       </div>
 
-      <div style={{ width: "44px", height: "44px" }}>
+      <div style={{ width: "32px", height: "32px" }}>
         {awayFlag ? (
           <img
             src={`/flags/${awayFlag}.png`}
             alt=""
             style={{
-              width: "44px",
-              height: "44px",
+              width: "32px",
+              height: "32px",
               borderRadius: "999px",
               objectFit: "cover",
               display: "block",
@@ -884,118 +878,6 @@ function FreeMatchRow({ match }: { match: Match }) {
 }
 
 export default function HomePage() {
-  const [query, setQuery] = useState("");
-  const upcomingCarouselRef = useRef<HTMLDivElement | null>(null);
-  const isUpcomingDraggingRef = useRef(false);
-  const upcomingDragStartXRef = useRef(0);
-  const upcomingDragScrollLeftRef = useRef(0);
-  const hasUpcomingDraggedRef = useRef(false);
-  const countriesCarouselRef = useRef<HTMLDivElement | null>(null);
-  const isCountriesDraggingRef = useRef(false);
-  const countriesDragStartXRef = useRef(0);
-  const countriesDragScrollLeftRef = useRef(0);
-  const hasCountriesDraggedRef = useRef(false);
-
-  function startUpcomingDrag(event: ReactPointerEvent<HTMLDivElement>) {
-    if (event.button !== 0) return;
-
-    const carousel = event.currentTarget;
-    isUpcomingDraggingRef.current = true;
-    hasUpcomingDraggedRef.current = false;
-    upcomingDragStartXRef.current = event.clientX;
-    upcomingDragScrollLeftRef.current = carousel.scrollLeft;
-    carousel.style.cursor = "grabbing";
-    carousel.setPointerCapture(event.pointerId);
-  }
-
-  function moveUpcomingDrag(event: ReactPointerEvent<HTMLDivElement>) {
-    if (!isUpcomingDraggingRef.current) return;
-
-    const carousel = event.currentTarget;
-    const distance = event.clientX - upcomingDragStartXRef.current;
-
-    if (Math.abs(distance) > 3) {
-      hasUpcomingDraggedRef.current = true;
-    }
-
-    carousel.scrollLeft = upcomingDragScrollLeftRef.current - distance;
-  }
-
-  function stopUpcomingDrag(event: ReactPointerEvent<HTMLDivElement>) {
-    if (!isUpcomingDraggingRef.current) return;
-
-    isUpcomingDraggingRef.current = false;
-    event.currentTarget.style.cursor = "grab";
-
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-  }
-
-  function preventUpcomingNativeDrag(event: ReactDragEvent<HTMLDivElement>) {
-    event.preventDefault();
-  }
-
-  function preventUpcomingClickAfterDrag(
-    event: ReactPointerEvent<HTMLDivElement>,
-  ) {
-    if (!hasUpcomingDraggedRef.current) return;
-
-    event.preventDefault();
-    event.stopPropagation();
-    hasUpcomingDraggedRef.current = false;
-  }
-
-  function startCountriesDrag(event: ReactPointerEvent<HTMLDivElement>) {
-    if (event.button !== 0) return;
-
-    const carousel = event.currentTarget;
-    isCountriesDraggingRef.current = true;
-    hasCountriesDraggedRef.current = false;
-    countriesDragStartXRef.current = event.clientX;
-    countriesDragScrollLeftRef.current = carousel.scrollLeft;
-    carousel.style.cursor = "grabbing";
-    carousel.setPointerCapture(event.pointerId);
-  }
-
-  function moveCountriesDrag(event: ReactPointerEvent<HTMLDivElement>) {
-    if (!isCountriesDraggingRef.current) return;
-
-    const carousel = event.currentTarget;
-    const distance = event.clientX - countriesDragStartXRef.current;
-
-    if (Math.abs(distance) > 3) {
-      hasCountriesDraggedRef.current = true;
-    }
-
-    carousel.scrollLeft = countriesDragScrollLeftRef.current - distance;
-  }
-
-  function stopCountriesDrag(event: ReactPointerEvent<HTMLDivElement>) {
-    if (!isCountriesDraggingRef.current) return;
-
-    isCountriesDraggingRef.current = false;
-    event.currentTarget.style.cursor = "grab";
-
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-  }
-
-  function preventCountriesNativeDrag(event: ReactDragEvent<HTMLDivElement>) {
-    event.preventDefault();
-  }
-
-  function preventCountriesClickAfterDrag(
-    event: ReactPointerEvent<HTMLDivElement>,
-  ) {
-    if (!hasCountriesDraggedRef.current) return;
-
-    event.preventDefault();
-    event.stopPropagation();
-    hasCountriesDraggedRef.current = false;
-  }
-
   const sortedMatches = useMemo(() => {
     return [...matches].sort((a, b) => {
       const aTime = a.matchDate
@@ -1013,8 +895,18 @@ export default function HomePage() {
   const featuredAwayTeam = getTeamName(featuredMatch.awayTeam);
   const featuredHomeFlag = getTeamFlagCode(featuredHomeTeam);
   const featuredAwayFlag = getTeamFlagCode(featuredAwayTeam);
-  const upcomingMatches = sortedMatches;
-  const visibleUpcomingMatches = upcomingMatches;
+  const featuredCountriesCount = new Set(
+    featuredMatch.broadcasts?.map((item) => item.countryCode),
+  ).size;
+  const featuredFreeCount =
+    featuredMatch.broadcasts?.filter((item) => item.access === "Free").length || 0;
+  const featuredPaidCount =
+    featuredMatch.broadcasts?.filter((item) => item.access === "Paid").length || 0;
+
+  const upcomingMatches = sortedMatches.filter(
+    (match) => match.slug !== featuredMatch.slug,
+  );
+  const visibleUpcomingMatches = upcomingMatches.slice(0, 4);
 
   const countryBroadcasts = useMemo(() => {
     const priorityCountries = [
@@ -1086,22 +978,17 @@ export default function HomePage() {
       });
   }, [sortedMatches]);
 
+  const priorityCountryCodes = ["us", "ca", "mx", "fr", "gb", "br"];
+
+  const visibleCountryBroadcasts = priorityCountryCodes
+    .map((code) =>
+      countryBroadcasts.find((country) => country.countryCode === code),
+    )
+    .filter(Boolean) as typeof countryBroadcasts;
+
   const freeMatches = sortedMatches
     .filter((match) => match.broadcasts?.some((item) => item.access === "Free"))
     .slice(0, 4);
-
-  const suggestions = useMemo(() => {
-    const cleanQuery = query.trim().toLowerCase();
-    if (!cleanQuery) return [];
-
-    return sortedMatches
-      .filter((match) => {
-        const homeTeam = getTeamName(match.homeTeam).toLowerCase();
-        const awayTeam = getTeamName(match.awayTeam).toLowerCase();
-        return homeTeam.includes(cleanQuery) || awayTeam.includes(cleanQuery);
-      })
-      .slice(0, 5);
-  }, [query, sortedMatches]);
 
   return (
     <main
@@ -1167,9 +1054,15 @@ gridTemplateColumns: "1fr 1fr",
               <Link
                 href="/schedule"
                 style={{
-                  display: "inline-flex",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "100%",
+                  maxWidth: "620px",
+                  boxSizing: "border-box",
                   marginTop: "1rem",
-                  padding: "0.68rem 0.95rem",
+                  minHeight: "22px",
+                  padding: "0.18rem 0.9rem",
                   borderRadius: "10px",
                   background: "#3B82F6",
                   color: "#FFFFFF",
@@ -1346,8 +1239,8 @@ gridTemplateColumns: "1fr 1fr",
           src={featuredHomeFlag ? `/flags/${featuredHomeFlag}.png` : "/flags/mx.png"}
           alt={`${featuredHomeTeam} flag`}
           style={{
-            width: "78px",
-            height: "78px",
+            width: "60px",
+            height: "60px",
             borderRadius: "999px",
             objectFit: "cover",
             border: "2px solid rgba(255,255,255,0.24)",
@@ -1400,8 +1293,8 @@ gridTemplateColumns: "1fr 1fr",
           src={featuredAwayFlag ? `/flags/${featuredAwayFlag}.png` : "/flags/za.png"}
           alt={`${featuredAwayTeam} flag`}
           style={{
-            width: "78px",
-            height: "78px",
+            width: "60px",
+            height: "60px",
             borderRadius: "999px",
             objectFit: "cover",
             border: "2px solid rgba(255,255,255,0.24)",
@@ -1438,9 +1331,9 @@ gridTemplateColumns: "1fr 1fr",
       }}
     >
       {[
-        ["Thu, 11 Jun 2026", "15:00"],
-        ["Mexico City Stadium", "Mexico City"],
-        ["Group A", "Matchday 1"],
+        [getMatchDateLabel(featuredMatch.matchDate), getTimeLabel(featuredMatch.matchDate)],
+        [featuredMatch.stadiumName || "Stadium TBC", featuredMatch.hostCity || "City TBC"],
+        [featuredMatch.group ? `Group ${featuredMatch.group}` : featuredMatch.stage, `Match ${featuredMatch.matchNumber}`],
       ].map(([top, bottom], index) => (
         <div
           key={top}
@@ -1485,9 +1378,9 @@ gridTemplateColumns: "1fr 1fr",
       }}
     >
       {[
-        ["🌍", "31 Countries", "#BFDBFE", "rgba(59,130,246,0.18)"],
-        ["▣", "11 Free", "#4ADE80", "rgba(34,197,94,0.16)"],
-        ["◉", "20 Paid", "#FBBF24", "rgba(245,158,11,0.16)"],
+        ["🌍", `${featuredCountriesCount} Countries`, "#BFDBFE", "rgba(59,130,246,0.18)"],
+        ["▣", `${featuredFreeCount} Free`, "#4ADE80", "rgba(34,197,94,0.16)"],
+        ["◉", `${featuredPaidCount} Paid`, "#FBBF24", "rgba(245,158,11,0.16)"],
       ].map(([icon, label, color, bg]) => (
         <div
           key={label}
@@ -1529,12 +1422,11 @@ gridTemplateColumns: "1fr 1fr",
 
 <div
   style={{
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  gap: "1rem",
-  marginTop: "0.2rem",
-}}
+    display: "grid",
+    gridTemplateColumns: "1fr",
+    gap: "0.55rem",
+    marginTop: "0.2rem",
+  }}
 >
   <Link
     href={`/match/${featuredMatch.slug}`}
@@ -1543,7 +1435,6 @@ gridTemplateColumns: "1fr 1fr",
       background: "linear-gradient(180deg, #3B82F6, #2563EB)",
       color: "#FFFFFF",
       borderRadius: "14px",
-      minHeight: "30px",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -1552,31 +1443,15 @@ gridTemplateColumns: "1fr 1fr",
       boxShadow:
         "0 14px 30px rgba(37,99,235,0.32), inset 0 1px 0 rgba(255,255,255,0.10)",
       border: "1px solid rgba(255,255,255,0.08)",
-      width: "48%",
+      width: "min(210px, 100%)",
+      justifySelf: "center",
+      minHeight: "22px",
+      padding: "0.14rem 0.68rem",
     }}
   >
     Watch match
   </Link>
 
-  <Link
-    href="/schedule"
-    style={{
-      textDecoration: "none",
-      background: "rgba(15,23,42,0.88)",
-      color: "#FFFFFF",
-      borderRadius: "14px",
-      minHeight: "30px",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontWeight: 800,
-      fontSize: "0.92rem",
-      border: "1px solid rgba(255,255,255,0.10)",
-      width: "48%",
-    }}
-  >
-    Full schedule
-  </Link>
 </div>
   </div>
 </aside>
@@ -1590,64 +1465,54 @@ gridTemplateColumns: "1fr 1fr",
             className="homepageSectionHeaderInline"
             style={{
               display: "flex",
-              alignItems: "baseline",
-              gap: "0.7rem",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "1rem",
               marginBottom: "0.55rem",
               flexWrap: "wrap",
             }}
           >
-            <h2 style={{ fontSize: "1.35rem", margin: 0 }}>
-              Upcoming matches
-            </h2>
-            <p style={{ color: "#94A3B8", margin: 0 }}>
-              Selected upcoming fixtures. Use Schedule for the full list.
-            </p>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                gap: "0.7rem",
+                flexWrap: "wrap",
+              }}
+            >
+              <h2 style={{ fontSize: "1.35rem", margin: 0 }}>
+                Upcoming matches
+              </h2>
+              <p style={{ color: "#94A3B8", margin: 0 }}>
+                Selected upcoming fixtures. Use Schedule for the full list.
+              </p>
+            </div>
+
+            <Link
+              href="/schedule"
+              style={{
+                color: "#3B82F6",
+                textDecoration: "none",
+                fontSize: "0.82rem",
+                fontWeight: 850,
+                whiteSpace: "nowrap",
+              }}
+            >
+              See all upcoming matches →
+            </Link>
           </div>
 
-          <div style={{ position: "relative" }}>
-   <div
-  ref={upcomingCarouselRef}
-  className="homepageMatchesCarousel"
-  onPointerDown={startUpcomingDrag}
-  onPointerMove={moveUpcomingDrag}
-  onPointerUp={stopUpcomingDrag}
-  onPointerCancel={stopUpcomingDrag}
-  onLostPointerCapture={stopUpcomingDrag}
-  onClickCapture={preventUpcomingClickAfterDrag}
-  onDragStart={preventUpcomingNativeDrag}
-     style={{
-  display: "flex",
-  gap: "0.75rem",
-  overflowX: "auto",
-  scrollBehavior: "auto",
-  paddingBottom: "0.35rem",
-  paddingRight: "1rem",
-  scrollbarWidth: "none",
-  msOverflowStyle: "none",
-  cursor: "grab",
-  userSelect: "none",
-  touchAction: "pan-y",
-  maskImage:
-    "linear-gradient(to right, transparent 0px, black 38px, black calc(100% - 38px), transparent 100%)",
-  WebkitMaskImage:
-    "linear-gradient(to right, transparent 0px, black 38px, black calc(100% - 38px), transparent 100%)",
-}}
-            >
-              {visibleUpcomingMatches.map((match) => (
-                <div
-                  key={match.slug}
-                  style={{
-                    flexGrow: 0,
-                    flexShrink: 0,
-                    flexBasis: "calc((100% - 2.25rem) / 4)",
-                    minWidth: "0",
-                    maxWidth: "calc((100% - 2.25rem) / 4)",
-                  }}
-                >
-                  <SmallMatchCard match={match} />
-                </div>
-              ))}
-            </div>
+          <div
+            className="homepageUpcomingGrid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+              gap: "0.75rem",
+            }}
+          >
+            {visibleUpcomingMatches.map((match) => (
+              <SmallMatchCard key={match.slug} match={match} />
+            ))}
           </div>
         </div>
       </section>
@@ -1658,64 +1523,54 @@ gridTemplateColumns: "1fr 1fr",
             className="homepageSectionHeaderInline"
             style={{
               display: "flex",
-              alignItems: "baseline",
-              gap: "0.7rem",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "1rem",
               marginBottom: "0.45rem",
               flexWrap: "wrap",
             }}
           >
-            <h2 style={{ fontSize: "1.35rem", margin: 0 }}>
-              Broadcasters by country
-            </h2>
-            <p style={{ color: "#94A3B8", margin: 0 }}>
-              Quick access to official broadcast information by country.
-            </p>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                gap: "0.7rem",
+                flexWrap: "wrap",
+              }}
+            >
+              <h2 style={{ fontSize: "1.35rem", margin: 0 }}>
+                Broadcasters by country
+              </h2>
+              <p style={{ color: "#94A3B8", margin: 0 }}>
+                Quick access to official broadcast information by country.
+              </p>
+            </div>
+
+            <Link
+              href="/country"
+              style={{
+                color: "#3B82F6",
+                textDecoration: "none",
+                fontSize: "0.82rem",
+                fontWeight: 850,
+                whiteSpace: "nowrap",
+              }}
+            >
+              See all countries →
+            </Link>
           </div>
 
-          <div style={{ position: "relative" }}>
-<div
-  ref={countriesCarouselRef}
-  className="homepageCountriesCarousel"
-  onPointerDown={startCountriesDrag}
-  onPointerMove={moveCountriesDrag}
-  onPointerUp={stopCountriesDrag}
-  onPointerCancel={stopCountriesDrag}
-  onLostPointerCapture={stopCountriesDrag}
-  onClickCapture={preventCountriesClickAfterDrag}
-  onDragStart={preventCountriesNativeDrag}
-style={{
-  display: "flex",
-  gap: "0.75rem",
-  overflowX: "auto",
-  scrollBehavior: "auto",
-  paddingBottom: "0.35rem",
-  paddingRight: "1rem",
-  scrollbarWidth: "none",
-  msOverflowStyle: "none",
-  cursor: "grab",
-  userSelect: "none",
-  touchAction: "pan-y",
-  maskImage:
-    "linear-gradient(to right, transparent 0px, black 38px, black calc(100% - 38px), transparent 100%)",
-  WebkitMaskImage:
-    "linear-gradient(to right, transparent 0px, black 38px, black calc(100% - 38px), transparent 100%)",
-}}
-            >
-              {countryBroadcasts.map((country) => (
-                <div
-                  key={country.countryCode}
-                  style={{
-                    flexGrow: 0,
-                    flexShrink: 0,
-                    flexBasis: "calc((100% - 3.25rem) / 6)",
-                    minWidth: "0",
-                    maxWidth: "calc((100% - 3.25rem) / 6)",
-                  }}
-                >
-                  <CountryBroadcastCard country={country} />
-                </div>
-              ))}
-            </div>
+          <div
+            className="homepageCountriesGrid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
+              gap: "0.75rem",
+            }}
+          >
+            {visibleCountryBroadcasts.map((country) => (
+              <CountryBroadcastCard key={country.countryCode} country={country} />
+            ))}
           </div>
         </div>
       </section>
@@ -1755,7 +1610,7 @@ style={{
                 ⊞
               </span>
               <h2 style={{ fontSize: "1.35rem", margin: 0 }}>
-                Free matches today
+                Next free matches
               </h2>
             </div>
 
@@ -1895,33 +1750,9 @@ overflow: "visible",
       <section style={{ padding: "0 1rem 3rem" }}></section>
 
       <style jsx>{`
-      
-        .homepageMatchesCarousel {
-          margin-right: -1rem;
-          padding-right: 1rem;
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-
-        .homepageMatchesCarousel::-webkit-scrollbar {
-          display: none;
-        }
-
-        .homepageCountriesCarousel {
-          margin-right: -1rem;
-          padding-right: 1rem;
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-
-        .homepageCountriesCarousel::-webkit-scrollbar {
-          display: none;
-        }
-
         .homepageFreeMatchesToday a:hover {
           background: rgba(59, 130, 246, 0.06);
         }
-
 
         @media (max-width: 980px) {
           .homepageTrustCapsules {
@@ -1933,34 +1764,36 @@ overflow: "visible",
             padding-right: 0 !important;
           }
 
-          .homepageMatchesCarousel > div {
-            flex-basis: calc((100% - 0.75rem) / 2) !important;
-            max-width: calc((100% - 0.75rem) / 2) !important;
+          .homepageUpcomingGrid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
           }
 
-          .homepageCountriesCarousel > div {
-            flex-basis: calc((100% - 1.3rem) / 3) !important;
-            max-width: calc((100% - 1.3rem) / 3) !important;
+          .homepageCountriesGrid {
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
           }
-        }
 
-        @media (max-width: 980px) {
+          .homepageCountriesGrid > a:nth-child(n + 4) {
+            display: none !important;
+          }
+
           .homepageFreeMatchesToday a {
-            grid-template-columns: 62px minmax(115px, 1fr) 28px minmax(
+            grid-template-columns: 62px minmax(115px, 1fr) 32px 40px 32px minmax(
                 115px,
                 1fr
               ) 62px !important;
-gap: 0.28rem !important;
+            gap: 0.28rem !important;
             padding: 0.6rem 0.7rem !important;
           }
 
-          .homepageFreeMatchesToday a > span:nth-child(6),
-          .homepageFreeMatchesToday a > div:nth-child(7) {
+          .homepageFreeMatchesToday a > span:nth-child(8),
+          .homepageFreeMatchesToday a > div:nth-child(9) {
             display: none !important;
           }
-.homepageHeroStats > div {
-  column-gap: 0.38rem !important;
-}
+
+          .homepageHeroStats > div {
+            column-gap: 0.38rem !important;
+          }
+
           .homepageHeader {
             grid-template-columns: 1fr !important;
           }
@@ -1978,33 +1811,39 @@ gap: 0.28rem !important;
           }
         }
 
+        @media (max-width: 767px) {
+          .homepageFreeMatchesTodaySection {
+            display: none !important;
+          }
 
-@media (max-width: 767px) {
-  .homepageFreeMatchesTodaySection {
-    display: none !important;
-  }
-.homepageHeroStats {
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  gap: 0.45rem !important;
-}
+          .homepageUpcomingGrid > a:nth-child(n + 3) {
+            display: none !important;
+          }
 
-.homepageHeroStats > div {
-  min-width: 0 !important;
-}
+          .homepageHeroStats {
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+            gap: 0.45rem !important;
+          }
 
-.homepageHeroStats span,
-.homepageHeroStats div {
-  font-size: clamp(0.68rem, 2vw, 0.82rem) !important;
-}
-  .homepageHeroStats > div:nth-child(3) {
-  letter-spacing: -0.03em;
-}
-  .homepageHeroStats svg {
-  width: 16px !important;
-  height: 16px !important;
-  flex-shrink: 0 !important;
-}
-}
+          .homepageHeroStats > div {
+            min-width: 0 !important;
+          }
+
+          .homepageHeroStats span,
+          .homepageHeroStats div {
+            font-size: clamp(0.68rem, 2vw, 0.82rem) !important;
+          }
+
+          .homepageHeroStats > div:nth-child(3) {
+            letter-spacing: -0.03em;
+          }
+
+          .homepageHeroStats svg {
+            width: 16px !important;
+            height: 16px !important;
+            flex-shrink: 0 !important;
+          }
+        }
 
         @media (max-width: 640px) {
           .homepageHeroTitle {

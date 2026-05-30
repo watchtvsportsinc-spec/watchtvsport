@@ -23,6 +23,7 @@ type SafeBroadcastInfo = {
 type SafeMatchData = MatchData & {
   slug: string;
   group: string;
+  stage?: string;
   matchDate: string;
   competition?: string;
 };
@@ -114,6 +115,63 @@ function getTeamFlagEmoji(team: MatchData["homeTeam"]): string {
   return flagsByTeamName[teamName] ?? "🏳️";
 }
 
+function getTeamCode(team: MatchData["homeTeam"]): string {
+  const teamName = getTeamName(team);
+
+  const codesByTeamName: Record<string, string> = {
+    Algeria: "DZ",
+    Argentina: "AR",
+    Australia: "AU",
+    Austria: "AT",
+    Belgium: "BE",
+    "Bosnia and Herzegovina": "BA",
+    Brazil: "BR",
+    Canada: "CA",
+    "Cabo Verde": "CV",
+    Colombia: "CO",
+    "Congo DR": "CD",
+    Croatia: "HR",
+    Curaçao: "CW",
+    Czechia: "CZ",
+    Ecuador: "EC",
+    Egypt: "EG",
+    England: "EN",
+    France: "FR",
+    Germany: "DE",
+    Ghana: "GH",
+    Haiti: "HT",
+    "IR Iran": "IR",
+    Iraq: "IQ",
+    Japan: "JP",
+    Jordan: "JO",
+    "Korea Republic": "KR",
+    Mexico: "MX",
+    Morocco: "MA",
+    Netherlands: "NL",
+    "New Zealand": "NZ",
+    Norway: "NO",
+    Panama: "PA",
+    Paraguay: "PY",
+    Portugal: "PT",
+    Qatar: "QA",
+    "Saudi Arabia": "SA",
+    Scotland: "SC",
+    Senegal: "SN",
+    "South Africa": "ZA",
+    Spain: "ES",
+    Sweden: "SE",
+    Switzerland: "CH",
+    Tunisia: "TN",
+    Türkiye: "TR",
+    Uruguay: "UY",
+    USA: "US",
+    Uzbekistan: "UZ",
+    "Côte d'Ivoire": "CI",
+  };
+
+  return codesByTeamName[teamName] ?? teamName.slice(0, 2).toUpperCase();
+}
+
 function ensureMatch(match: MatchData): SafeMatchData {
   return {
     ...match,
@@ -180,7 +238,11 @@ function getSafeBroadcasts(match: MatchData): SafeBroadcastInfo[] {
     .filter((item): item is SafeBroadcastInfo => item !== null);
 }
 
-function formatStage(group: string): string {
+function formatStage(group: string, stage?: string): string {
+  if (stage && stage !== "Group Stage") {
+    return stage;
+  }
+
   switch (group) {
     case "R32":
       return "Round of 32";
@@ -192,7 +254,7 @@ function formatStage(group: string): string {
       return "Semi-finals";
     case "3P":
       return "Third-place match";
-    case "F":
+    case "FINAL":
       return "Final";
     default:
       return `Group ${group}`;
@@ -434,18 +496,30 @@ export default async function CountryPage({ params }: PageProps) {
 
       <div
         style={{
-          maxWidth: "1100px",
+          maxWidth: "1180px",
           margin: "0 auto",
         }}
       >
         <div
+          className="countryHeroCard"
           style={{
-            background: "#0B1A33",
-            border: "1px solid rgba(59,130,246,0.22)",
-            borderRadius: "20px",
-            padding: "1.25rem",
-            marginBottom: "1rem",
+            position: "relative",
+            overflow: "hidden",
+            minHeight: "100px",
+            backgroundImage:
+              'linear-gradient(180deg, rgba(11,18,32,0.48), rgba(11,18,32,0.96)), url("/stadium-bg.jpg")',
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            border: "1px solid rgba(59,130,246,0.24)",
+            borderRadius: "22px",
+   padding: "1.45rem 1.5rem",
+            marginBottom: "1.35rem",
             textAlign: "center",
+            boxShadow:
+              "0 22px 70px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.06)",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
           }}
         >
           <div
@@ -484,31 +558,44 @@ export default async function CountryPage({ params }: PageProps) {
             </span>
           </div>
 
-          <h1
-            style={{
-              fontSize: "clamp(1.65rem, 5vw, 2.25rem)",
-              lineHeight: 1.1,
-              margin: 0,
-              marginBottom: "0.55rem",
-            }}
-          >
-            Where to watch FIFA World Cup in {countryName}{" "}
-            <span aria-hidden="true">{countryFlag}</span>
-          </h1>
+         <h1
+  className="countryHeroTitle"
+  style={{
+    fontSize: "clamp(2.25rem, 5.4vw, 3.65rem)",
+    lineHeight: 1.02,
+    margin: 0,
+    marginBottom: "1.05rem",
+    letterSpacing: "-0.055em",
+  }}
+>
+  Where to watch FIFA World Cup in {countryName}{" "}
+  <span
+    aria-hidden="true"
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      marginLeft: "0.55rem",
+      fontSize: "0.92em",
+      verticalAlign: "-0.05em",
+      filter: "drop-shadow(0 10px 18px rgba(0,0,0,0.42))",
+    }}
+  >
+    {countryFlag}
+  </span>
+</h1>
 
-          <p
-            style={{
-              color: "#CBD5E1",
-              fontSize: "0.98rem",
-              lineHeight: 1.55,
-              maxWidth: "760px",
-              margin: "0 auto 1rem",
-            }}
-          >
-            Find official TV channels and legal viewing options for FIFA World Cup
-            matches in {countryName}.
-          </p>
-
+<p
+  style={{
+    color: "#CBD5E1",
+    fontSize: "1.12rem",
+    lineHeight: 1.62,
+    maxWidth: "820px",
+    margin: "0 auto 1.6rem",
+  }}
+>
+  Find official TV channels and legal viewing options for FIFA World Cup
+  matches in {countryName}.
+</p>
           <div
             style={{
               display: "flex",
@@ -521,7 +608,7 @@ export default async function CountryPage({ params }: PageProps) {
           >
             <span
               style={{
-                padding: "0.35rem 0.65rem",
+                padding: "0.44rem 0.78rem",
                 borderRadius: "999px",
                 background: "rgba(255,255,255,0.05)",
                 border: "1px solid rgba(255,255,255,0.08)",
@@ -533,7 +620,7 @@ export default async function CountryPage({ params }: PageProps) {
 
             <span
               style={{
-                padding: "0.35rem 0.65rem",
+                padding: "0.44rem 0.78rem",
                 borderRadius: "999px",
                 background: "rgba(34,197,94,0.12)",
                 border: "1px solid rgba(34,197,94,0.18)",
@@ -545,7 +632,7 @@ export default async function CountryPage({ params }: PageProps) {
 
             <span
               style={{
-                padding: "0.35rem 0.65rem",
+                padding: "0.44rem 0.78rem",
                 borderRadius: "999px",
                 background: "rgba(245,158,11,0.12)",
                 border: "1px solid rgba(245,158,11,0.18)",
@@ -557,7 +644,7 @@ export default async function CountryPage({ params }: PageProps) {
 
             <span
               style={{
-                padding: "0.35rem 0.65rem",
+                padding: "0.44rem 0.78rem",
                 borderRadius: "999px",
                 background: "rgba(255,255,255,0.05)",
                 border: "1px solid rgba(255,255,255,0.08)",
@@ -575,32 +662,40 @@ export default async function CountryPage({ params }: PageProps) {
 
         <div
           style={{
-            background: "#111827",
-            border: "1px solid rgba(59,130,246,0.22)",
+            background:
+              "linear-gradient(180deg, rgba(17,24,39,0.98), rgba(15,23,42,0.98))",
+            border: "1px solid rgba(59,130,246,0.20)",
             borderRadius: "16px",
-            padding: "0.45rem 0.55rem",
+            padding: "0.65rem",
             display: "flex",
-            gap: "0.45rem",
+            gap: "0.5rem",
             flexWrap: "wrap",
             marginBottom: "1.5rem",
+            boxShadow: "0 14px 34px rgba(0,0,0,0.22)",
           }}
         >
           {otherCountries.map((item) => (
             <Link
               key={item.code}
               href={`/country/${item.code}`}
+              className="countryChip"
               style={{
                 textDecoration: "none",
                 color: "#FFFFFF",
-                padding: "0.22rem 0.5rem",
+                padding: "0.48rem 0.72rem",
                 borderRadius: "999px",
-                background: "rgba(59,130,246,0.12)",
-                border: "1px solid rgba(59,130,246,0.28)",
-                fontWeight: 800,
-                fontSize: "0.74rem",
+                background:
+                  "linear-gradient(180deg, rgba(59,130,246,0.16), rgba(15,23,42,0.72))",
+                border: "1px solid rgba(59,130,246,0.26)",
+                fontWeight: 850,
+                fontSize: "0.82rem",
+                letterSpacing: "-0.01em",
+                lineHeight: 1,
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
               }}
             >
-              <span aria-hidden="true">{getFlagEmoji(item.code)}</span> {item.name}
+              <span className="countryChipName">{item.name}</span>
+              <span className="countryChipCode">{item.code.toUpperCase()}</span>
             </Link>
           ))}
         </div>
@@ -714,6 +809,8 @@ export default async function CountryPage({ params }: PageProps) {
           {countryMatches.map((item) => {
             const homeTeam = getTeamName(item.match.homeTeam);
             const awayTeam = getTeamName(item.match.awayTeam);
+            const homeCode = getTeamCode(item.match.homeTeam);
+            const awayCode = getTeamCode(item.match.awayTeam);
             const homeFlag = getTeamFlagEmoji(item.match.homeTeam);
             const awayFlag = getTeamFlagEmoji(item.match.awayTeam);
             const featuredBroadcast = getFeaturedBroadcast(item.broadcasts);
@@ -747,7 +844,7 @@ export default async function CountryPage({ params }: PageProps) {
                     lineHeight: 1.1,
                   }}
                 >
-                  <span>{formatStage(item.match.group)}</span>
+                  <span>{formatStage(item.match.group, item.match.stage)}</span>
                   <span style={{ color: "#64748B" }}>•</span>
                   <MatchStatusBadge matchDate={item.match.matchDate} />
                 </div>
@@ -761,8 +858,14 @@ export default async function CountryPage({ params }: PageProps) {
                     minWidth: 0,
                   }}
                 >
-                  <span aria-hidden="true">{homeFlag}</span> {homeTeam} vs {awayTeam}{" "}
-                  <span aria-hidden="true">{awayFlag}</span>
+                  <span className="matchTeamFull">
+                    <span aria-hidden="true">{homeFlag}</span> {homeTeam} vs {awayTeam}{" "}
+                    <span aria-hidden="true">{awayFlag}</span>
+                  </span>
+                  <span className="matchTeamCode">
+                    <span aria-hidden="true">{homeFlag}</span> {homeCode} vs {awayCode}{" "}
+                    <span aria-hidden="true">{awayFlag}</span>
+                  </span>
                 </div>
 
                 <div
@@ -878,6 +981,53 @@ export default async function CountryPage({ params }: PageProps) {
           recommendations. Information is provided for legal viewing options only.
         </div>
       </div>
+            <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            .countryChipCode {
+              display: none;
+            }
+
+            .matchTeamCode {
+              display: none;
+            }
+
+            @media (max-width: 768px) {
+              .countryHeroCard {
+                min-height: 60px !important;
+                padding: 0.4rem 1.05rem !important;
+              }
+
+              .countryHeroTitle {
+                font-size: 2rem !important;
+                line-height: 1.08 !important;
+              }
+
+              .countryChip {
+                justify-content: center;
+                text-align: center;
+              }
+
+              .countryChipName {
+                display: inline;
+              }
+
+              .countryChipCode {
+                display: none;
+              }
+
+              .matchTeamFull {
+                display: none;
+              }
+
+              .matchTeamCode {
+                display: inline;
+                letter-spacing: 0.02em;
+              }
+            }
+          `,
+        }}
+      />
     </main>
   );
 }

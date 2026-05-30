@@ -317,12 +317,13 @@ export default async function WatchCountryPage({ params, searchParams }: PagePro
             marginBottom: "0.75rem",
             boxShadow:
               "0 18px 40px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.04)",
+              textAlign: "center",
           }}
         >
           <div
             style={{
               display: "grid",
-gridTemplateColumns: "160px 120px 160px",
+gridTemplateColumns: "1fr auto 1fr",
               alignItems: "start",
               gap: "10px",
               marginBottom: "0.45rem",
@@ -355,7 +356,8 @@ gridTemplateColumns: "160px 120px 160px",
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  minWidth: "160px",
+minWidth: 0,
+width: "100%",
                 }}
                 flagStyle={{
                   width: "62px",
@@ -471,7 +473,8 @@ gridTemplateColumns: "160px 120px 160px",
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-minWidth: "160px",
+minWidth: 0,
+width: "100%",
                 }}
                 flagStyle={{
                   width: "62px",
@@ -535,361 +538,17 @@ minWidth: "160px",
     marginBottom: "0.9rem",
   }}
 >
-  <h1
-    style={{
-      fontSize: "1.15rem",
-      fontWeight: 800,
-      lineHeight: 1.2,
-      margin: 0,
-      color: "#FFFFFF",
-    }}
-  >
-    Watch {homeTeam} vs {awayTeam} in {countryName}
-  </h1>
 
-  <p
-    style={{
-      marginTop: "0.28rem",
-      color: "#94A3B8",
-      fontSize: "0.82rem",
-      lineHeight: 1.45,
-      marginBottom: 0,
-    }}
-  >
-    Official broadcasters and legal viewing options.
-  </p>
   <div
   style={{
     marginBottom: "1rem",
   }}
 >
-  <BestOptionCTA
-    broadcaster={
-      localBroadcasts[0]?.broadcaster ||
-      sortedBroadcasts[0]?.broadcaster ||
-      "Official Broadcaster"
-    }
-    country={countryName}
-    url={
-      localBroadcasts[0]?.affiliateUrl ||
-      localBroadcasts[0]?.url ||
-      "#"
-    }
-  />
+
 </div>
 </div>
 
-        <div
-          style={{
-            display: "grid",
-            gap: "0.55rem",
-            marginBottom: "1rem",
-          }}
-        >
-          <div
-            style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: "14px",
-              padding: "0.65rem",
-              display: "grid",
-              gap: "0.5rem",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: "0.6rem",
-                flexWrap: "wrap",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.45rem",
-                  flexWrap: "wrap",
-                }}
-              >
-                <div
-                  style={{
-                    color: "#FFFFFF",
-                    fontSize: "0.82rem",
-                    fontWeight: 800,
-                    lineHeight: 1,
-                  }}
-                >
-                  1. Access
-                </div>
-                <div
-                  style={{
-                    color: "#94A3B8",
-                    fontSize: "0.72rem",
-                    lineHeight: 1,
-                  }}
-                >
-                  Choose free, paid, or both.
-                </div>
-              </div>
-
-              {hasActiveFilters ? (
-                <Link
-                  href={`/watch/${safeMatch.slug}/${countryCode}`}
-                  style={{
-                    textDecoration: "none",
-                    padding: "0.28rem 0.52rem",
-                    borderRadius: "999px",
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    color: "#CBD5E1",
-                    fontSize: "0.72rem",
-                    fontWeight: 700,
-                    lineHeight: 1,
-                  }}
-                >
-                  Clear filters
-                </Link>
-              ) : null}
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                gap: "0.35rem",
-                flexWrap: "wrap",
-                alignItems: "center",
-              }}
-            >
-              {[
-                { value: "free", label: "Free" },
-                { value: "paid", label: "Paid" },
-              ].map((filter) => {
-                const isActive = selectedAccess.includes(filter.value);
-                const nextAccess = toggleFilterValue(selectedAccess, filter.value);
-
-                return (
-                  <Link
-                    key={filter.value}
-                    href={buildFilterHref({
-                      slug: safeMatch.slug,
-                      country: countryCode,
-                      access: nextAccess,
-                      countries: selectedCountries,
-                      languages: selectedLanguages,
-                    })}
-                    style={{
-                      textDecoration: "none",
-                      padding: "0.28rem 0.52rem",
-                      borderRadius: "999px",
-                      background: isActive
-                        ? filter.value === "free"
-                          ? "rgba(34,197,94,0.16)"
-                          : "rgba(245,158,11,0.16)"
-                        : filter.value === "free"
-                          ? "rgba(34,197,94,0.06)"
-                          : "rgba(245,158,11,0.06)",
-                      border: isActive
-                        ? filter.value === "free"
-                          ? "1px solid rgba(34,197,94,0.38)"
-                          : "1px solid rgba(245,158,11,0.38)"
-                        : filter.value === "free"
-                          ? "1px solid rgba(34,197,94,0.16)"
-                          : "1px solid rgba(245,158,11,0.16)",
-                      color: isActive
-                        ? filter.value === "free"
-                          ? "#22C55E"
-                          : "#F59E0B"
-                        : "#CBD5E1",
-                      fontSize: "0.74rem",
-                      fontWeight: 800,
-                      lineHeight: 1,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {filter.label}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-
-          <div
-            style={{
-              background: "rgba(59,130,246,0.055)",
-              border: "1px solid rgba(59,130,246,0.16)",
-              borderRadius: "14px",
-              padding: "0.65rem",
-              display: "grid",
-              gap: "0.5rem",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.45rem",
-                flexWrap: "wrap",
-              }}
-            >
-              <div
-                style={{
-                  color: "#BFDBFE",
-                  fontSize: "0.82rem",
-                  fontWeight: 800,
-                  lineHeight: 1,
-                }}
-              >
-                2. Countries
-              </div>
-              <div
-                style={{
-                  color: "#94A3B8",
-                  fontSize: "0.72rem",
-                  lineHeight: 1,
-                }}
-              >
-                Select one or several countries.
-              </div>
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                gap: "0.35rem",
-                flexWrap: "wrap",
-                alignItems: "center",
-              }}
-            >
-              {uniqueCountries.map((country) => {
-                const isActive = selectedCountries.includes(country.countryCode);
-                const nextCountries = toggleFilterValue(
-                  selectedCountries,
-                  country.countryCode
-                );
-
-                return (
-                  <Link
-                    key={`country-filter-${country.countryCode}`}
-                    href={buildFilterHref({
-                      slug: safeMatch.slug,
-                      country: countryCode,
-                      access: selectedAccess,
-                      countries: nextCountries,
-                      languages: selectedLanguages,
-                    })}
-                    style={{
-                      textDecoration: "none",
-                      padding: "0.28rem 0.5rem",
-                      borderRadius: "999px",
-                      background: isActive
-                        ? "rgba(59,130,246,0.18)"
-                        : "rgba(59,130,246,0.06)",
-                      border: isActive
-                        ? "1px solid rgba(59,130,246,0.42)"
-                        : "1px solid rgba(59,130,246,0.14)",
-                      color: isActive ? "#BFDBFE" : "#CBD5E1",
-                      fontSize: "0.72rem",
-                      fontWeight: 700,
-                      lineHeight: 1,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {country.countryName}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-
-          {availableLanguages.length > 0 ? (
-            <div
-              style={{
-                background: "rgba(168,85,247,0.055)",
-                border: "1px solid rgba(168,85,247,0.16)",
-                borderRadius: "14px",
-                padding: "0.65rem",
-                display: "grid",
-                gap: "0.5rem",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.45rem",
-                  flexWrap: "wrap",
-                }}
-              >
-                <div
-                  style={{
-                    color: "#E9D5FF",
-                    fontSize: "0.82rem",
-                    fontWeight: 800,
-                    lineHeight: 1,
-                  }}
-                >
-                  3. Commentary languages
-                </div>
-                <div
-                  style={{
-                    color: "#94A3B8",
-                    fontSize: "0.72rem",
-                    lineHeight: 1,
-                  }}
-                >
-                  Select one or several languages.
-                </div>
-              </div>
-
-              <div
-                style={{
-                  display: "flex",
-                  gap: "0.35rem",
-                  flexWrap: "wrap",
-                  alignItems: "center",
-                }}
-              >
-                {availableLanguages.map((lang) => {
-                  const isActive = selectedLanguages.includes(lang);
-                  const nextLanguages = toggleFilterValue(selectedLanguages, lang);
-
-                  return (
-                    <Link
-                      key={`language-filter-${lang}`}
-                      href={buildFilterHref({
-                        slug: safeMatch.slug,
-                        country: countryCode,
-                        access: selectedAccess,
-                        countries: selectedCountries,
-                        languages: nextLanguages,
-                      })}
-                      style={{
-                        textDecoration: "none",
-                        padding: "0.28rem 0.5rem",
-                        borderRadius: "999px",
-                        background: isActive
-                          ? "rgba(168,85,247,0.18)"
-                          : "rgba(168,85,247,0.06)",
-                        border: isActive
-                          ? "1px solid rgba(168,85,247,0.42)"
-                          : "1px solid rgba(168,85,247,0.14)",
-                        color: isActive ? "#E9D5FF" : "#CBD5E1",
-                        fontSize: "0.72rem",
-                        fontWeight: 700,
-                        lineHeight: 1,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {lang}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          ) : null}
-        </div>
+        
 
         <SectionTitle>Viewing options</SectionTitle>
 

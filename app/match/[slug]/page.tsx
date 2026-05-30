@@ -333,7 +333,7 @@ minHeight: "unset",
             ? "1px solid rgba(34,197,94,0.18)"
             : "1px solid rgba(245,158,11,0.20)",
         borderRadius: "16px",
-padding: "0.48rem 0.62rem",
+padding: "0.34rem 0.56rem",
         boxShadow: options?.featured
           ? "0 24px 56px rgba(0,0,0,0.34), 0 0 34px rgba(59,130,246,0.14), inset 0 1px 0 rgba(255,255,255,0.08)"
           : "0 18px 38px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.05)",
@@ -341,6 +341,7 @@ padding: "0.48rem 0.62rem",
     >
 
       <div
+        className="premiumBroadcastCardInner"
         style={{
           position: "relative",
           zIndex: 1,
@@ -349,6 +350,7 @@ padding: "0.48rem 0.62rem",
         }}
       >
         <div
+          className="premiumBroadcastTopRow"
           style={{
             display: "flex",
             alignItems: "flex-start",
@@ -356,8 +358,9 @@ padding: "0.48rem 0.62rem",
             gap: "0.55rem",
           }}
         >
-          <div style={{ minWidth: 0, flex: "1 1 auto" }}>
+          <div className="premiumBroadcastMain" style={{ minWidth: 0, flex: "1 1 auto" }}>
             <div
+              className="premiumBroadcastCountryLine"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -365,7 +368,7 @@ padding: "0.48rem 0.62rem",
                 color: "#94A3B8",
                 fontSize: "0.72rem",
                 fontWeight: 800,
-                marginBottom: "0.28rem",
+                marginBottom: "0.12rem",
               }}
             >
               <Image
@@ -394,10 +397,11 @@ padding: "0.48rem 0.62rem",
             </div>
 
             <div
+              className="premiumBroadcastLanguage"
               style={{
                 color: "#CBD5E1",
                 fontSize: "0.76rem",
-                marginTop: "0.2rem",
+                marginTop: "0.08rem",
                 lineHeight: 1.25,
                 whiteSpace: "nowrap",
                 overflow: "hidden",
@@ -409,10 +413,11 @@ padding: "0.48rem 0.62rem",
           </div>
 
           <div
+            className="premiumBroadcastActions"
             style={{
               display: "grid",
               justifyItems: "end",
-              gap: "0.42rem",
+         gap: "0.14rem",
               flexShrink: 0,
             }}
           >
@@ -428,8 +433,8 @@ aria-label="Watch"
                 alignItems: "center",
                 justifyContent: "center",
                 gap: "0.36rem",
-                height: "28px",
-                padding: "0 0.65rem",
+height: "20px",
+padding: "0 0.58rem",
                 borderRadius: "10px",
                 background: options?.featured
                   ? "linear-gradient(180deg, #3B82F6 0%, #1D4ED8 100%)"
@@ -439,7 +444,7 @@ aria-label="Watch"
                   : "1px solid rgba(255,255,255,0.08)",
                 color: "#FFFFFF",
                 textDecoration: "none",
-                fontSize: "0.76rem",
+       fontSize: "0.70rem",
                 fontWeight: 900,
                 whiteSpace: "nowrap",
                 boxShadow: options?.featured
@@ -611,6 +616,10 @@ const sportsEventSchema = {
 }
 
 @media (max-width: 767px) {
+
+.heroBackgroundFlag {
+  display: none !important;
+}
   .matchHeroCard {
     --hero-card-padding: 0.82rem 0.62rem 0.75rem;
     --hero-grid-gap: 0px;
@@ -641,12 +650,26 @@ const sportsEventSchema = {
     padding: 0.55rem 0.45rem !important;
   }
 
-  .premiumFiltersGrid,
-  .premiumOptionsGrid,
-  .premiumOtherFreeGrid,
-  .premiumPaidGrid,
+.premiumFiltersGrid,
+.premiumOptionsGrid,
+.premiumOtherFreeGrid,
+.premiumPaidGrid {
+  grid-template-columns: minmax(0, 1fr) !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+  .premiumFiltersGrid input,
+.premiumFiltersGrid select {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  min-width: 0 !important;
+}
+
   .premiumBroadcasterGrid {
-    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.55rem !important;
   }
 
   .premiumSectionHeader {
@@ -668,6 +691,135 @@ const sportsEventSchema = {
 
   .premiumFilterChipWrap::-webkit-scrollbar {
     display: none !important;
+  }
+
+  .premiumFiltersGrid {
+    gap: 0.38rem !important;
+    margin-bottom: 0.65rem !important;
+    padding: 0.5rem !important;
+    border-radius: 14px !important;
+  }
+
+  .premiumFiltersGrid > div,
+.premiumFiltersGrid > label {
+  gap: 0.18rem !important;
+}
+
+.premiumFiltersGrid a,
+.premiumFiltersGrid button,
+.premiumFiltersGrid input,
+.premiumFiltersGrid select {
+  min-height: 22px !important;
+  height: 22px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+.premiumFiltersGrid input,
+.premiumFiltersGrid select {
+  font-size: 0.90rem !important;
+}
+  border-radius: 8px !important;
+}
+.premiumFiltersGrid select,
+.premiumFiltersGrid select option {
+  font-size: 1rem !important;
+}
+.premiumFilterChipWrap {
+  display: flex !important;
+  justify-content: space-between !important;
+  gap: 0 !important;
+  overflow-x: visible !important;
+}
+
+.premiumFilterChipWrap a {
+  flex: 0 0 28% !important;
+  max-width: 28% !important;
+  min-width: 0 !important;
+  height: 22px !important;
+  min-height: 22px !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.premiumFiltersGrid a {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+  .premiumFiltersGrid input,
+  .premiumFiltersGrid select {
+    padding-left: 0.58rem !important;
+    padding-right: 0.58rem !important;
+  }
+
+  .premiumFiltersGrid button {
+    padding-left: 0.72rem !important;
+    padding-right: 0.72rem !important;
+  }
+
+  .premiumBroadcastCard {
+    padding: 0.34rem 0.46rem !important;
+    border-radius: 14px !important;
+    min-height: 0 !important;
+  }
+
+  .premiumBroadcastCardInner {
+    gap: 0 !important;
+  }
+
+  .premiumBroadcastTopRow {
+    align-items: stretch !important;
+    gap: 0.38rem !important;
+  }
+
+  .premiumBroadcastCountryLine {
+    margin-bottom: 0.1rem !important;
+    font-size: 0.66rem !important;
+    line-height: 1 !important;
+  }
+
+  .premiumBroadcastLanguage {
+    margin-top: 0.05rem !important;
+    font-size: 0.7rem !important;
+    line-height: 1.05 !important;
+  }
+
+  .premiumBroadcastActions {
+    align-self: stretch !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    align-items: flex-end !important;
+    gap: 0.12rem !important;
+  }
+
+  .premiumBroadcastActions > span {
+    transform: translateY(0) !important;
+  }
+
+.premiumBroadcastActions a {
+    height: 18px !important;
+    min-height: 18px !important;
+    padding-left: 0.46rem !important;
+    padding-right: 0.46rem !important;
+    font-size: 0.68rem !important;
+    border-radius: 8px !important;
+  }
+
+  #watch-by-country {
+    margin-top: 0.35rem !important;
+    margin-bottom: 0.32rem !important;
+  }
+
+  #watch-by-country + .watchByCountryChips {
+    gap: 0.35rem !important;
+    margin-bottom: 0.35rem !important;
+  }
+
+  #watch-by-country + .watchByCountryChips a {
+    padding: 0.38rem 0.62rem !important;
+    font-size: 0.78rem !important;
+    line-height: 1 !important;
   }
 
   .matchUpdateNotice {
@@ -722,7 +874,51 @@ const sportsEventSchema = {
               pointerEvents: "none",
             }}
           />
+<Image
+className="heroBackgroundFlag"
+  aria-hidden="true"
+  src={`/flags/${fifaCodeToIso2(safeMatch.homeTeam.code)}.png`}
+  alt=""
+  width={320}
+  height={320}
+style={{
+  position: "absolute",
+  left: "-35px",
+  top: "-20px",
+  width: "420px",
+  height: "420px",
+  borderRadius: "999px",
+  objectFit: "cover",
+  opacity: 0.10,
+  filter: "blur(2px) saturate(1.18) brightness(1.05)",
+  transform: "rotate(-10deg)",
+  pointerEvents: "none",
+  zIndex: 0,
+}}
+/>
 
+<Image
+className="heroBackgroundFlag"
+  aria-hidden="true"
+  src={`/flags/${fifaCodeToIso2(safeMatch.awayTeam.code)}.png`}
+  alt=""
+  width={320}
+  height={320}
+style={{
+  position: "absolute",
+  right: "-35px",
+  top: "-20px",
+  width: "420px",
+  height: "420px",
+  borderRadius: "999px",
+  objectFit: "cover",
+  opacity: 0.10,
+  filter: "blur(2px) saturate(1.18) brightness(1.05)",
+  transform: "rotate(10deg)",
+  pointerEvents: "none",
+  zIndex: 0,
+}}
+/>
           <div
             className="matchHeroGrid"
             style={{
@@ -765,17 +961,16 @@ const sportsEventSchema = {
                   justifyContent: "center",
                   minWidth: "var(--hero-team-min-width, 160px)",
                 }}
-                flagStyle={{
-                  width: "var(--hero-flag-size, 62px)",
-                  height: "var(--hero-flag-size, 62px)",
-                  minWidth: "var(--hero-flag-size, 62px)",
-                  minHeight: "var(--hero-flag-size, 62px)",
-                  borderRadius: "999px",
-                  objectFit: "cover",
-                  background: "#071632",
-                  border: "2px solid rgba(255,255,255,0.78)",
-                  boxShadow: "0 16px 34px rgba(0,0,0,0.34), 0 0 34px rgba(59,130,246,0.18)",
-                }}
+flagStyle={{
+  width: "var(--hero-flag-size, 62px)",
+  height: "var(--hero-flag-size, 62px)",
+  minWidth: "var(--hero-flag-size, 62px)",
+  minHeight: "var(--hero-flag-size, 62px)",
+  borderRadius: "999px",
+  objectFit: "cover",
+  border: "1.5px solid rgba(255,255,255,0.25)",
+  boxShadow: "0 4px 12px rgba(0,0,0,0.18)",
+}}
               />
             </div>
 
@@ -885,17 +1080,16 @@ const sportsEventSchema = {
                   justifyContent: "center",
                   minWidth: "var(--hero-team-min-width, 160px)",
                 }}
-                flagStyle={{
-                  width: "var(--hero-flag-size, 62px)",
-                  height: "var(--hero-flag-size, 62px)",
-                  minWidth: "var(--hero-flag-size, 62px)",
-                  minHeight: "var(--hero-flag-size, 62px)",
-                  borderRadius: "999px",
-                  objectFit: "cover",
-                  background: "#071632",
-                  border: "2px solid rgba(255,255,255,0.78)",
-                  boxShadow: "0 16px 34px rgba(0,0,0,0.34), 0 0 34px rgba(59,130,246,0.18)",
-                }}
+flagStyle={{
+  width: "var(--hero-flag-size, 62px)",
+  height: "var(--hero-flag-size, 62px)",
+  minWidth: "var(--hero-flag-size, 62px)",
+  minHeight: "var(--hero-flag-size, 62px)",
+  borderRadius: "999px",
+  objectFit: "cover",
+  border: "1.5px solid rgba(255,255,255,0.25)",
+  boxShadow: "0 4px 12px rgba(0,0,0,0.18)",
+}}
               />
             </div>
           </div>
@@ -1013,9 +1207,9 @@ const sportsEventSchema = {
 
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-                gap: "0.4rem",
+               display: "flex",
+gap: "0.4rem",
+alignItems: "center",
               }}
             >
               {[
@@ -1041,7 +1235,12 @@ const sportsEventSchema = {
                     style={{
                       textDecoration: "none",
                       textAlign: "center",
-                      padding: "0.56rem 0.68rem",
+height: "40px",
+minHeight: "40px",
+padding: "0 0.68rem",
+display: "inline-flex",
+alignItems: "center",
+justifyContent: "center",
                       borderRadius: "10px",
                       background: isActive
                         ? filter.value === "free"
@@ -1289,6 +1488,7 @@ const sportsEventSchema = {
 </div>
 
         <div
+          className="watchByCountryChips"
           style={{
             display: "flex",
             gap: "0.55rem",
