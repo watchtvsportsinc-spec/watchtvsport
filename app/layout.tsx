@@ -13,7 +13,12 @@ export const metadata: Metadata = {
   },
   description:
     "Find where to watch football matches legally by country. Compare official broadcasters, TV channels, and free or paid viewing options for FIFA World Cup 2026 matches.",
-  applicationName: "WatchTVSport",
+  icons: {
+  icon: "/favicon.ico",
+  shortcut: "/favicon.ico",
+  apple: "/favicon.ico",
+},
+    applicationName: "WatchTVSport",
   keywords: [
     "where to watch football",
     "official broadcasters",
@@ -61,7 +66,7 @@ export default function RootLayout({
     "@type": "Organization",
     name: "WatchTVSport",
     url: "https://watchtvsport.com",
-    logo: "https://watchtvsport.com/logo.png",
+    logo: "https://watchtvsport.com/logo-watchtvsport-V3.png",
     description:
       "WatchTVSport helps users find where to watch football matches legally by country using official broadcaster information only.",
   };
@@ -85,6 +90,14 @@ export default function RootLayout({
           fontFamily: "Inter, system-ui, Arial, sans-serif",
         }}
       >
+        <style>{`
+          @media (max-width: 768px) {
+            .headerLogo {
+              height: 30px !important;
+            }
+          }
+        `}</style>
+
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
@@ -103,90 +116,102 @@ export default function RootLayout({
           }}
         >
           <header
-  style={{
-    position: "sticky",
-    top: 0,
-    zIndex: 20,
-    height: "48px",
-    backdropFilter: "blur(10px)",
-    background: "rgba(11,18,32,0.88)",
-    borderBottom: "1px solid rgba(255,255,255,0.08)",
-  }}
->
-  <div
-    style={{
-      maxWidth: "1100px",
-      height: "48px",
-      margin: "0 auto",
-padding: "0 1rem",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      gap: "1rem",
-      flexWrap: "nowrap",
-    }}
-  >
-    <Link
-      href="/"
-      style={{
-        textDecoration: "none",
-        color: "#FFFFFF",
-        display: "inline-flex",
-        alignItems: "center",
-      }}
-    >
-<Image
-  src="/logo-watchtvsport.png"
-  alt="WatchTVSport logo"
-  width={320}
-  height={60}
-  style={{
-    height: "52px",
-    width: "auto",
-    display: "block",
-    objectFit: "contain",
-    marginTop: "4px",
-  }}
-/>
-    </Link>
+            style={{
+              position: "sticky",
+              top: 0,
+              zIndex: 20,
+              height: "48px",
+              backdropFilter: "blur(10px)",
+              background: "rgba(11,18,32,0.88)",
+              borderBottom: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
+            <div
+              style={{
+                maxWidth: "1100px",
+                height: "48px",
+                margin: "0 auto",
+                padding: "0 1rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "1rem",
+                flexWrap: "nowrap",
+              }}
+            >
+              <Link
+                href="/"
+                style={{
+                  textDecoration: "none",
+                  color: "#FFFFFF",
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
+              >
+                <Image
+                  src="/logo-watchtvsport-v3.png"
+                  alt="WatchTVSport logo"
+                  width={320}
+                  height={60}
+                  unoptimized
+                  className="headerLogo"
+                  style={{
+                    height: "42px",
+                    width: "auto",
+                    display: "block",
+                    objectFit: "contain",
+                  }}
+                />
+              </Link>
 
-    <nav
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "0.75rem",
-        flexWrap: "nowrap",
-      }}
-    >
-      <Link href="/" style={{ textDecoration: "none", color: "#CBD5E1", fontWeight: 600 }}>
-        Home
-      </Link>
+              <nav
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "1rem",
+                  flexWrap: "nowrap",
+                }}
+              >
+                <Link
+                  href="/"
+                  style={{
+                    textDecoration: "none",
+                    color: "#CBD5E1",
+                    fontWeight: 600,
+                  }}
+                >
+                  Home
+                </Link>
 
-<Link
-  href="/schedule#faq"
-  style={{ textDecoration: "none", color: "#CBD5E1", fontWeight: 600 }}
->
-  FAQ
-</Link>
+                <Link
+                  href="/schedule"
+                  style={{
+                    textDecoration: "none",
+                    color: "#CBD5E1",
+                    fontWeight: 600,
+                  }}
+                >
+                  Schedule
+                </Link>
 
-<Link
-  href="/schedule"
-        style={{
-          textDecoration: "none",
-          color: "#FFFFFF",
-          background: "#3B82F6",
-          fontWeight: 700,
-          padding: "0.35rem 0.70rem",
-          borderRadius: "9px",
-          fontSize: "0.9rem",
-          lineHeight: 1,
-        }}
-      >
-        Find your team
-      </Link>
-    </nav>
-  </div>
-</header>
+                <Link
+                  href="/country"
+                  style={{
+                    textDecoration: "none",
+                    color: "#FFFFFF",
+                    background: "#3B82F6",
+                    fontWeight: 700,
+                    padding: "0.35rem 0.70rem",
+                    borderRadius: "9px",
+                    fontSize: "0.9rem",
+                    lineHeight: 1,
+                  }}
+                >
+                  Countries
+                </Link>
+              </nav>
+            </div>
+          </header>
 
           <div style={{ flex: 1 }}>{children}</div>
 
@@ -319,11 +344,11 @@ padding: "0 1rem",
                 <span>© 2026 WatchTVSport</span>
                 <span>Legal viewing information only</span>
               </div>
-                    </div>
-      </footer>
-    </div>
+            </div>
+          </footer>
+        </div>
 
-                   <Analytics />
+        <Analytics />
 
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-2V9H3M35PT"

@@ -103,7 +103,7 @@ export default function CountriesPage() {
         background:
           "radial-gradient(circle at top left, rgba(59,130,246,0.16), transparent 34%), radial-gradient(circle at top right, rgba(34,197,94,0.10), transparent 30%), #0B1220",
         color: "#FFFFFF",
-        padding: "1.15rem 1rem 2.2rem",
+padding: "0.9rem 1.2rem",
       }}
     >
       <style>{`
@@ -127,63 +127,121 @@ export default function CountriesPage() {
           margin: "0 auto",
         }}
       >
-        <div
-          style={{
-            marginBottom: "1rem",
-            border: "1px solid rgba(96,165,250,0.20)",
-            borderRadius: "22px",
-            padding: "1.05rem",
-            background:
-              "linear-gradient(180deg, rgba(15,23,42,0.94), rgba(2,6,23,0.82))",
-            boxShadow:
-              "0 24px 70px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.06)",
-          }}
-        >
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.42rem",
-              marginBottom: "0.55rem",
-              borderRadius: "999px",
-              padding: "0.34rem 0.62rem",
-              background: "rgba(59,130,246,0.13)",
-              border: "1px solid rgba(96,165,250,0.22)",
-              color: "#BFDBFE",
-              fontSize: "0.76rem",
-              fontWeight: 900,
-              lineHeight: 1,
-            }}
-          >
-            Official broadcasters by country
-          </div>
+       <div
+  style={{
+    position: "relative",
+    overflow: "hidden",
+    marginBottom: "1rem",
+    border: "1px solid rgba(96,165,250,0.20)",
+    borderRadius: "22px",
+    minHeight: "150px",
+    padding: "0.7rem 1.2rem",
+backgroundImage:
+  "linear-gradient(rgba(11,18,32,0.38), rgba(11,18,32,0.58)), url('/world-map-hero.png')",
+backgroundSize: "100% auto",
+backgroundPosition: "center center",
+backgroundRepeat: "no-repeat",
+backgroundColor: "#0B1220",
+    boxShadow:
+      "0 24px 70px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.06)",
+  }}
+>
+  <div
+    style={{
+      position: "relative",
+      zIndex: 1,
+      minHeight: "180px",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      textAlign: "center",
+    }}
+  >
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "0.42rem",
+        marginBottom: "0.7rem",
+        borderRadius: "999px",
+        padding: "0.34rem 0.62rem",
+        background: "rgba(59,130,246,0.13)",
+        border: "1px solid rgba(96,165,250,0.22)",
+        color: "#BFDBFE",
+        fontSize: "0.76rem",
+        fontWeight: 900,
+        lineHeight: 1,
+      }}
+    >
+      Official broadcasters by country
+    </div>
 
-          <h1
-            style={{
-              margin: 0,
-              fontSize: "clamp(2rem, 5vw, 3.8rem)",
-              lineHeight: 0.95,
-              letterSpacing: "-0.06em",
-              fontWeight: 1000,
-            }}
-          >
-            Browse countries
-          </h1>
+    <h1
+      style={{
+        margin: 0,
+fontSize: "clamp(1.5rem, 2.4vw, 2.3rem)",
+        lineHeight: 0.92,
+        letterSpacing: "-0.06em",
+        fontWeight: 1000,
+      }}
+    >
+      Browse countries
+    </h1>
 
-          <p
-            style={{
-              maxWidth: "680px",
-              margin: "0.7rem 0 0",
-              color: "#CBD5E1",
-              fontSize: "0.96rem",
-              lineHeight: 1.55,
-              fontWeight: 650,
-            }}
-          >
-            Select a country to see official TV broadcasters, free and paid
-            viewing options, and available matches.
-          </p>
-        </div>
+    <p
+      style={{
+        maxWidth: "700px",
+        margin: "0.55rem auto 0",
+        color: "#CBD5E1",
+        fontSize: "1rem",
+        lineHeight: 1.6,
+        fontWeight: 650,
+      }}
+    >
+      Find official football broadcasters, free and paid viewing options,
+      and available matches by country.
+    </p>
+
+    <div
+      style={{
+        position: "relative",
+        zIndex: 1,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "0.85rem",
+        flexWrap: "wrap",
+        maxWidth: "620px",
+        margin: "0.9rem auto 0",
+        padding: "0.65rem 0.9rem",
+        borderRadius: "999px",
+        background: "rgba(15,23,42,0.68)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        color: "#CBD5E1",
+        fontSize: "0.78rem",
+        fontWeight: 800,
+        lineHeight: 1,
+        backdropFilter: "blur(10px)",
+      }}
+    >
+      <div style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+        <span style={{ color: "#93C5FD", fontSize: "0.88rem" }}>⊚</span>
+        <span>104 Matches</span>
+      </div>
+
+      <div style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+        <span style={{ color: "#22C55E", fontSize: "0.88rem" }}>▣</span>
+        <span>12 Countries</span>
+      </div>
+
+      <div style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+        <span style={{ color: "#F59E0B", fontSize: "0.88rem" }}>▣</span>
+        <span>15 Broadcasters</span>
+      </div>
+    </div>
+  </div>
+</div>
 
         <div className="countriesGrid">
           {countries.map((country) => {

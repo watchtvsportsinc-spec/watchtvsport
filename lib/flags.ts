@@ -40,7 +40,7 @@ export function fifaCodeToIso2(code: string): string {
     POR: "pt",
     QAT: "qa",
     RSA: "za",
-    SCO: "sc",
+    SCO: "gb-sct",
     SEN: "sn",
     SUI: "ch",
     SWE: "se",

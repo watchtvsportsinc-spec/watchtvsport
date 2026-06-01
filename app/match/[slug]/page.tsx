@@ -1428,8 +1428,65 @@ justifyContent: "center",
             </Link>
           ) : null}
         </form>
+<div
+  style={{
+    marginBottom: "1rem",
+    borderRadius: "16px",
+    overflow: "hidden",
+    border: "1px solid rgba(255,255,255,0.08)",
+    boxShadow:
+      "0 18px 42px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.04)",
+  }}
+>
+  <div
+    style={{
+      padding: "0.45rem 0.85rem",
+      background: "rgba(15,23,42,0.95)",
+      color: "#94A3B8",
+      fontSize: "0.72rem",
+      fontWeight: 900,
+      textTransform: "uppercase",
+      letterSpacing: "0.06em",
+    }}
+  >
+    Official Partner • Privacy & Security
+  </div>
 
-        
+  <a
+    href="https://go.nordvpn.net/aff_c?offer_id=15&aff_id=149235&url_id=902"
+    target="_blank"
+    rel="sponsored noopener noreferrer"
+    style={{
+      display: "block",
+      textDecoration: "none",
+    }}
+  >
+    <Image
+      src="/nordvpn-banner.png"
+      alt="NordVPN"
+      width={970}
+      height={250}
+      style={{
+        width: "100%",
+        height: "auto",
+        display: "block",
+      }}
+    />
+  </a>
+
+  <div
+    style={{
+      padding: "0.75rem 0.95rem",
+      background: "rgba(15,23,42,0.95)",
+      color: "#CBD5E1",
+      fontSize: "0.82rem",
+      lineHeight: 1.5,
+      borderTop: "1px solid rgba(255,255,255,0.08)",
+    }}
+  >
+Privacy and security for sports fans on the move.
+  </div>
+</div>
         <div
           style={{
             marginBottom: "1rem",
@@ -1639,6 +1696,43 @@ justifyContent: "center",
           VPN recommendations. Information is provided for legal viewing options
           only.
         </div>
+        <div
+  style={{
+    marginTop: "1rem",
+    display: "flex",
+    justifyContent: "center",
+  }}
+>
+  <a
+    href="https://x.com/watchtvsport"
+    target="_blank"
+    rel="noopener noreferrer"
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "0.55rem",
+      color: "#FFFFFF",
+      textDecoration: "none",
+      fontWeight: 700,
+      padding: "0.65rem 1rem",
+      borderRadius: "999px",
+      background: "rgba(255,255,255,0.05)",
+      border: "1px solid rgba(255,255,255,0.10)",
+    }}
+  >
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M18.901 1H22.58L14.54 10.188L24 23H16.594L10.793 15.227L3.98 23H.299L8.898 13.182L0 1H7.594L12.838 8.097L18.901 1Z" />
+    </svg>
+
+    Follow WatchTVSport on X
+  </a>
+</div>
       </div>
     </main>
   );

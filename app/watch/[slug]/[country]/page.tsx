@@ -265,6 +265,7 @@ export default async function WatchCountryPage({ params, searchParams }: PagePro
     "@type": "SportsEvent",
     name: `${homeTeam} vs ${awayTeam}`,
     startDate: safeMatch.matchDate,
+    endDate: safeMatch.matchDate,
     sport: "Soccer",
     eventStatus: "https://schema.org/EventScheduled",
     location: {

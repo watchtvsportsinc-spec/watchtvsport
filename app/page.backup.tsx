@@ -216,7 +216,7 @@ function getTimeLabel(dateString?: string) {
   }).format(date);
 }
 
-function getTeamFlagCode(teamName: string): string {
+function getTeamFlagCode(teamName: string) {
   const map: Record<string, string> = {
     Algeria: "dz",
     Argentina: "ar",
@@ -226,9 +226,7 @@ function getTeamFlagCode(teamName: string): string {
     "Bosnia and Herzegovina": "ba",
     Brazil: "br",
     Canada: "ca",
-    "Cabo Verde": "cv",
     Colombia: "co",
-    "Congo DR": "cd",
     Croatia: "hr",
     Curaçao: "cw",
     Czechia: "cz",
@@ -239,33 +237,17 @@ function getTeamFlagCode(teamName: string): string {
     Germany: "de",
     Ghana: "gh",
     Haiti: "ht",
-    "IR Iran": "ir",
-    Iraq: "iq",
     Japan: "jp",
-    Jordan: "jo",
-    "Korea Republic": "kr",
     Mexico: "mx",
     Morocco: "ma",
     Netherlands: "nl",
-    "New Zealand": "nz",
-    Norway: "no",
-    Panama: "pa",
     Paraguay: "py",
     Portugal: "pt",
-    Qatar: "qa",
-    "Saudi Arabia": "sa",
-    Scotland: "gb-sct",
     Senegal: "sn",
     "South Africa": "za",
     Spain: "es",
-    Sweden: "se",
     Switzerland: "ch",
-    Tunisia: "tn",
-    Türkiye: "tr",
-    Uruguay: "uy",
     USA: "us",
-    Uzbekistan: "uz",
-    "Côte d'Ivoire": "ci",
   };
 
   return map[teamName] || "";

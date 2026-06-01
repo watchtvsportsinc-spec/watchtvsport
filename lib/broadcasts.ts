@@ -310,22 +310,22 @@ export const broadcastsByCountry: Record<string, BroadcastInfo[]> = {
   ],
 
   pt: [
-    {
-      countryCode: "pt",
-      countryName: "Portugal",
-      broadcaster: "Sport TV",
-      access: "Paid",
-      url: "https://www.sporttv.pt/",
-      sourceName: "Sport TV FIFA World Cup 2026 rights",
-      sourceUrl:
-        "https://www.broadbandtvnews.com/2025/12/05/sport-tv-to-air-all-104-fifa-world-cup-2026-matches-in-portugal/",
-      lastChecked: "2026-05-15",
-      hasFullCoverage: true,
-      coverageType: "full",
-      coverageStatus: "confirmed",
-      notes: "Paid full tournament coverage in Portugal",
-      commentaryLanguages: ["Portuguese"],
-    },
+ {
+  countryCode: "pt",
+  countryName: "Portugal",
+  broadcaster: "RTP1",
+  access: "Free",
+  url: "https://www.rtp.pt/play/",
+  sourceName: "RTP FIFA World Cup coverage",
+  sourceUrl: "https://www.rtp.pt/",
+  lastChecked: "2026-05-30",
+  hasFullCoverage: false,
+  coverageType: "partial",
+  coverageStatus: "to_update",
+  matchSlugs: [],
+  notes: "Selected FIFA World Cup 2026 matches in Portugal",
+  commentaryLanguages: ["Portuguese"],
+},
   ],
 
   se: [
