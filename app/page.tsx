@@ -180,6 +180,7 @@ function getMatchDateLabel(dateString?: string) {
 
   return new Intl.DateTimeFormat("en-US", {
     weekday: "short",
+    timeZone: "UTC",
     month: "short",
     day: "numeric",
     hour: "2-digit",
@@ -195,6 +196,7 @@ function getShortDateLabel(dateString?: string) {
   if (Number.isNaN(date.getTime())) return "TBC";
 
   return new Intl.DateTimeFormat("en-US", {
+    timeZone: "UTC",
     day: "2-digit",
     month: "short",
   })
@@ -210,6 +212,7 @@ function getTimeLabel(dateString?: string) {
   if (Number.isNaN(date.getTime())) return "--:--";
 
   return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "UTC",
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
