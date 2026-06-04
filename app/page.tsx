@@ -1154,7 +1154,7 @@ gridTemplateColumns: "1fr 1fr",
     borderRadius: "24px",
     padding: "0.95rem 1.55rem 0.78rem",
     backgroundImage:
-      "linear-gradient(180deg, rgba(2,6,23,0.18) 0%, rgba(2,6,23,0.54) 48%, rgba(6,78,59,0.36) 100%), url('/hero-stadium-bg.png')",
+      "linear-gradient(180deg, rgba(2,6,23,0.18) 0%, rgba(2,6,23,0.54) 48%, rgba(6,78,59,0.36) 100%), url('/hero-stadium-bg.webp')",
     backgroundSize: "cover",
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",

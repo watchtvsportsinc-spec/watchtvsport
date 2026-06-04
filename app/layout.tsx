@@ -66,7 +66,7 @@ export default function RootLayout({
     "@type": "Organization",
     name: "WatchTVSport",
     url: "https://watchtvsport.com",
-    logo: "https://watchtvsport.com/logo-watchtvsport-V3.png",
+    logo: "https://watchtvsport.com/logo-watchtvsport-v3.webp",
     description:
       "WatchTVSport helps users find where to watch football matches legally by country using official broadcaster information only.",
   };
@@ -149,7 +149,7 @@ export default function RootLayout({
                 }}
               >
                 <Image
-                  src="/logo-watchtvsport-v3.png"
+                  src="/logo-watchtvsport-v3.webp"
                   alt="WatchTVSport logo"
                   width={320}
                   height={60}
