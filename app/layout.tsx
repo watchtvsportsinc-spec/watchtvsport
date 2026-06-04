@@ -66,7 +66,7 @@ export default function RootLayout({
     "@type": "Organization",
     name: "WatchTVSport",
     url: "https://watchtvsport.com",
-    logo: "https://watchtvsport.com/logo-watchtvsport-v3.webp",
+logo: "https://watchtvsport.com/logo-watchtvsport-v3.png",
     description:
       "WatchTVSport helps users find where to watch football matches legally by country using official broadcaster information only.",
   };
@@ -80,23 +80,31 @@ export default function RootLayout({
       "Find where to watch football matches legally by country.",
   };
 
-  return (
-    <html lang="en">
-      <body
-        style={{
-          margin: 0,
-          background: "#0B1220",
-          color: "#FFFFFF",
-          fontFamily: "Inter, system-ui, Arial, sans-serif",
-        }}
-      >
-        <style>{`
-          @media (max-width: 768px) {
-            .headerLogo {
-              height: 30px !important;
-            }
+return (
+  <html lang="en">
+    <head>
+      <link
+        rel="preload"
+        as="image"
+        href="/hero-stadium-bg.webp"
+      />
+    </head>
+
+    <body
+      style={{
+        margin: 0,
+        background: "#0B1220",
+        color: "#FFFFFF",
+        fontFamily: "Inter, system-ui, Arial, sans-serif",
+      }}
+    >
+      <style>{`
+        @media (max-width: 768px) {
+          .headerLogo {
+            height: 30px !important;
           }
-        `}</style>
+        }
+      `}</style>
 
         <script
           type="application/ld+json"
@@ -149,19 +157,18 @@ export default function RootLayout({
                 }}
               >
                 <Image
-                  src="/logo-watchtvsport-v3.webp"
-                  alt="WatchTVSport logo"
-                  width={320}
-                  height={60}
-                  unoptimized
-                  className="headerLogo"
-                  style={{
-                    height: "42px",
-                    width: "auto",
-                    display: "block",
-                    objectFit: "contain",
-                  }}
-                />
+  src="/logo-watchtvsport-v3.png"
+  alt="WatchTVSport logo"
+  width={320}
+  height={60}
+  className="headerLogo"
+  style={{
+    height: "42px",
+    width: "auto",
+    display: "block",
+    objectFit: "contain",
+  }}
+/>
               </Link>
 
               <nav
