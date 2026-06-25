@@ -260,30 +260,51 @@ export default async function WatchCountryPage({ params, searchParams }: PagePro
     selectedCountries.length > 0 ||
     selectedLanguages.length > 0;
 
-  const schema = {
-    "@context": "https://schema.org",
-    "@type": "SportsEvent",
-    name: `${homeTeam} vs ${awayTeam}`,
-    startDate: safeMatch.matchDate,
-    endDate: safeMatch.matchDate,
-    sport: "Soccer",
-    eventStatus: "https://schema.org/EventScheduled",
-    location: {
-      "@type": "Place",
-      name:
-        safeMatch.hostCity && safeMatch.hostCountry
-          ? `${safeMatch.hostCity}, ${safeMatch.hostCountry}`
-          : safeMatch.competition ?? "FIFA World Cup 2026",
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "SportsEvent",
+  name: `${homeTeam} vs ${awayTeam}`,
+  description: `Find official broadcasters and legal viewing options for ${homeTeam} vs ${awayTeam} in ${countryName}. Compare free and paid TV coverage by country on WatchTVSport.`,
+  image: "https://watchtvsport.com/hero-stadium-bg.webp",
+  startDate: safeMatch.matchDate,
+  endDate: safeMatch.matchDate,
+  sport: "Soccer",
+  eventStatus: "https://schema.org/EventScheduled",
+
+  performer: [
+    {
+      "@type": "SportsTeam",
+      name: homeTeam,
     },
-    offers: broadcasts.map((item) => ({
-      "@type": "Offer",
-      name: `${item.broadcaster} in ${item.countryName}`,
-      url: item.affiliateUrl || item.url,
-      category: item.access,
-      areaServed: item.countryName,
-      availability: "https://schema.org/InStock",
-    })),
-  };
+    {
+      "@type": "SportsTeam",
+      name: awayTeam,
+    },
+  ],
+
+  organizer: {
+    "@type": "Organization",
+    name: "FIFA",
+    url: "https://www.fifa.com",
+  },
+
+  location: {
+    "@type": "Place",
+    name:
+      safeMatch.hostCity && safeMatch.hostCountry
+        ? `${safeMatch.hostCity}, ${safeMatch.hostCountry}`
+        : safeMatch.competition ?? "FIFA World Cup 2026",
+  },
+
+  offers: broadcasts.map((item) => ({
+    "@type": "Offer",
+    name: `${item.broadcaster} in ${item.countryName}`,
+    url: item.affiliateUrl || item.url,
+    category: item.access,
+    areaServed: item.countryName,
+    availability: "https://schema.org/InStock",
+  })),
+};
 
   return (
     <main

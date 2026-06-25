@@ -82,13 +82,19 @@ logo: "https://watchtvsport.com/logo-watchtvsport-v3.png",
 
 return (
   <html lang="en">
-    <head>
-      <link
-        rel="preload"
-        as="image"
-        href="/hero-stadium-bg.webp"
-      />
-    </head>
+ <head>
+  <link
+    rel="preload"
+    as="image"
+    href="/hero-stadium-bg.webp"
+  />
+
+  <script
+    async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5316440056832386"
+    crossOrigin="anonymous"
+  />
+</head>
 
     <body
       style={{
@@ -98,13 +104,14 @@ return (
         fontFamily: "Inter, system-ui, Arial, sans-serif",
       }}
     >
-      <style>{`
-        @media (max-width: 768px) {
-          .headerLogo {
-            height: 30px !important;
-          }
-        }
-      `}</style>
+<style>{`
+  @media (max-width: 768px) {
+    .headerLogo {
+      width: 160px !important;
+      height: 30px !important;
+    }
+  }
+`}</style>
 
         <script
           type="application/ld+json"
@@ -156,15 +163,16 @@ return (
                   alignItems: "center",
                 }}
               >
-                <Image
+<Image
   src="/logo-watchtvsport-v3.png"
   alt="WatchTVSport logo"
   width={320}
   height={60}
+  priority
   className="headerLogo"
   style={{
+    width: "224px",
     height: "42px",
-    width: "auto",
     display: "block",
     objectFit: "contain",
   }}
@@ -172,51 +180,46 @@ return (
               </Link>
 
               <nav
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "1rem",
-                  flexWrap: "nowrap",
-                }}
-              >
-                <Link
-                  href="/"
-                  style={{
-                    textDecoration: "none",
-                    color: "#CBD5E1",
-                    fontWeight: 600,
-                  }}
-                >
-                  Home
-                </Link>
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: "1rem",
+    flexWrap: "nowrap",
+  }}
+>
+  <Link
+    href="/"
+    style={{
+      textDecoration: "none",
+      color: "#CBD5E1",
+      fontWeight: 600,
+    }}
+  >
+    Home
+  </Link>
 
-                <Link
-                  href="/schedule"
-                  style={{
-                    textDecoration: "none",
-                    color: "#CBD5E1",
-                    fontWeight: 600,
-                  }}
-                >
-                  Schedule
-                </Link>
+  <Link
+    href="/schedule"
+    style={{
+      textDecoration: "none",
+      color: "#CBD5E1",
+      fontWeight: 600,
+    }}
+  >
+    Schedule
+  </Link>
 
-                <Link
-                  href="/country"
-                  style={{
-                    textDecoration: "none",
-                    color: "#FFFFFF",
-                    background: "#3B82F6",
-                    fontWeight: 700,
-                    padding: "0.35rem 0.70rem",
-                    borderRadius: "9px",
-                    fontSize: "0.9rem",
-                    lineHeight: 1,
-                  }}
-                >
-                  Countries
-                </Link>
-              </nav>
+  <Link
+    href="/country"
+    style={{
+      textDecoration: "none",
+      color: "#CBD5E1",
+      fontWeight: 600,
+    }}
+  >
+    Countries
+  </Link>
+</nav>
             </div>
           </header>
 
@@ -348,8 +351,29 @@ return (
                   flexWrap: "wrap",
                 }}
               >
-                <span>© 2026 WatchTVSport</span>
-                <span>Legal viewing information only</span>
+                <div
+  style={{
+    display: "flex",
+    gap: "1rem",
+    flexWrap: "wrap",
+    alignItems: "center",
+  }}
+>
+  <span>© 2026 WatchTVSport</span>
+
+  <a
+    href="/calendar"
+    style={{
+      color: "#60A5FA",
+      textDecoration: "none",
+      fontWeight: 700,
+    }}
+  >
+    📅 World Cup 2026 Calendar
+  </a>
+</div>
+
+<span>Legal viewing information only</span>
               </div>
             </div>
           </footer>

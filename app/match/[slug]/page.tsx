@@ -159,22 +159,42 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       ? `Find where to watch ${homeTeam} vs ${awayTeam} legally worldwide. Compare official broadcasters, free and paid TV channels by country, including ${freeCount} free option${freeCount > 1 ? "s" : ""} currently listed across ${countryCount} countr${countryCount > 1 ? "ies" : "y"}.`
       : `Find where to watch ${homeTeam} vs ${awayTeam} legally worldwide. Compare official broadcasters and paid TV channels by country.`;
 
+  const ogImage = "https://watchtvsport.com/og-watchtvsport.png";
+
   return {
     title,
     description,
     alternates: {
       canonical: `/match/${safeMatch.slug}`,
     },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+      },
+    },
     openGraph: {
       title,
       description,
       url: `/match/${safeMatch.slug}`,
       type: "website",
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: `${homeTeam} vs ${awayTeam} official broadcasters on WatchTVSport`,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: [ogImage],
     },
   };
 }
@@ -1452,40 +1472,31 @@ justifyContent: "center",
     Official Partner • Privacy & Security
   </div>
 
-  <a
-    href="https://go.nordvpn.net/aff_c?offer_id=15&aff_id=149235&url_id=902"
-    target="_blank"
-    rel="sponsored noopener noreferrer"
-    style={{
-      display: "block",
-      textDecoration: "none",
-    }}
-  >
-    <Image
-      src="/nordvpn-banner.png"
-      alt="NordVPN"
-      width={970}
-      height={250}
+<a
+  href="https://go.nordvpn.net/aff_c?offer_id=15&aff_id=149235&url_id=902"
+  target="_blank"
+  rel="sponsored noopener noreferrer"
+  style={{
+    display: "block",
+    textDecoration: "none",
+  }}
+>
+  <picture>
+    <source
+      media="(max-width: 768px)"
+      srcSet="/nordvpn-banner-mobile.png"
+    />
+    <img
+      src="/nordvpn-banner-desktop.png"
+      alt="Watch World Cup matches with NordVPN and official free broadcasters"
       style={{
         width: "100%",
-        height: "auto",
         display: "block",
       }}
     />
-  </a>
+  </picture>
+</a>
 
-  <div
-    style={{
-      padding: "0.75rem 0.95rem",
-      background: "rgba(15,23,42,0.95)",
-      color: "#CBD5E1",
-      fontSize: "0.82rem",
-      lineHeight: 1.5,
-      borderTop: "1px solid rgba(255,255,255,0.08)",
-    }}
-  >
-Privacy and security for sports fans on the move.
-  </div>
 </div>
         <div
           style={{
@@ -1696,6 +1707,32 @@ Privacy and security for sports fans on the move.
           VPN recommendations. Information is provided for legal viewing options
           only.
         </div>
+        <div
+          style={{
+            marginTop: "1rem",
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <Link
+            href="/calendar"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              color: "#BFDBFE",
+              textDecoration: "none",
+              fontWeight: 800,
+              padding: "0.6rem 0.9rem",
+              borderRadius: "999px",
+              background: "rgba(59,130,246,0.10)",
+              border: "1px solid rgba(96,165,250,0.22)",
+            }}
+          >
+            📅 Free World Cup 2026 Calendar
+          </Link>
+        </div>
+
         <div
   style={{
     marginTop: "1rem",

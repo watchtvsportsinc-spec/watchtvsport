@@ -571,6 +571,8 @@ background: "linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)",
             {featuredMatches.length > 0 ? (
               featuredMatches.map((match, index) => {
                 const stageLabel = formatStage(match.group);
+const finished =
+  new Date(match.matchDate).getTime() + 3 * 60 * 60 * 1000 < Date.now();
                 const currentDayKey = getDayKey(match.matchDate);
                 const previousDayKey =
                   index > 0 ? getDayKey(featuredMatches[index - 1].matchDate) : null;
@@ -617,6 +619,7 @@ background: "linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)",
                         padding: "0.22rem 0.65rem",
                         textDecoration: "none",
                         color: "#FFFFFF",
+                        opacity: finished ? 0.45 : 1,
                         borderTop: isNewDay ? "1px solid rgba(255,255,255,0.04)" : "none",
                         borderRight: "1px solid rgba(255,255,255,0.04)",
                         borderBottom: "1px solid rgba(255,255,255,0.04)",
@@ -869,7 +872,8 @@ background: "linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)",
                   index > 0 ? getDayKey(sortedMatches[index - 1].matchDate) : null;
                 const isNewDay = index === 0 || currentDayKey !== previousDayKey;
                 const stageLabel = formatStage(match.group);
-
+const finished =
+  new Date(match.matchDate).getTime() + 3 * 60 * 60 * 1000 < Date.now();
                 return (
                   <div key={match.slug}>
                     {isNewDay ? (
@@ -910,6 +914,7 @@ background: "linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)",
                         alignItems: "center",
                         padding: "0.22rem 0.65rem",
                         textDecoration: "none",
+                        opacity: finished ? 0.45 : 1,
                         color: "#FFFFFF",
                         borderTop: isNewDay ? "1px solid rgba(255,255,255,0.04)" : "none",
                         borderRight: "1px solid rgba(255,255,255,0.04)",

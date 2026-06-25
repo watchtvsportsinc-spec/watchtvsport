@@ -1,4 +1,5 @@
 import { matches, type MatchData, type BroadcastInfo } from "@/lib/matches";
+import { broadcastsByCountry } from "@/lib/broadcasts";
 
 export type SafeBroadcastInfo = {
   countryCode: string;
@@ -97,9 +98,40 @@ export function normalizeBroadcast(item: BroadcastInfo): SafeBroadcastInfo | nul
 }
 
 export function getSafeBroadcasts(match: MatchData): SafeBroadcastInfo[] {
-  const broadcasts = Array.isArray(match.broadcasts) ? match.broadcasts : [];
+  const matchSlug =
+    typeof match.slug === "string" && match.slug.trim() ? match.slug.trim() : "";
 
-  return broadcasts
+  const embeddedBroadcasts = Array.isArray(match.broadcasts)
+    ? match.broadcasts
+    : [];
+
+  const sourceOfTruthBroadcasts = Object.values(broadcastsByCountry)
+    .flat()
+    .filter((broadcast) => {
+      if (broadcast.hasFullCoverage === true) {
+        return true;
+      }
+
+      return (
+        matchSlug.length > 0 &&
+        Array.isArray(broadcast.matchSlugs) &&
+        broadcast.matchSlugs.includes(matchSlug)
+      );
+    });
+
+  const seen = new Set<string>();
+
+  return [...embeddedBroadcasts, ...sourceOfTruthBroadcasts]
+    .filter((broadcast) => {
+      const key = `${broadcast.countryCode}-${broadcast.broadcaster}-${broadcast.access}`;
+
+      if (seen.has(key)) {
+        return false;
+      }
+
+      seen.add(key);
+      return true;
+    })
     .map((item) => normalizeBroadcast(item))
     .filter((item): item is SafeBroadcastInfo => item !== null);
 }

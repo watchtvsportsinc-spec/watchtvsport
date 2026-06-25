@@ -402,7 +402,7 @@ export const groupStageMatches: RawWorldCupGroupStageMatch[] = [
     matchNumber: 36,
     stage: "Group",
     group: "F",
-    matchDate: "2026-06-20T00:00:00-04:00",
+    matchDate: "2026-06-21T00:00:00-04:00",
     homeTeam: "Tunisia",
     awayTeam: "Japan",
     slug: "tunisia-vs-japan",

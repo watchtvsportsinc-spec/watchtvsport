@@ -1,5 +1,5 @@
 "use client";
-
+import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
 import { matches } from "@/lib/matches";
@@ -180,7 +180,6 @@ function getMatchDateLabel(dateString?: string) {
 
   return new Intl.DateTimeFormat("en-US", {
     weekday: "short",
-    timeZone: "UTC",
     month: "short",
     day: "numeric",
     hour: "2-digit",
@@ -196,7 +195,6 @@ function getShortDateLabel(dateString?: string) {
   if (Number.isNaN(date.getTime())) return "TBC";
 
   return new Intl.DateTimeFormat("en-US", {
-    timeZone: "UTC",
     day: "2-digit",
     month: "short",
   })
@@ -212,7 +210,6 @@ function getTimeLabel(dateString?: string) {
   if (Number.isNaN(date.getTime())) return "--:--";
 
   return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "UTC",
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
@@ -345,7 +342,7 @@ function SmallMatchCard({ match }: { match: Match }) {
             boxShadow: "0 0 18px rgba(59,130,246,0.18)",
           }}
         >
-          {getShortDateLabel(match.matchDate)}
+{getShortDateLabel(match.matchDate)}
         </span>
 
         <span
@@ -899,17 +896,24 @@ function FreeMatchRow({ match }: { match: Match }) {
 }
 
 export default function HomePage() {
-  const sortedMatches = useMemo(() => {
-    return [...matches].sort((a, b) => {
-      const aTime = a.matchDate
-        ? new Date(a.matchDate).getTime()
-        : Number.MAX_SAFE_INTEGER;
-      const bTime = b.matchDate
-        ? new Date(b.matchDate).getTime()
-        : Number.MAX_SAFE_INTEGER;
+const sortedMatches = useMemo(() => {
+  const now = Date.now();
+
+  return [...matches]
+    .filter((match) => {
+      if (!match.matchDate) return false;
+
+      const matchTime = new Date(match.matchDate).getTime();
+
+      return matchTime >= now;
+    })
+    .sort((a, b) => {
+      const aTime = new Date(a.matchDate).getTime();
+      const bTime = new Date(b.matchDate).getTime();
+
       return aTime - bTime;
     });
-  }, []);
+}, []);
 
   const featuredMatch = sortedMatches[0];
   const featuredHomeTeam = getTeamName(featuredMatch.homeTeam);
@@ -957,7 +961,7 @@ export default function HomePage() {
       }
     >();
 
-    sortedMatches.forEach((match) => {
+matches.forEach((match) => {
       match.broadcasts?.forEach((broadcast) => {
         const code = broadcast.countryCode.toLowerCase();
         const existing = byCountry.get(code);
@@ -999,13 +1003,17 @@ export default function HomePage() {
       });
   }, [sortedMatches]);
 
-  const priorityCountryCodes = ["us", "ca", "mx", "fr", "gb", "br"];
+  const priorityCountryCodes = ["us", "mx", "fr", "gb", "br", "au"];
 
   const visibleCountryBroadcasts = priorityCountryCodes
     .map((code) =>
       countryBroadcasts.find((country) => country.countryCode === code),
     )
     .filter(Boolean) as typeof countryBroadcasts;
+    console.log(
+  "Countries found:",
+  visibleCountryBroadcasts.map((c) => c.countryCode),
+);
 
   const freeMatches = sortedMatches
     .filter((match) => match.broadcasts?.some((item) => item.access === "Free"))
@@ -1156,15 +1164,40 @@ gridTemplateColumns: "1fr 1fr",
     border: "1px solid rgba(96,165,250,0.42)",
     borderRadius: "24px",
     padding: "0.95rem 1.55rem 0.78rem",
-    backgroundImage:
-      "linear-gradient(180deg, rgba(2,6,23,0.18) 0%, rgba(2,6,23,0.54) 48%, rgba(6,78,59,0.36) 100%), url('/hero-stadium-bg.webp')",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
+background: "#0B1220",
     boxShadow:
       "0 28px 90px rgba(0,0,0,0.50), 0 0 0 1px rgba(255,255,255,0.035), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 50px rgba(59,130,246,0.16)",
   }}
 >
+  <Image
+    aria-hidden="true"
+    src="/hero-stadium-bg.webp"
+    alt=""
+    fill
+    priority
+    sizes="(max-width: 900px) 100vw, 50vw"
+    style={{
+      objectFit: "cover",
+      objectPosition: "center",
+      zIndex: 0,
+      pointerEvents: "none",
+    }}
+  /><Image
+  aria-hidden="true"
+  src="/hero-stadium-bg.webp"
+  alt=""
+  fill
+  priority
+  sizes="(max-width: 900px) 100vw, 50vw"
+  style={{
+    objectFit: "cover",
+    objectPosition: "center",
+    opacity: 0.32,
+    zIndex: -1,
+    pointerEvents: "none",
+  }}
+/>
+
   <div
     aria-hidden="true"
     style={{
@@ -1476,6 +1509,39 @@ gridTemplateColumns: "1fr 1fr",
 </div>
   </div>
 </aside>
+<div
+  style={{
+    marginTop: "0.85rem",
+    marginBottom: "1rem",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "0.75rem",
+    padding: "0.7rem 1rem",
+    borderRadius: "14px",
+    border: "1px solid rgba(255,255,255,0.08)",
+    background: "rgba(15,23,42,0.65)",
+    color: "#CBD5E1",
+    fontSize: "0.92rem",
+    fontWeight: 700,
+  }}
+>
+  <span>⭐</span>
+
+  <span>
+    Bookmark WatchTVSport for quick access during the World Cup.
+  </span>
+
+  <span
+    style={{
+      color: "#93C5FD",
+      fontWeight: 900,
+      whiteSpace: "nowrap",
+    }}
+  >
+    Ctrl+D / ⌘+D
+  </span>
+</div>
           </div>
         </div>
       </section>
@@ -1537,7 +1603,36 @@ gridTemplateColumns: "1fr 1fr",
           </div>
         </div>
       </section>
-
+<section style={{ padding: "0 1rem 2rem" }}>
+  <a
+    href="https://go.nordvpn.net/aff_c?offer_id=15&aff_id=149235&url_id=902"
+    target="_blank"
+    rel="noopener noreferrer sponsored"
+    style={{
+      display: "block",
+      maxWidth: "1360px",
+      margin: "0 auto",
+      borderRadius: "22px",
+      overflow: "hidden",
+      border: "1px solid rgba(59,130,246,0.35)",
+    }}
+  >
+    <picture>
+      <source
+        media="(max-width: 768px)"
+        srcSet="/nordvpn-banner-mobile.png"
+      />
+     <img
+  src="/nordvpn-banner-desktop.png"
+  alt="NordVPN partner offer"
+  style={{
+    width: "100%",
+    display: "block",
+  }}
+/>
+    </picture>
+  </a>
+</section>
       <section style={{ padding: "0 1rem 1.05rem" }}>
         <div style={{ maxWidth: "1360px", margin: "0 auto" }}>
           <div
@@ -1749,24 +1844,7 @@ overflow: "visible",
         </div>
       </section>
 
-      <section style={{ padding: "0 1rem 2rem" }}>
-        <div
-          style={{
-            maxWidth: "1360px",
-            margin: "0 auto",
-            minHeight: "110px",
-            borderRadius: "22px",
-            border: "1px dashed rgba(255,255,255,0.14)",
-            background: "rgba(255,255,255,0.025)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#64748B",
-          }}
-        >
-          Future premium sponsor placement
-        </div>
-      </section>
+
 
 <section style={{ padding: "0 1rem 3rem" }}>
   <div
@@ -1886,7 +1964,7 @@ overflow: "visible",
         }}
       >
         <a
-          href="https://x.com/watchtvsport"
+          href="https://x.com/watchtvsportcom"
           target="_blank"
           rel="noopener noreferrer"
           style={{
