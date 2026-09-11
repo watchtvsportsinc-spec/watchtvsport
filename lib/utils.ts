@@ -109,36 +109,45 @@ export function getSafeBroadcasts(match: MatchData): SafeBroadcastInfo[] {
 
   const normalizedMatchSlug = normalizeMatchSlugForCompare(matchSlug);
 
+  const isBroadcastAvailableForMatch = (broadcast: BroadcastInfo): boolean => {
+    const coverageType =
+      broadcast.coverageType ??
+      (broadcast.hasFullCoverage === false ? "partial" : "full");
+
+    const isExplicitlyExcluded =
+      normalizedMatchSlug.length > 0 &&
+      Array.isArray(broadcast.excludedMatchSlugs) &&
+      broadcast.excludedMatchSlugs.some(
+        (slug) => normalizeMatchSlugForCompare(slug) === normalizedMatchSlug
+      );
+
+    if (isExplicitlyExcluded) {
+      return false;
+    }
+
+    if (coverageType === "full") {
+      return true;
+    }
+
+    if (normalizedMatchSlug.length === 0) {
+      return false;
+    }
+
+    return (
+      Array.isArray(broadcast.matchSlugs) &&
+      broadcast.matchSlugs.some(
+        (slug) => normalizeMatchSlugForCompare(slug) === normalizedMatchSlug
+      )
+    );
+  };
+
   const embeddedBroadcasts = Array.isArray(match.broadcasts)
-    ? match.broadcasts
+    ? match.broadcasts.filter(isBroadcastAvailableForMatch)
     : [];
 
   const sourceOfTruthBroadcasts = Object.values(broadcastsByCountry)
     .flat()
-    .filter((broadcast) => {
-      const isExplicitlyExcluded =
-        normalizedMatchSlug.length > 0 &&
-        Array.isArray(broadcast.excludedMatchSlugs) &&
-        broadcast.excludedMatchSlugs.some(
-          (slug) => normalizeMatchSlugForCompare(slug) === normalizedMatchSlug
-        );
-
-      if (isExplicitlyExcluded) {
-        return false;
-      }
-
-      if (broadcast.hasFullCoverage === true) {
-        return true;
-      }
-
-      return (
-        normalizedMatchSlug.length > 0 &&
-        Array.isArray(broadcast.matchSlugs) &&
-        broadcast.matchSlugs.some(
-          (slug) => normalizeMatchSlugForCompare(slug) === normalizedMatchSlug
-        )
-      );
-    });
+    .filter(isBroadcastAvailableForMatch);
 
   const seen = new Set<string>();
 
