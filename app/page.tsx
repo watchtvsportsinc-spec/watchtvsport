@@ -915,7 +915,19 @@ const sortedMatches = useMemo(() => {
     });
 }, []);
 
-  const featuredMatch = sortedMatches[0];
+  const latestMatch = useMemo(() => {
+    return [...matches]
+      .filter((match) => Boolean(match.matchDate))
+      .sort((a, b) => {
+        const aTime = new Date(a.matchDate).getTime();
+        const bTime = new Date(b.matchDate).getTime();
+
+        return bTime - aTime;
+      })[0];
+  }, []);
+
+  const featuredMatch = sortedMatches[0] ?? latestMatch;
+
   const featuredHomeTeam = getTeamName(featuredMatch.homeTeam);
   const featuredAwayTeam = getTeamName(featuredMatch.awayTeam);
   const featuredHomeFlag = getTeamFlagCode(featuredHomeTeam);

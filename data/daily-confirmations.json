@@ -1,1 +1,59 @@
-{}
+{
+  "date": "2026-06-11",
+  "matches": [
+    {
+      "home": "Mexico",
+      "away": "South Africa",
+      "confirmedBroadcasters": [
+        {
+          "id": "fox",
+          "channel": "FOX",
+          "country": "US",
+          "source": "https://www.foxsports.com/stories/soccer/2026-world-cup-schedule-all-games-dates-matchups-how-watch"
+        },
+        {
+          "id": "tubi",
+          "channel": "Tubi",
+          "country": "US",
+          "source": "https://worldcuppass.com/2026-fifa-world-cup-tv-schedule-usa/"
+        },
+        {
+          "id": "telemundo",
+          "channel": "Telemundo",
+          "country": "US",
+          "source": "https://worldcuppass.com/2026-fifa-world-cup-tv-schedule-usa/"
+        },
+        {
+          "id": "peacock",
+          "channel": "Peacock",
+          "country": "US",
+          "source": "https://worldcuppass.com/2026-fifa-world-cup-tv-schedule-usa/"
+        }
+      ]
+    },
+    {
+      "home": "South Korea",
+      "away": "Czechia",
+      "confirmedBroadcasters": [
+        {
+          "id": "fs1",
+          "channel": "FS1",
+          "country": "US",
+          "source": "https://worldcuppass.com/2026-fifa-world-cup-tv-schedule-usa/"
+        },
+        {
+          "id": "telemundo",
+          "channel": "Telemundo",
+          "country": "US",
+          "source": "https://worldcuppass.com/2026-fifa-world-cup-tv-schedule-usa/"
+        },
+        {
+          "id": "peacock",
+          "channel": "Peacock",
+          "country": "US",
+          "source": "https://worldcuppass.com/2026-fifa-world-cup-tv-schedule-usa/"
+        }
+      ]
+    }
+  ]
+}

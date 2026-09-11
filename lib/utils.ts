@@ -101,6 +101,14 @@ export function getSafeBroadcasts(match: MatchData): SafeBroadcastInfo[] {
   const matchSlug =
     typeof match.slug === "string" && match.slug.trim() ? match.slug.trim() : "";
 
+  const normalizeMatchSlugForCompare = (slug: string) =>
+    slug
+      .trim()
+      .toLowerCase()
+      .replace("cote-divoire", "cote-d-ivoire");
+
+  const normalizedMatchSlug = normalizeMatchSlugForCompare(matchSlug);
+
   const embeddedBroadcasts = Array.isArray(match.broadcasts)
     ? match.broadcasts
     : [];
@@ -113,9 +121,11 @@ export function getSafeBroadcasts(match: MatchData): SafeBroadcastInfo[] {
       }
 
       return (
-        matchSlug.length > 0 &&
+        normalizedMatchSlug.length > 0 &&
         Array.isArray(broadcast.matchSlugs) &&
-        broadcast.matchSlugs.includes(matchSlug)
+        broadcast.matchSlugs.some(
+          (slug) => normalizeMatchSlugForCompare(slug) === normalizedMatchSlug
+        )
       );
     });
 
@@ -123,7 +133,7 @@ export function getSafeBroadcasts(match: MatchData): SafeBroadcastInfo[] {
 
   return [...embeddedBroadcasts, ...sourceOfTruthBroadcasts]
     .filter((broadcast) => {
-      const key = `${broadcast.countryCode}-${broadcast.broadcaster}-${broadcast.access}`;
+      const key = `${broadcast.countryCode.toLowerCase()}-${broadcast.broadcaster}-${broadcast.access}`;
 
       if (seen.has(key)) {
         return false;

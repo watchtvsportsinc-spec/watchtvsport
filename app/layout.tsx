@@ -14,11 +14,11 @@ export const metadata: Metadata = {
   description:
     "Find where to watch football matches legally by country. Compare official broadcasters, TV channels, and free or paid viewing options for FIFA World Cup 2026 matches.",
   icons: {
-  icon: "/favicon.ico",
-  shortcut: "/favicon.ico",
-  apple: "/favicon.ico",
-},
-    applicationName: "WatchTVSport",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
+  applicationName: "WatchTVSport",
   keywords: [
     "where to watch football",
     "official broadcasters",
@@ -42,12 +42,21 @@ export const metadata: Metadata = {
     description:
       "Compare official football broadcasters by country and see where FIFA World Cup 2026 matches are available for free or paid.",
     url: "/",
+    images: [
+      {
+        url: "https://watchtvsport.com/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "WatchTVSport - Official football broadcasters by country",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "WatchTVSport | Where to Watch Football Matches Legally",
     description:
       "Find official football broadcasters by country and compare legal viewing options worldwide.",
+    images: ["https://watchtvsport.com/og-image.jpg"],
   },
   robots: {
     index: true,
@@ -55,6 +64,8 @@ export const metadata: Metadata = {
   },
   category: "sports",
 };
+
+
 
 export default function RootLayout({
   children,
