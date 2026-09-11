@@ -31,7 +31,9 @@ function isBroadcastAvailableForMatch(
     (broadcast.hasFullCoverage === false ? "partial" : "full");
 
   if (broadcast.excludedMatchSlugs && broadcast.excludedMatchSlugs.length > 0) {
-    return !broadcast.excludedMatchSlugs.includes(matchSlug);
+    if (broadcast.excludedMatchSlugs.includes(matchSlug)) {
+      return false;
+    }
   }
 
   if (coverageType === "full") {

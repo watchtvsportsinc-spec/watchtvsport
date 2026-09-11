@@ -116,6 +116,17 @@ export function getSafeBroadcasts(match: MatchData): SafeBroadcastInfo[] {
   const sourceOfTruthBroadcasts = Object.values(broadcastsByCountry)
     .flat()
     .filter((broadcast) => {
+      const isExplicitlyExcluded =
+        normalizedMatchSlug.length > 0 &&
+        Array.isArray(broadcast.excludedMatchSlugs) &&
+        broadcast.excludedMatchSlugs.some(
+          (slug) => normalizeMatchSlugForCompare(slug) === normalizedMatchSlug
+        );
+
+      if (isExplicitlyExcluded) {
+        return false;
+      }
+
       if (broadcast.hasFullCoverage === true) {
         return true;
       }
