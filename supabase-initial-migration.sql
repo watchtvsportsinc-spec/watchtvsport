@@ -1,4 +1,7 @@
 BEGIN;
+SET LOCAL search_path = public, pg_catalog;
+-- Initial migration only; PostgreSQL 15+, existing Supabase roles required.
+
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
@@ -359,7 +362,7 @@ BEGIN
       RAISE EXCEPTION 'event broadcast right competition mismatch';
     END IF;
 
-    IF v_event.season_id IS NOT NULL AND v_right.season_id IS NOT NULL THEN
+    IF v_right.season_id IS NOT NULL THEN
       IF v_event.season_id IS DISTINCT FROM v_right.season_id THEN
         RAISE EXCEPTION 'event broadcast right season mismatch';
       END IF;
@@ -454,8 +457,7 @@ BEGIN
     WHERE eb.broadcast_right_id = NEW.id
       AND (
         e.competition_id IS DISTINCT FROM NEW.competition_id
-        OR (e.season_id IS NOT NULL AND NEW.season_id IS NOT NULL AND e.season_id IS DISTINCT FROM NEW.season_id)
-        OR (e.season_id IS NOT NULL AND NEW.season_id IS NULL)
+        OR (NEW.season_id IS NOT NULL AND e.season_id IS DISTINCT FROM NEW.season_id)
         OR eb.territory_id IS DISTINCT FROM NEW.territory_id
         OR eb.broadcaster_id IS DISTINCT FROM NEW.broadcaster_id
         OR COALESCE(eb.platform_id::text, '') IS DISTINCT FROM COALESCE(NEW.platform_id::text, '')
@@ -599,5 +601,76 @@ CREATE POLICY no_public_write_platforms ON platforms FOR ALL USING (false) WITH 
 CREATE POLICY no_public_write_languages ON languages FOR ALL USING (false) WITH CHECK (false);
 CREATE POLICY no_public_write_broadcast_rights ON broadcast_rights FOR ALL USING (false) WITH CHECK (false);
 CREATE POLICY no_public_write_event_broadcasts ON event_broadcasts FOR ALL USING (false) WITH CHECK (false);
+
+
+-- Revalidate existing broadcasts when their event changes competition/season.
+CREATE FUNCTION validate_event_broadcasts_on_event_update()
+RETURNS trigger LANGUAGE plpgsql SET search_path = public, pg_catalog AS $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM public.event_broadcasts eb
+    JOIN public.broadcast_rights br ON br.id = eb.broadcast_right_id
+    WHERE eb.event_id = OLD.id AND (
+      NEW.competition_id IS DISTINCT FROM br.competition_id
+      OR (br.season_id IS NOT NULL AND NEW.season_id IS DISTINCT FROM br.season_id)
+    )
+  ) THEN
+    RAISE EXCEPTION USING ERRCODE = '23514',
+      MESSAGE = 'event update conflicts with existing broadcast rights';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+CREATE TRIGGER trg_event_broadcasts_on_event_update
+BEFORE UPDATE OF competition_id, season_id ON public.events
+FOR EACH ROW EXECUTE FUNCTION validate_event_broadcasts_on_event_update();
+
+CREATE FUNCTION validate_participant_sport_on_parent_update()
+RETURNS trigger LANGUAGE plpgsql SET search_path = public, pg_catalog AS $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM public.events e
+    WHERE (e.home_participant_id = OLD.id OR e.away_participant_id = OLD.id)
+      AND e.sport_id IS DISTINCT FROM NEW.sport_id
+  ) THEN
+    RAISE EXCEPTION USING ERRCODE = '23514',
+      MESSAGE = 'participant sport update conflicts with existing events';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+CREATE TRIGGER trg_participant_sport_on_parent_update
+BEFORE UPDATE OF sport_id ON public.participants
+FOR EACH ROW EXECUTE FUNCTION validate_participant_sport_on_parent_update();
+
+-- Explicit privileges on this migration's tables only.
+REVOKE ALL PRIVILEGES ON TABLE public.sports FROM PUBLIC, anon, authenticated;
+REVOKE ALL PRIVILEGES ON TABLE public.competitions FROM PUBLIC, anon, authenticated;
+REVOKE ALL PRIVILEGES ON TABLE public.seasons FROM PUBLIC, anon, authenticated;
+REVOKE ALL PRIVILEGES ON TABLE public.territories FROM PUBLIC, anon, authenticated;
+REVOKE ALL PRIVILEGES ON TABLE public.participant_categories FROM PUBLIC, anon, authenticated;
+REVOKE ALL PRIVILEGES ON TABLE public.participants FROM PUBLIC, anon, authenticated;
+REVOKE ALL PRIVILEGES ON TABLE public.events FROM PUBLIC, anon, authenticated;
+REVOKE ALL PRIVILEGES ON TABLE public.event_urls FROM PUBLIC, anon, authenticated;
+REVOKE ALL PRIVILEGES ON TABLE public.broadcasters FROM PUBLIC, anon, authenticated;
+REVOKE ALL PRIVILEGES ON TABLE public.platforms FROM PUBLIC, anon, authenticated;
+REVOKE ALL PRIVILEGES ON TABLE public.languages FROM PUBLIC, anon, authenticated;
+REVOKE ALL PRIVILEGES ON TABLE public.broadcast_rights FROM PUBLIC, anon, authenticated;
+REVOKE ALL PRIVILEGES ON TABLE public.event_broadcasts FROM PUBLIC, anon, authenticated;
+REVOKE ALL PRIVILEGES ON TABLE public.event_external_ids FROM PUBLIC, anon, authenticated;
+REVOKE ALL PRIVILEGES ON TABLE public.event_updates FROM PUBLIC, anon, authenticated;
+GRANT SELECT ON TABLE public.sports TO anon, authenticated;
+GRANT SELECT ON TABLE public.competitions TO anon, authenticated;
+GRANT SELECT ON TABLE public.seasons TO anon, authenticated;
+GRANT SELECT ON TABLE public.territories TO anon, authenticated;
+GRANT SELECT ON TABLE public.participant_categories TO anon, authenticated;
+GRANT SELECT ON TABLE public.participants TO anon, authenticated;
+GRANT SELECT ON TABLE public.events TO anon, authenticated;
+GRANT SELECT ON TABLE public.event_urls TO anon, authenticated;
+GRANT SELECT ON TABLE public.broadcasters TO anon, authenticated;
+GRANT SELECT ON TABLE public.platforms TO anon, authenticated;
+GRANT SELECT ON TABLE public.languages TO anon, authenticated;
+GRANT SELECT ON TABLE public.broadcast_rights TO anon, authenticated;
+GRANT SELECT ON TABLE public.event_broadcasts TO anon, authenticated;
 
 COMMIT;
