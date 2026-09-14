@@ -103,6 +103,11 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
   const returnTo = safeReturnTo(resolvedSearch.returnTo);
   const homeFavorite = participantFavorite(event.participant1);
   const awayFavorite = participantFavorite(event.participant2);
+  const competitionFavorite: FavoriteCandidate = {
+    kind: "competition",
+    entityId: `${event.sport}:${event.competitionSlug}`,
+    label: `${event.competition} (${event.sport === "football" ? "Football" : event.sport})`,
+  };
   const confirmedBroadcasts = event.broadcasts.filter(
     (broadcast) => broadcast.coverageStatus === "confirmed"
   );
@@ -173,11 +178,12 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
         </div>
 
         <div
-          aria-label="Follow teams"
+          aria-label="Follow teams and competition"
           style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "1rem" }}
         >
           {homeFavorite ? <FavoriteButton favorite={homeFavorite} /> : null}
           {awayFavorite ? <FavoriteButton favorite={awayFavorite} /> : null}
+          <FavoriteButton favorite={competitionFavorite} />
         </div>
       </section>
 
