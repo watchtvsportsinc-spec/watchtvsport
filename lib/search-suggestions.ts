@@ -5,7 +5,7 @@ export type SearchSuggestion = {
   id: string;
   label: string;
   value: string;
-  kind: "Club" | "Nation";
+  kind: "Club" | "Nation" | "Competition";
   href: string;
   searchTerms: string[];
 };
@@ -52,14 +52,13 @@ function participantHref(participant: Participant, sport: string): string {
 
 export function buildSearchSuggestions(events: EventData[]): SearchSuggestion[] {
   const participants = new Map<string, SearchSuggestion>();
+  const competitions = new Map<string, SearchSuggestion>();
 
   for (const event of events) {
     for (const participant of [event.participant1, event.participant2]) {
       if (!participant) continue;
       if (participant.type !== "club" && participant.type !== "national_team") continue;
 
-      // The same organization name may exist in several sports (for example PSG
-      // football and handball), so sport is part of the suggestion identity.
       const participantKey = `${event.sport}:${participant.id}`;
       if (participants.has(participantKey)) continue;
 
@@ -76,9 +75,33 @@ export function buildSearchSuggestions(events: EventData[]): SearchSuggestion[] 
         ]),
       });
     }
+
+    const competitionKey = `${event.sport}:${event.competitionSlug}`;
+    if (!competitions.has(competitionKey)) {
+      const params = new URLSearchParams({
+        view: "all",
+        sport: event.sport,
+        competition: event.competitionSlug,
+      });
+
+      competitions.set(competitionKey, {
+        id: `competition:${competitionKey}`,
+        label: `${event.competition} (${sportLabel(event.sport)})`,
+        value: event.competition,
+        kind: "Competition",
+        href: `/?${params.toString()}`,
+        searchTerms: unique([
+          event.competition,
+          event.competitionSlug.replaceAll("-", " "),
+          event.sport,
+          sportLabel(event.sport),
+        ]),
+      });
+    }
   }
 
-  return Array.from(participants.values()).sort((a, b) =>
-    a.label.localeCompare(b.label)
-  );
+  return [
+    ...Array.from(participants.values()).sort((a, b) => a.label.localeCompare(b.label)),
+    ...Array.from(competitions.values()).sort((a, b) => a.label.localeCompare(b.label)),
+  ];
 }
