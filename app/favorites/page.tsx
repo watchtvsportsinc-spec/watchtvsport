@@ -3,7 +3,7 @@ import FavoritesView from "@/components/FavoritesView";
 
 export const metadata: Metadata = {
   title: "Favorites",
-  description: "Your saved WatchTVSport teams, competitions and events.",
+  description: "Your followed WatchTVSport teams, nations and competitions.",
   robots: { index: false, follow: true },
 };
 
