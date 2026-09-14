@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import FavoriteButton from "@/components/FavoriteButton";
+import { clubSlug } from "@/lib/club-aliases";
 import { getAllEvents, type EventData } from "@/lib/events";
 import type { FavoriteCandidate } from "@/lib/favorites";
 
@@ -43,6 +44,10 @@ function formatEventDate(value: string): string {
     timeZone: "UTC",
     timeZoneName: "short",
   }).format(new Date(value));
+}
+
+function participantLink(name?: string) {
+  return name ? `/football/club/${clubSlug(name)}` : null;
 }
 
 export async function generateStaticParams() {
@@ -132,19 +137,40 @@ export default async function CompetitionPage({ params }: PageProps) {
           </div>
         ) : (
           <div className="v2-event-list">
-            {upcoming.map((event) => (
-              <article className="v2-event-card" key={event.id}>
-                <div className="v2-event-main">
-                  <p className="v2-event-competition">{event.stage ?? name}</p>
-                  <h3>{event.title}</h3>
-                  <p className="v2-event-stage">{formatEventDate(event.eventDate)}</p>
-                </div>
-                <Link className="v2-broadcast-link" href={event.detailPath}>
-                  <span>Event details</span>
-                  <strong>View broadcasters →</strong>
-                </Link>
-              </article>
-            ))}
+            {upcoming.map((event) => {
+              const homeHref = participantLink(event.participant1?.name);
+              const awayHref = participantLink(event.participant2?.name);
+
+              return (
+                <article className="v2-event-card" key={event.id}>
+                  <div className="v2-event-main">
+                    <p className="v2-event-competition">{event.stage ?? name}</p>
+                    <h3>
+                      {homeHref && event.participant1 ? (
+                        <Link href={homeHref}>{event.participant1.name}</Link>
+                      ) : (
+                        event.participant1?.name ?? event.title
+                      )}
+                      {event.participant2 ? (
+                        <>
+                          <span aria-hidden="true"> vs </span>
+                          {awayHref ? (
+                            <Link href={awayHref}>{event.participant2.name}</Link>
+                          ) : (
+                            event.participant2.name
+                          )}
+                        </>
+                      ) : null}
+                    </h3>
+                    <p className="v2-event-stage">{formatEventDate(event.eventDate)}</p>
+                  </div>
+                  <Link className="v2-broadcast-link" href={event.detailPath}>
+                    <span>Event details</span>
+                    <strong>View broadcasters →</strong>
+                  </Link>
+                </article>
+              );
+            })}
           </div>
         )}
       </section>
@@ -158,19 +184,40 @@ export default async function CompetitionPage({ params }: PageProps) {
             </div>
           </div>
           <div className="v2-event-list">
-            {recent.map((event) => (
-              <article className="v2-event-card" key={event.id}>
-                <div className="v2-event-main">
-                  <p className="v2-event-competition">{event.stage ?? name}</p>
-                  <h3>{event.title}</h3>
-                  <p className="v2-event-stage">{formatEventDate(event.eventDate)}</p>
-                </div>
-                <Link className="v2-broadcast-link" href={event.detailPath}>
-                  <span>Event archive</span>
-                  <strong>Open event →</strong>
-                </Link>
-              </article>
-            ))}
+            {recent.map((event) => {
+              const homeHref = participantLink(event.participant1?.name);
+              const awayHref = participantLink(event.participant2?.name);
+
+              return (
+                <article className="v2-event-card" key={event.id}>
+                  <div className="v2-event-main">
+                    <p className="v2-event-competition">{event.stage ?? name}</p>
+                    <h3>
+                      {homeHref && event.participant1 ? (
+                        <Link href={homeHref}>{event.participant1.name}</Link>
+                      ) : (
+                        event.participant1?.name ?? event.title
+                      )}
+                      {event.participant2 ? (
+                        <>
+                          <span aria-hidden="true"> vs </span>
+                          {awayHref ? (
+                            <Link href={awayHref}>{event.participant2.name}</Link>
+                          ) : (
+                            event.participant2.name
+                          )}
+                        </>
+                      ) : null}
+                    </h3>
+                    <p className="v2-event-stage">{formatEventDate(event.eventDate)}</p>
+                  </div>
+                  <Link className="v2-broadcast-link" href={event.detailPath}>
+                    <span>Event archive</span>
+                    <strong>Open event →</strong>
+                  </Link>
+                </article>
+              );
+            })}
           </div>
         </section>
       ) : null}
