@@ -18,6 +18,8 @@ import {
 } from "@/lib/utils";
 import { fifaCodeToIso2 } from "@/lib/flags";
 import LocalTime from "@/components/LocalTime";
+import FavoriteButton from "@/components/FavoriteButton";
+import { mapMatchToEvent } from "@/lib/events";
 
 type PageProps = {
   params: Promise<{
@@ -259,6 +261,7 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
 
   const homeTeam = getTeamName(safeMatch.homeTeam);
   const awayTeam = getTeamName(safeMatch.awayTeam);
+  const favoriteEvent = mapMatchToEvent(safeMatch);
 
   const stageLabel =
     safeMatch.group && safeMatch.group.length === 1
@@ -1211,6 +1214,54 @@ flagStyle={{
             </Link>
           </div>
         </div>
+
+        <section
+          className="v2-match-favorites"
+          aria-label="Save this event or follow related sports"
+        >
+          <strong>Save or follow</strong>
+          <div>
+            <FavoriteButton
+              favorite={{
+                kind: "event",
+                entityId: favoriteEvent.id,
+                label: favoriteEvent.title,
+                event: {
+                  detailPath: favoriteEvent.detailPath,
+                  eventDate: favoriteEvent.eventDate,
+                  sport: favoriteEvent.sport,
+                  competition: favoriteEvent.competition,
+                  participantNames: [homeTeam, awayTeam],
+                },
+              }}
+            />
+            {favoriteEvent.participant1 ? (
+              <FavoriteButton
+                favorite={{
+                  kind: "participant",
+                  entityId: favoriteEvent.participant1.id,
+                  label: favoriteEvent.participant1.name,
+                }}
+              />
+            ) : null}
+            {favoriteEvent.participant2 ? (
+              <FavoriteButton
+                favorite={{
+                  kind: "participant",
+                  entityId: favoriteEvent.participant2.id,
+                  label: favoriteEvent.participant2.name,
+                }}
+              />
+            ) : null}
+            <FavoriteButton
+              favorite={{
+                kind: "competition",
+                entityId: favoriteEvent.competitionSlug,
+                label: favoriteEvent.competition,
+              }}
+            />
+          </div>
+        </section>
 
         <div
           className="matchUpdateNotice"

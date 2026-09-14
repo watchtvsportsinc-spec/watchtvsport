@@ -1,4 +1,9 @@
 import { getAllEvents, type EventData } from "./events";
+import type {
+  FavoriteEventFeed,
+  FavoriteEventSummary,
+  FavoriteLookup,
+} from "./favorites";
 
 export const CALENDAR_PAGE_SIZE = 24;
 
@@ -118,6 +123,38 @@ function getStatusLabel(
   }
 
   return "Scheduled";
+}
+
+function toCalendarEvent(event: EventData, now: Date): CalendarEvent {
+  return {
+    ...event,
+    sportLabel: sportLabel(event.sport),
+    statusLabel: getStatusLabel(event, now),
+    confirmedBroadcastCount: event.broadcasts.filter(isConfirmedBroadcast).length,
+  };
+}
+
+function toFavoriteEventSummary(
+  event: EventData,
+  now: Date
+): FavoriteEventSummary {
+  const calendarEvent = toCalendarEvent(event, now);
+
+  return {
+    id: event.id,
+    detailPath: event.detailPath,
+    title: event.title,
+    sport: event.sport,
+    sportLabel: calendarEvent.sportLabel,
+    competition: event.competition,
+    eventDate: event.eventDate,
+    statusLabel: calendarEvent.statusLabel,
+    participantNames: [
+      event.participant1?.name,
+      event.participant2?.name,
+    ].filter((name): name is string => Boolean(name)),
+    confirmedBroadcastCount: calendarEvent.confirmedBroadcastCount,
+  };
 }
 
 function addDays(dateKey: string, days: number): string {
@@ -251,17 +288,56 @@ export function getCalendarPage(
   return {
     events: filteredEvents
       .slice(offset, offset + CALENDAR_PAGE_SIZE)
-      .map((event) => ({
-        ...event,
-        sportLabel: sportLabel(event.sport),
-        statusLabel: getStatusLabel(event, now),
-        confirmedBroadcastCount: event.broadcasts.filter(isConfirmedBroadcast)
-          .length,
-      })),
+      .map((event) => toCalendarEvent(event, now)),
     total,
     page,
     pageCount,
   };
+}
+
+export function getFavoriteEventFeed(
+  lookup: FavoriteLookup,
+  now = new Date()
+): FavoriteEventFeed {
+  const eventIds = new Set(lookup.eventIds);
+  const participantIds = new Set(lookup.participantIds);
+  const competitionIds = new Set(lookup.competitionIds);
+  const events = allConfirmedEvents();
+
+  const exactEvents = events
+    .filter((event) => eventIds.has(event.id))
+    .sort(
+      (a, b) =>
+        new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
+    )
+    .map((event) => toFavoriteEventSummary(event, now));
+
+  const upcomingEvents = events
+    .filter((event) => {
+      if (eventIds.has(event.id)) return false;
+
+      const followsCompetition = competitionIds.has(event.competitionSlug);
+      const followsParticipant = [event.participant1, event.participant2].some(
+        (participant) => participant && participantIds.has(participant.id)
+      );
+      if (!followsCompetition && !followsParticipant) return false;
+
+      const startTime = new Date(event.eventDate).getTime();
+      return (
+        event.status === "live" ||
+        (event.status !== "finished" &&
+          Number.isFinite(startTime) &&
+          startTime >= now.getTime())
+      );
+    })
+    .sort(
+      (a, b) =>
+        new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
+    )
+    .slice(0, 48)
+    .map((event) => toFavoriteEventSummary(event, now));
+
+  return { exactEvents, upcomingEvents };
 }
 
 export function buildCalendarHref(

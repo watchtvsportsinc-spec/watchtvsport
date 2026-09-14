@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import FavoriteButton from "@/components/FavoriteButton";
 import TimezoneSync from "@/components/TimezoneSync";
+import type { FavoriteCandidate } from "@/lib/favorites";
 import {
   buildCalendarHref,
   formatCalendarDay,
@@ -53,7 +55,8 @@ function pageTitle(filters: CalendarFilters): string {
 
 function eventHref(event: CalendarEvent, returnTo: string): string {
   const params = new URLSearchParams({ returnTo });
-  return `/match/${event.slug}?${params.toString()}`;
+  const separator = event.detailPath.includes("?") ? "&" : "?";
+  return `${event.detailPath}${separator}${params.toString()}`;
 }
 
 function eventStage(event: CalendarEvent): string {
@@ -61,6 +64,24 @@ function eventStage(event: CalendarEvent): string {
   return [event.stage, event.group ? `Group ${event.group}` : ""]
     .filter(Boolean)
     .join(" · ");
+}
+
+function eventFavorite(event: CalendarEvent): FavoriteCandidate {
+  return {
+    kind: "event",
+    entityId: event.id,
+    label: event.title,
+    event: {
+      detailPath: event.detailPath,
+      eventDate: event.eventDate,
+      sport: event.sport,
+      competition: event.competition,
+      participantNames: [
+        event.participant1?.name,
+        event.participant2?.name,
+      ].filter((name): name is string => Boolean(name)),
+    },
+  };
 }
 
 function hiddenInput(name: string, value: string | undefined) {
@@ -332,6 +353,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                           <p className="v2-event-stage">
                             {eventStage(event)}
                           </p>
+                          <FavoriteButton
+                            compact
+                            favorite={eventFavorite(event)}
+                          />
                         </div>
 
                         <Link

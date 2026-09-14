@@ -9,6 +9,7 @@ export type EntityType = "national_team" | "club" | "player" | "event";
 export type VisualType = "flag" | "crest" | "player" | "generic";
 
 export type Participant = {
+  id: string;
   name: string;
   shortName?: string;
   type: EntityType;
@@ -19,6 +20,7 @@ export type Participant = {
 export type EventData = {
   id: string;
   slug: string;
+  detailPath: string;
   sport: string;
   competition: string;
   competitionSlug: string;
@@ -36,6 +38,7 @@ export function mapMatchToEvent(match: MatchData): EventData {
   return {
     id: match.id,
     slug: match.slug,
+    detailPath: `/match/${match.slug}`,
     sport: "football",
     competition: match.competition,
     competitionSlug: match.competitionSlug,
@@ -44,6 +47,7 @@ export function mapMatchToEvent(match: MatchData): EventData {
     eventDate: match.matchDate,
     status: match.status,
     participant1: {
+      id: `national-team:${match.homeTeam.code.toLowerCase()}`,
       name: match.homeTeam.name,
       shortName: match.homeTeam.code,
       type: "national_team",
@@ -51,6 +55,7 @@ export function mapMatchToEvent(match: MatchData): EventData {
       visual: match.homeTeam.code || "",
     },
     participant2: {
+      id: `national-team:${match.awayTeam.code.toLowerCase()}`,
       name: match.awayTeam.name,
       shortName: match.awayTeam.code,
       type: "national_team",
