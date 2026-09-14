@@ -1,0 +1,184 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import FavoriteButton from "@/components/FavoriteButton";
+import {
+  clubSlug,
+  getAllClubNames,
+  getClubAliases,
+  getClubNameBySlug,
+} from "@/lib/club-aliases";
+import { getAllEvents, type EventData } from "@/lib/events";
+import type { FavoriteCandidate } from "@/lib/favorites";
+
+type PageProps = {
+  params: Promise<{ club: string }>;
+};
+
+function clubEvents(clubName: string): EventData[] {
+  const id = `club:${clubSlug(clubName)}`;
+  return getAllEvents()
+    .filter(
+      (event) => event.participant1?.id === id || event.participant2?.id === id
+    )
+    .sort(
+      (a, b) =>
+        new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
+    );
+}
+
+function favoriteForClub(clubName: string): FavoriteCandidate {
+  return {
+    kind: "participant",
+    entityId: `club:${clubSlug(clubName)}`,
+    label: clubName,
+  };
+}
+
+function formatEventDate(value: string): string {
+  return new Intl.DateTimeFormat("en", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "UTC",
+    timeZoneName: "short",
+  }).format(new Date(value));
+}
+
+export async function generateStaticParams() {
+  return getAllClubNames().map((name) => ({ club: clubSlug(name) }));
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { club } = await params;
+  const clubName = getClubNameBySlug(club);
+
+  if (!clubName) {
+    return {
+      title: "Club not found | WatchTVSport",
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const aliases = getClubAliases(clubName);
+  const aliasText = aliases.slice(0, 5).join(", ");
+
+  return {
+    title: `${clubName} TV schedule & official broadcasters | WatchTVSport`,
+    description: `Find upcoming ${clubName} matches, official TV channels and streaming options${aliasText ? ` for searches including ${aliasText}` : ""}.`,
+    keywords: [clubName, ...aliases, `${clubName} TV`, `${clubName} live stream`, `${clubName} schedule`],
+    alternates: { canonical: `/football/club/${club}` },
+  };
+}
+
+export default async function ClubPage({ params }: PageProps) {
+  const { club } = await params;
+  const clubName = getClubNameBySlug(club);
+  if (!clubName) notFound();
+
+  const aliases = getClubAliases(clubName);
+  const events = clubEvents(clubName);
+  const now = Date.now();
+  const upcoming = events.filter(
+    (event) => event.status === "live" || new Date(event.eventDate).getTime() >= now
+  );
+  const recent = events
+    .filter((event) => new Date(event.eventDate).getTime() < now)
+    .reverse()
+    .slice(0, 8);
+  const favorite = favoriteForClub(clubName);
+
+  const teamJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SportsTeam",
+    name: clubName,
+    alternateName: aliases,
+    sport: "Football",
+    url: `https://watchtvsport.com/football/club/${club}`,
+  };
+
+  return (
+    <main id="main-content" className="v2-calendar">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(teamJsonLd) }}
+      />
+
+      <section className="v2-calendar-hero" aria-labelledby="club-title">
+        <p className="v2-eyebrow">Football club</p>
+        <h1 id="club-title">{clubName}</h1>
+        <p className="v2-hero-copy">
+          Upcoming matches and verified official broadcasters for {clubName}.
+        </p>
+        <FavoriteButton favorite={favorite} />
+        {aliases.length > 0 ? (
+          <p className="v2-signature">Also known as: {aliases.join(" · ")}</p>
+        ) : null}
+      </section>
+
+      <section className="v2-results" aria-labelledby="upcoming-title">
+        <div className="v2-results-heading">
+          <div>
+            <p className="v2-eyebrow">Schedule</p>
+            <h2 id="upcoming-title">Upcoming matches</h2>
+          </div>
+          <p>{upcoming.length} scheduled</p>
+        </div>
+
+        {upcoming.length === 0 ? (
+          <div className="v2-empty-state" role="status">
+            <h3>No upcoming match currently confirmed</h3>
+            <p>WatchTVSport will show new fixtures here as soon as they are confirmed.</p>
+          </div>
+        ) : (
+          <div className="v2-event-list">
+            {upcoming.map((event) => (
+              <article className="v2-event-card" key={event.id}>
+                <div className="v2-event-main">
+                  <p className="v2-event-competition">{event.competition}</p>
+                  <h3>{event.title}</h3>
+                  <p className="v2-event-stage">
+                    {formatEventDate(event.eventDate)} · {event.stage ?? "Scheduled"}
+                  </p>
+                </div>
+                <Link className="v2-broadcast-link" href={event.detailPath}>
+                  <span>Match details</span>
+                  <strong>View broadcasters →</strong>
+                </Link>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {recent.length > 0 ? (
+        <section className="v2-results" aria-labelledby="recent-title">
+          <div className="v2-results-heading">
+            <div>
+              <p className="v2-eyebrow">Archive</p>
+              <h2 id="recent-title">Recent matches</h2>
+            </div>
+          </div>
+          <div className="v2-event-list">
+            {recent.map((event) => (
+              <article className="v2-event-card" key={event.id}>
+                <div className="v2-event-main">
+                  <p className="v2-event-competition">{event.competition}</p>
+                  <h3>{event.title}</h3>
+                  <p className="v2-event-stage">{formatEventDate(event.eventDate)}</p>
+                </div>
+                <Link className="v2-broadcast-link" href={event.detailPath}>
+                  <span>Match archive</span>
+                  <strong>Open match →</strong>
+                </Link>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
+    </main>
+  );
+}
