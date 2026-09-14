@@ -8,12 +8,15 @@ type MatchStatusBadgeProps = {
   liveDurationMinutes?: number;
 };
 
-function getStatus(matchDate: string, liveDurationMinutes: number) {
+function getStatus(
+  matchDate: string,
+  liveDurationMinutes: number,
+  now: number | null
+) {
   const startTime = new Date(matchDate).getTime();
-  const now = Date.now();
   const liveEndTime = startTime + liveDurationMinutes * 60 * 1000;
 
-  if (!Number.isFinite(startTime)) {
+  if (!Number.isFinite(startTime) || now === null) {
     return {
       label: "",
       status: "unknown" as const,
@@ -65,19 +68,23 @@ export default function MatchStatusBadge({
   matchDate,
   liveDurationMinutes = 120,
 }: MatchStatusBadgeProps) {
-  const [status, setStatus] = useState(() =>
-    getStatus(matchDate, liveDurationMinutes)
-  );
+  const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
-    setStatus(getStatus(matchDate, liveDurationMinutes));
-
+    const initialUpdate = window.setTimeout(() => {
+      setNow(Date.now());
+    }, 0);
     const interval = window.setInterval(() => {
-      setStatus(getStatus(matchDate, liveDurationMinutes));
+      setNow(Date.now());
     }, 60000);
 
-    return () => window.clearInterval(interval);
-  }, [matchDate, liveDurationMinutes]);
+    return () => {
+      window.clearTimeout(initialUpdate);
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  const status = getStatus(matchDate, liveDurationMinutes, now);
 
   if (!status.label) {
     return null;

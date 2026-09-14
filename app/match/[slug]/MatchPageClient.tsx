@@ -35,7 +35,7 @@ function getTimingBadgeStyle(tone: TimingTone) {
   };
 }
 
-function getMatchStatus(matchTimestamp: number | null): {
+function getMatchStatus(matchTimestamp: number | null, now: number | null): {
   label: string;
   tone: TimingTone;
 } {
@@ -46,7 +46,13 @@ function getMatchStatus(matchTimestamp: number | null): {
     };
   }
 
-  const now = Date.now();
+  if (now === null) {
+    return {
+      label: "Scheduled",
+      tone: "upcoming",
+    };
+  }
+
   const endTimestamp = matchTimestamp + 2 * 60 * 60 * 1000;
 
   if (now >= matchTimestamp && now < endTimestamp) {
@@ -109,18 +115,24 @@ function formatLocalKickoff(matchTimestamp: number | null): string {
 export default function MatchPageClient({
   matchTimestamp,
 }: MatchPageClientProps) {
-  const [now, setNow] = useState<number>(Date.now());
+  const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
+    const initialUpdate = window.setTimeout(() => {
+      setNow(Date.now());
+    }, 0);
     const interval = window.setInterval(() => {
       setNow(Date.now());
     }, 30000);
 
-    return () => window.clearInterval(interval);
+    return () => {
+      window.clearTimeout(initialUpdate);
+      window.clearInterval(interval);
+    };
   }, []);
 
   const status = useMemo(() => {
-    return getMatchStatus(matchTimestamp);
+    return getMatchStatus(matchTimestamp, now);
   }, [matchTimestamp, now]);
 
   const timingBadgeStyle = getTimingBadgeStyle(status.tone);

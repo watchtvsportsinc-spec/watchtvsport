@@ -2,7 +2,7 @@
 import { usePathname } from "next/navigation";
 import { getDictionary } from "@/lib/i18n";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   getHomepageStats,
   getTeamName,
@@ -126,6 +126,21 @@ function getTeamFlagCode(teamName: string) {
 export default function HomePage() {
   const stats = getHomepageStats();
   const [teamQuery, setTeamQuery] = useState("");
+  const [currentTime, setCurrentTime] = useState<number | null>(null);
+
+  useEffect(() => {
+    const initialUpdate = window.setTimeout(() => {
+      setCurrentTime(Date.now());
+    }, 0);
+    const interval = window.setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 60000);
+
+    return () => {
+      window.clearTimeout(initialUpdate);
+      window.clearInterval(interval);
+    };
+  }, []);
 
   const uniqueTeamNames = useMemo(() => {
     return Array.from(
@@ -571,8 +586,11 @@ background: "linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)",
             {featuredMatches.length > 0 ? (
               featuredMatches.map((match, index) => {
                 const stageLabel = formatStage(match.group);
-const finished =
-  new Date(match.matchDate).getTime() + 3 * 60 * 60 * 1000 < Date.now();
+                const finished = Boolean(
+                  currentTime !== null &&
+                    new Date(match.matchDate).getTime() + 3 * 60 * 60 * 1000 <
+                      currentTime
+                );
                 const currentDayKey = getDayKey(match.matchDate);
                 const previousDayKey =
                   index > 0 ? getDayKey(featuredMatches[index - 1].matchDate) : null;
@@ -872,8 +890,11 @@ const finished =
                   index > 0 ? getDayKey(sortedMatches[index - 1].matchDate) : null;
                 const isNewDay = index === 0 || currentDayKey !== previousDayKey;
                 const stageLabel = formatStage(match.group);
-const finished =
-  new Date(match.matchDate).getTime() + 3 * 60 * 60 * 1000 < Date.now();
+                const finished = Boolean(
+                  currentTime !== null &&
+                    new Date(match.matchDate).getTime() + 3 * 60 * 60 * 1000 <
+                      currentTime
+                );
                 return (
                   <div key={match.slug}>
                     {isNewDay ? (
