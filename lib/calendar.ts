@@ -1,4 +1,5 @@
 import type { EventData } from "./events";
+import { getClubSearchNames } from "./club-aliases";
 import type {
   FavoriteEventFeed,
   FavoriteEventSummary,
@@ -248,8 +249,14 @@ export function getCalendarPage(
           event.group,
           event.participant1?.name,
           event.participant1?.shortName,
+          ...(event.participant1?.type === "club"
+            ? getClubSearchNames(event.participant1.name)
+            : []),
           event.participant2?.name,
           event.participant2?.shortName,
+          ...(event.participant2?.type === "club"
+            ? getClubSearchNames(event.participant2.name)
+            : []),
         ]
           .filter(Boolean)
           .join(" ")
