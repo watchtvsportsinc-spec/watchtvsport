@@ -16,8 +16,12 @@ export type BroadcastInfo = {
   hasFullCoverage?: boolean;
   notes?: string;
   commentaryLanguages?: string[];
-  coverageType?: "full" | "partial";
+  coverageType?: "full" | "partial" | "unknown";
   coverageStatus?: "confirmed" | "expected" | "to_update";
+  broadcastType?: "live" | "delayed" | "replay" | "highlights";
+  accessConditions?: string;
+  requiresAccount?: boolean;
+  isFreeTrial?: boolean;
   matchSlugs?: string[];
   excludedMatchSlugs?: string[];
 };

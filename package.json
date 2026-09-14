@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "npm run test:imports && npm run test:data",
     "test:imports": "node --test scripts/import-validation.test.mjs",
+    "test:data": "node --test scripts/world-cup-archive-import.test.mjs scripts/public-events-schema.test.mjs",
+    "export:world-cup": "node scripts/export-world-cup-archive.mjs",
     "validate:import": "node scripts/validate-import.mjs"
   },
   "dependencies": {
@@ -24,6 +27,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
+    "jiti": "2.6.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

@@ -1,10 +1,11 @@
 # Proposition de schéma Supabase / PostgreSQL (version corrigée)
 
 > Mise à jour V2 — 14 septembre 2026 : ce document décrit la migration initiale.
-> L'état courant comprend ensuite `supabase-v2-foundation-migration.sql` puis
-> `supabase-v2-ingestion-migration.sql`. Les règles de sources et d'import sont
-> documentées dans [`docs/data-sources.md`](docs/data-sources.md). Les trois
-> migrations et leurs assertions ont été exécutées ensemble sur une base locale
+> L'état courant comprend ensuite `supabase-v2-foundation-migration.sql`,
+> `supabase-v2-ingestion-migration.sql` et
+> `supabase-v2-read-api-migration.sql`. Les règles de sources, d'import et de
+> lecture sont documentées dans [`docs/data-sources.md`](docs/data-sources.md).
+> Les migrations et leurs assertions sont testées ensemble sur une base locale
 > jetable ; aucune migration distante n'a été effectuée.
 
 Ce document met à jour la proposition initiale pour refléter les décisions retenues avant le lancement Champions League, sans connecter le site à Supabase ni exécuter de migration distante.

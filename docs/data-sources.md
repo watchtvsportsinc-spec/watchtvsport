@@ -100,3 +100,31 @@ database access.
 Failed, rejected, cancelled, unchanged, and applied runs are terminal. An
 unchanged run records a safe idempotent no-op. A retry is a new run linked to a
 failed or cancelled parent, preserving the original evidence.
+
+## World Cup archive transition
+
+The tracked V1 World Cup data can be transformed into bounded, deterministic
+V2 import bundles without contacting an external website:
+
+`npm run export:world-cup -- --output-dir <empty-directory>`
+
+The export is split into one catalog bundle and batches of broadcast records.
+It preserves the existing match and country-broadcast paths, distinguishes
+territorial broadcaster identities, and labels every record as archive data.
+Generated files remain candidates only: the export manifest and structural
+validator never authorize publication or a database write.
+
+## Public read path
+
+`supabase-v2-read-api-migration.sql` exposes one bounded, read-only JSON
+contract for published and confirmed events. It deliberately omits internal
+provider identities and unconfirmed, excluded, unpublished, or non-HTTPS
+broadcast offers.
+
+The Next.js data access layer stays server-only. It uses the bundled World Cup
+archive unless `WATCHTVSPORT_DATA_SOURCE=supabase` is explicitly configured
+with `SUPABASE_URL` and either `SUPABASE_PUBLISHABLE_KEY` or
+`SUPABASE_ANON_KEY`. It never uses a service-role key. Supabase responses are
+size-limited and validated before display. A timeout, invalid response, or
+configuration error preserves the bundled archive and exposes a visible stale
+data warning instead of presenting the fallback as fresh live data.

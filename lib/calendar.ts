@@ -1,4 +1,4 @@
-import { getAllEvents, type EventData } from "./events";
+import type { EventData } from "./events";
 import type {
   FavoriteEventFeed,
   FavoriteEventSummary,
@@ -195,19 +195,19 @@ export function parseCalendarFilters(
   };
 }
 
-function allConfirmedEvents(): EventData[] {
-  return getAllEvents().filter(hasConfirmedBroadcast);
+function allConfirmedEvents(events: EventData[]): EventData[] {
+  return events.filter(hasConfirmedBroadcast);
 }
 
-export function getCalendarFilterOptions(): {
+export function getCalendarFilterOptions(events: EventData[]): {
   sports: CalendarFilterOption[];
   competitions: CalendarFilterOption[];
 } {
-  const events = allConfirmedEvents();
+  const confirmedEvents = allConfirmedEvents(events);
   const sports = new Map<string, string>();
   const competitions = new Map<string, string>();
 
-  for (const event of events) {
+  for (const event of confirmedEvents) {
     sports.set(event.sport, sportLabel(event.sport));
     competitions.set(event.competitionSlug, event.competition);
   }
@@ -224,6 +224,7 @@ export function getCalendarFilterOptions(): {
 }
 
 export function getCalendarPage(
+  events: EventData[],
   filters: CalendarFilters,
   now = new Date()
 ): CalendarPage {
@@ -236,7 +237,7 @@ export function getCalendarPage(
         : today;
   const query = normalizeSearchValue(filters.query);
 
-  const filteredEvents = allConfirmedEvents()
+  const filteredEvents = allConfirmedEvents(events)
     .filter((event) => {
       const eventDate = getDateKey(new Date(event.eventDate), filters.timeZone);
       const matchesDate =
@@ -296,15 +297,16 @@ export function getCalendarPage(
 }
 
 export function getFavoriteEventFeed(
+  events: EventData[],
   lookup: FavoriteLookup,
   now = new Date()
 ): FavoriteEventFeed {
   const eventIds = new Set(lookup.eventIds);
   const participantIds = new Set(lookup.participantIds);
   const competitionIds = new Set(lookup.competitionIds);
-  const events = allConfirmedEvents();
+  const confirmedEvents = allConfirmedEvents(events);
 
-  const exactEvents = events
+  const exactEvents = confirmedEvents
     .filter((event) => eventIds.has(event.id))
     .sort(
       (a, b) =>
@@ -312,7 +314,7 @@ export function getFavoriteEventFeed(
     )
     .map((event) => toFavoriteEventSummary(event, now));
 
-  const upcomingEvents = events
+  const upcomingEvents = confirmedEvents
     .filter((event) => {
       if (eventIds.has(event.id)) return false;
 

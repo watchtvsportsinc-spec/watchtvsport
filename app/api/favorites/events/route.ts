@@ -1,5 +1,6 @@
 import { getFavoriteEventFeed } from "@/lib/calendar";
 import { MAX_FAVORITES, type FavoriteLookup } from "@/lib/favorites";
+import { getPublicEventsSnapshot } from "@/lib/public-events";
 
 const MAX_REQUEST_BYTES = 50_000;
 const TECHNICAL_ID_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9:._/-]*$/;
@@ -73,7 +74,15 @@ export async function POST(request: Request): Promise<Response> {
     competitionIds,
   };
 
-  return Response.json(getFavoriteEventFeed(lookup), {
-    headers: { "Cache-Control": "private, no-store" },
+  const dataSnapshot = await getPublicEventsSnapshot();
+
+  return Response.json(getFavoriteEventFeed(dataSnapshot.events, lookup), {
+    headers: {
+      "Cache-Control": "private, no-store",
+      "X-WatchTVSport-Data-Source": dataSnapshot.source,
+      ...(dataSnapshot.warning
+        ? { Warning: '110 - "Live sports data unavailable; archive fallback used"' }
+        : {}),
+    },
   });
 }

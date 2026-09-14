@@ -3,6 +3,7 @@ import Link from "next/link";
 import FavoriteButton from "@/components/FavoriteButton";
 import TimezoneSync from "@/components/TimezoneSync";
 import type { FavoriteCandidate } from "@/lib/favorites";
+import { getPublicEventsSnapshot } from "@/lib/public-events";
 import {
   buildCalendarHref,
   formatCalendarDay,
@@ -91,8 +92,9 @@ function hiddenInput(name: string, value: string | undefined) {
 export default async function HomePage({ searchParams }: HomePageProps) {
   const filters = parseCalendarFilters((await searchParams) ?? {});
   const now = new Date();
-  const calendar = getCalendarPage(filters, now);
-  const options = getCalendarFilterOptions();
+  const dataSnapshot = await getPublicEventsSnapshot();
+  const calendar = getCalendarPage(dataSnapshot.events, filters, now);
+  const options = getCalendarFilterOptions(dataSnapshot.events);
   const today = getDateKey(now, filters.timeZone);
   const groupedEvents = new Map<string, CalendarEvent[]>();
 
@@ -120,6 +122,12 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       <a className="v2-skip-link" href="#calendar-results">
         Skip to events
       </a>
+
+      {dataSnapshot.warning ? (
+        <p className="v2-data-warning" role="status">
+          {dataSnapshot.warning}
+        </p>
+      ) : null}
 
       <section className="v2-calendar-hero" aria-labelledby="calendar-title">
         <p className="v2-eyebrow">Official sports broadcast guide</p>
