@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import FavoriteButton from "@/components/FavoriteButton";
+import SearchAutocomplete from "@/components/SearchAutocomplete";
 import TimezoneSync from "@/components/TimezoneSync";
 import type { FavoriteCandidate } from "@/lib/favorites";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
+import { buildSearchSuggestions } from "@/lib/search-suggestions";
 import {
   buildCalendarHref,
   formatCalendarDay,
@@ -95,6 +97,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const dataSnapshot = await getPublicEventsSnapshot();
   const calendar = getCalendarPage(dataSnapshot.events, filters, now);
   const options = getCalendarFilterOptions(dataSnapshot.events);
+  const searchSuggestions = buildSearchSuggestions(dataSnapshot.events);
   const today = getDateKey(now, filters.timeZone);
   const groupedEvents = new Map<string, CalendarEvent[]>();
 
@@ -138,26 +141,13 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           territory. WatchTVSport does not host video streams.
         </p>
 
-        <form className="v2-search" action="/" method="get" role="search">
-          <label htmlFor="event-search">Team, competition or event</label>
-          <div className="v2-search-row">
-            <input
-              id="event-search"
-              name="q"
-              type="search"
-              defaultValue={filters.query}
-              maxLength={100}
-              placeholder="Search France, World Cup..."
-            />
-            <button type="submit">Search</button>
-          </div>
-          <input type="hidden" name="view" value="all" />
-          {hiddenInput("sport", filters.sport)}
-          {hiddenInput("competition", filters.competition)}
-          {filters.timeZone !== "UTC"
-            ? hiddenInput("tz", filters.timeZone)
-            : null}
-        </form>
+        <SearchAutocomplete
+          defaultValue={filters.query}
+          sport={filters.sport}
+          competition={filters.competition}
+          timeZone={filters.timeZone}
+          suggestions={searchSuggestions}
+        />
       </section>
 
       <section className="v2-calendar-controls" aria-label="Calendar filters">
