@@ -1,0 +1,57 @@
+const CLUB_ALIASES: Record<string, readonly string[]> = {
+  "AEK Athens": ["AEK", "AEK FC", "AEK Athens FC"],
+  LASK: ["LASK Linz", "LASK Linz FC"],
+  "Club Brugge": ["Brugge", "Club Brugge KV", "Bruges"],
+  "Aston Villa": ["Villa", "AVFC", "Aston Villa FC"],
+  "Borussia Dortmund": ["Dortmund", "BVB", "BVB 09"],
+  Villarreal: ["Villarreal CF", "Villarreal Club de Futbol"],
+  Porto: ["FC Porto", "FCP"],
+  "Manchester City": ["Man City", "Man City FC", "MCFC", "City"],
+  Lille: ["LOSC", "Lille OSC", "LOSC Lille"],
+  "Real Betis": ["Betis", "Real Betis Balompie", "RBB"],
+  "Real Madrid": ["Real", "Real Madrid CF", "RMA", "Los Blancos"],
+  Inter: ["Inter Milan", "Internazionale", "FC Internazionale", "Inter Milano", "INT"],
+  Barcelona: ["FC Barcelona", "Barca", "Barça", "FCB"],
+  Feyenoord: ["Feyenoord Rotterdam", "FEY"],
+  Stuttgart: ["VfB Stuttgart", "VFB"],
+  Viking: ["Viking FK", "VIK"],
+  Liverpool: ["Liverpool FC", "LFC"],
+  "Atlético de Madrid": ["Atletico Madrid", "Atleti", "ATM", "Club Atletico de Madrid"],
+  "Paris Saint-Germain": ["PSG", "Paris SG", "Paris Saint Germain", "Paris"],
+  "Slovan Bratislava": ["SK Slovan Bratislava", "Slovan", "SLO"],
+  "Sporting CP": ["Sporting", "Sporting Lisbon", "Sporting Clube de Portugal", "SCP"],
+  Galatasaray: ["Galatasaray SK", "Gala", "GAL"],
+  Napoli: ["SSC Napoli", "Naples", "NAP"],
+  Arsenal: ["Arsenal FC", "AFC", "Gunners"],
+  Fenerbahçe: ["Fenerbahce", "Fenerbahce SK", "Fener", "FEN"],
+  Roma: ["AS Roma", "Roma FC", "ROM"],
+  "PSV Eindhoven": ["PSV", "PSV Eindhoven", "PSV Eindhoven FC"],
+  "Shakhtar Donetsk": ["Shakhtar", "FC Shakhtar Donetsk", "SHA"],
+  Como: ["Como 1907", "Como 1907 FC", "COM"],
+  Leipzig: ["RB Leipzig", "RBL"],
+  "Bayern München": ["Bayern Munich", "Bayern", "FC Bayern", "FC Bayern Munich", "FC Bayern München", "BMU"],
+  "Bodø/Glimt": ["Bodo/Glimt", "Bodoe/Glimt", "FK Bodo/Glimt", "FK Bodø/Glimt", "BOG"],
+  "Manchester United": ["Man United", "Man Utd", "Manchester Utd", "MUFC", "United", "MUN"],
+  Sabah: ["Sabah FK", "Sabah FC", "Sabah Masazir", "SBH"],
+  "Slavia Praha": ["Slavia Prague", "SK Slavia Prague", "SK Slavia Praha", "SLA"],
+  Lens: ["RC Lens", "Racing Club de Lens", "RCL"],
+};
+
+function unique(values: readonly string[]): string[] {
+  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
+}
+
+export function getClubAliases(name: string): string[] {
+  return unique(CLUB_ALIASES[name] ?? []);
+}
+
+export function getClubSearchNames(name: string): string[] {
+  return unique([name, ...getClubAliases(name)]);
+}
+
+export function getFixtureSeoAliases(homeName?: string, awayName?: string): string[] {
+  return unique([
+    ...(homeName ? getClubSearchNames(homeName) : []),
+    ...(awayName ? getClubSearchNames(awayName) : []),
+  ]);
+}
