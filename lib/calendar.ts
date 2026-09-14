@@ -96,10 +96,6 @@ function isConfirmedBroadcast(
   );
 }
 
-function hasConfirmedBroadcast(event: EventData): boolean {
-  return event.broadcasts.some(isConfirmedBroadcast);
-}
-
 function sportLabel(value: string): string {
   if (value === "football") return "Football";
 
@@ -195,19 +191,14 @@ export function parseCalendarFilters(
   };
 }
 
-function allConfirmedEvents(events: EventData[]): EventData[] {
-  return events.filter(hasConfirmedBroadcast);
-}
-
 export function getCalendarFilterOptions(events: EventData[]): {
   sports: CalendarFilterOption[];
   competitions: CalendarFilterOption[];
 } {
-  const confirmedEvents = allConfirmedEvents(events);
   const sports = new Map<string, string>();
   const competitions = new Map<string, string>();
 
-  for (const event of confirmedEvents) {
+  for (const event of events) {
     sports.set(event.sport, sportLabel(event.sport));
     competitions.set(event.competitionSlug, event.competition);
   }
@@ -237,7 +228,7 @@ export function getCalendarPage(
         : today;
   const query = normalizeSearchValue(filters.query);
 
-  const filteredEvents = allConfirmedEvents(events)
+  const filteredEvents = events
     .filter((event) => {
       const eventDate = getDateKey(new Date(event.eventDate), filters.timeZone);
       const matchesDate =
@@ -304,9 +295,8 @@ export function getFavoriteEventFeed(
   const eventIds = new Set(lookup.eventIds);
   const participantIds = new Set(lookup.participantIds);
   const competitionIds = new Set(lookup.competitionIds);
-  const confirmedEvents = allConfirmedEvents(events);
 
-  const exactEvents = confirmedEvents
+  const exactEvents = events
     .filter((event) => eventIds.has(event.id))
     .sort(
       (a, b) =>
@@ -314,7 +304,7 @@ export function getFavoriteEventFeed(
     )
     .map((event) => toFavoriteEventSummary(event, now));
 
-  const upcomingEvents = confirmedEvents
+  const upcomingEvents = events
     .filter((event) => {
       if (eventIds.has(event.id)) return false;
 
@@ -336,48 +326,8 @@ export function getFavoriteEventFeed(
       (a, b) =>
         new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
     )
-    .slice(0, 48)
+    .slice(0, 24)
     .map((event) => toFavoriteEventSummary(event, now));
 
   return { exactEvents, upcomingEvents };
-}
-
-export function buildCalendarHref(
-  filters: CalendarFilters,
-  changes: Partial<CalendarFilters> = {},
-  hash?: string
-): string {
-  const next = { ...filters, ...changes };
-  const params = new URLSearchParams();
-
-  if (next.view !== "today") params.set("view", next.view);
-  if (next.view === "date" && next.date) params.set("date", next.date);
-  if (next.query) params.set("q", next.query);
-  if (next.sport) params.set("sport", next.sport);
-  if (next.competition) params.set("competition", next.competition);
-  if (next.timeZone !== "UTC") params.set("tz", next.timeZone);
-  if (next.page > 1) params.set("page", String(next.page));
-
-  const query = params.toString();
-  const fragment = hash ? `#${encodeURIComponent(hash)}` : "";
-  return `${query ? `/?${query}` : "/"}${fragment}`;
-}
-
-export function formatCalendarDay(date: string, timeZone: string): string {
-  return new Intl.DateTimeFormat("en", {
-    timeZone,
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(date));
-}
-
-export function formatCalendarTime(date: string, timeZone: string): string {
-  return new Intl.DateTimeFormat("en", {
-    timeZone,
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).format(new Date(date));
 }
