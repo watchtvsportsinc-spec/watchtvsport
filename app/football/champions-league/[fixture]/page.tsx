@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import FavoriteButton from "@/components/FavoriteButton";
-import { getAllEvents, getEventByDetailPath } from "@/lib/events";
+import { getClubAliases, getFixtureSeoAliases } from "@/lib/club-aliases";
+import { getAllEvents, getEventByDetailPath, type Participant } from "@/lib/events";
 import type { FavoriteCandidate } from "@/lib/favorites";
 
 type PageProps = {
@@ -28,21 +29,12 @@ function safeReturnTo(value?: string): string {
   }
 }
 
-function eventFavorite(event: ReturnType<typeof getEventByDetailPath>): FavoriteCandidate | null {
-  if (!event) return null;
+function participantFavorite(participant?: Participant): FavoriteCandidate | null {
+  if (!participant) return null;
   return {
-    kind: "event",
-    entityId: event.id,
-    label: event.title,
-    event: {
-      detailPath: event.detailPath,
-      eventDate: event.eventDate,
-      sport: event.sport,
-      competition: event.competition,
-      participantNames: [event.participant1?.name, event.participant2?.name].filter(
-        (name): name is string => Boolean(name)
-      ),
-    },
+    kind: "participant",
+    entityId: participant.id,
+    label: participant.name,
   };
 }
 
@@ -80,10 +72,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
+  const homeName = event.participant1?.name;
+  const awayName = event.participant2?.name;
+  const aliases = getFixtureSeoAliases(homeName, awayName);
+
   return {
     title: `${event.title} – Official broadcasters | WatchTVSport`,
-    description: `Find official TV channels and streaming platforms for ${event.title}.`,
+    description: `Find official TV channels and streaming platforms for ${event.title} in the UEFA Champions League.`,
+    keywords: aliases,
     alternates: { canonical: event.detailPath },
+    openGraph: {
+      title: `${event.title} – Official broadcasters`,
+      description: `Official TV and streaming information for ${event.title}.`,
+      url: event.detailPath,
+      type: "website",
+    },
   };
 }
 
@@ -94,13 +97,51 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
 
   const resolvedSearch = (await searchParams) ?? {};
   const returnTo = safeReturnTo(resolvedSearch.returnTo);
-  const favorite = eventFavorite(event);
+  const homeFavorite = participantFavorite(event.participant1);
+  const awayFavorite = participantFavorite(event.participant2);
   const confirmedBroadcasts = event.broadcasts.filter(
     (broadcast) => broadcast.coverageStatus === "confirmed"
   );
 
+  const homeAliases = event.participant1 ? getClubAliases(event.participant1.name) : [];
+  const awayAliases = event.participant2 ? getClubAliases(event.participant2.name) : [];
+  const sportsEventJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SportsEvent",
+    name: event.title,
+    startDate: event.eventDate,
+    eventStatus:
+      event.status === "finished"
+        ? "https://schema.org/EventCompleted"
+        : event.status === "live"
+          ? "https://schema.org/EventInProgress"
+          : "https://schema.org/EventScheduled",
+    url: `https://watchtvsport.com${event.detailPath}`,
+    competitor: [
+      event.participant1
+        ? {
+            "@type": "SportsTeam",
+            name: event.participant1.name,
+            ...(homeAliases.length ? { alternateName: homeAliases } : {}),
+          }
+        : null,
+      event.participant2
+        ? {
+            "@type": "SportsTeam",
+            name: event.participant2.name,
+            ...(awayAliases.length ? { alternateName: awayAliases } : {}),
+          }
+        : null,
+    ].filter(Boolean),
+  };
+
   return (
     <main id="main-content" className="v2-calendar">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(sportsEventJsonLd) }}
+      />
+
       <section className="v2-calendar-hero" aria-labelledby="event-title">
         <p className="v2-eyebrow">{event.competition}</p>
         <h1 id="event-title">{event.title}</h1>
@@ -108,7 +149,14 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
         <p className="v2-hero-copy">
           {formatDateTime(event.eventDate)}. Times will be localized from the calendar view.
         </p>
-        {favorite ? <FavoriteButton favorite={favorite} /> : null}
+
+        <div
+          aria-label="Follow teams"
+          style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "1rem" }}
+        >
+          {homeFavorite ? <FavoriteButton favorite={homeFavorite} /> : null}
+          {awayFavorite ? <FavoriteButton favorite={awayFavorite} /> : null}
+        </div>
       </section>
 
       <section className="v2-results" aria-labelledby="broadcasts-title">
