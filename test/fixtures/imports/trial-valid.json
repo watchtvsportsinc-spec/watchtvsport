@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "source": "v2-test-source",
+  "idempotencyKey": "trial-calendar-2026-09-14T11:00:00Z",
+  "observedAt": "2026-09-14T11:00:00Z",
+  "records": [
+    {
+      "entityType": "event",
+      "externalKey": "test-only-event-001",
+      "evidenceUrl": "https://provider.invalid/events/test-only-event-001",
+      "payload": {
+        "testOnly": true,
+        "title": "TEST ONLY — Import pipeline fixture",
+        "status": "scheduled",
+        "startTime": "2026-09-15T18:00:00Z"
+      }
+    }
+  ]
+}

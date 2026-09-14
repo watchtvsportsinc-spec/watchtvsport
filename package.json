@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:imports": "node --test scripts/import-validation.test.mjs",
+    "validate:import": "node scripts/validate-import.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
