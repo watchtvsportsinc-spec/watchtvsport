@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import FavoriteButton from "@/components/FavoriteButton";
 import SearchAutocomplete from "@/components/SearchAutocomplete";
 import TimezoneSync from "@/components/TimezoneSync";
+import type { FavoriteCandidate } from "@/lib/favorites";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 import { buildSearchSuggestions } from "@/lib/search-suggestions";
 import {
@@ -67,6 +69,21 @@ function eventStage(event: CalendarEvent): string {
     .join(" · ");
 }
 
+function sportLabel(sport: string): string {
+  if (sport === "football") return "Football";
+  if (sport === "basketball") return "Basketball";
+  if (sport === "handball") return "Handball";
+  if (sport === "tennis") return "Tennis";
+  if (sport === "formula-1") return "Formula 1";
+  if (sport === "motogp") return "MotoGP";
+
+  return sport
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 function hiddenInput(name: string, value: string | undefined) {
   return value ? <input type="hidden" name={name} value={value} /> : null;
 }
@@ -98,6 +115,20 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       filters.competition
   );
   const timezoneLabel = filters.timeZone.replaceAll("_", " ");
+  const selectedCompetitionEvent = filters.competition
+    ? dataSnapshot.events.find(
+        (event) =>
+          event.competitionSlug === filters.competition &&
+          (!filters.sport || event.sport === filters.sport)
+      )
+    : undefined;
+  const competitionFavorite: FavoriteCandidate | null = selectedCompetitionEvent
+    ? {
+        kind: "competition",
+        entityId: `${selectedCompetitionEvent.sport}:${selectedCompetitionEvent.competitionSlug}`,
+        label: `${selectedCompetitionEvent.competition} (${sportLabel(selectedCompetitionEvent.sport)})`,
+      }
+    : null;
 
   return (
     <main id="main-content" className="v2-calendar">
@@ -248,6 +279,12 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             {calendar.total} {calendar.total === 1 ? "event" : "events"}
           </p>
         </div>
+
+        {competitionFavorite ? (
+          <div style={{ marginTop: "0.9rem" }}>
+            <FavoriteButton favorite={competitionFavorite} />
+          </div>
+        ) : null}
 
         <p className="v2-timezone-note">
           Times shown in {timezoneLabel}. Your device timezone is detected when
