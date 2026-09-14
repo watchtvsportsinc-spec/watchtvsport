@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import FavoriteButton from "@/components/FavoriteButton";
 import { clubSlug } from "@/lib/club-aliases";
 import { getAllEvents, type EventData } from "@/lib/events";
@@ -15,10 +16,7 @@ function footballCompetitionEvents(slug: string): EventData[] {
     .filter(
       (event) => event.sport === "football" && event.competitionSlug === slug
     )
-    .sort(
-      (a, b) =>
-        new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
-    );
+    .sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
 }
 
 function competitionName(slug: string): string | null {
@@ -73,7 +71,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     title: `${name} TV schedule & official broadcasters | WatchTVSport`,
-    description: `Find the ${name} schedule, upcoming fixtures and verified official TV and streaming broadcasters.`,
+    description: `Find the ${name} schedule, participating teams, upcoming fixtures and verified official TV and streaming broadcasters.`,
     alternates: { canonical: `/football/competition/${competition}` },
     openGraph: {
       title: `${name} TV schedule & official broadcasters`,
@@ -98,28 +96,65 @@ export default async function CompetitionPage({ params }: PageProps) {
   );
   const recent = events
     .filter(
-      (event) =>
-        event.status === "finished" || new Date(event.eventDate).getTime() < now
+      (event) => event.status === "finished" || new Date(event.eventDate).getTime() < now
     )
     .reverse()
     .slice(0, 12);
+
+  const clubs = Array.from(
+    new Map(
+      events.flatMap((event) =>
+        [event.participant1, event.participant2]
+          .filter((participant) => participant?.type === "club")
+          .map((participant) => [participant!.id, participant!] as const)
+      )
+    ).values()
+  ).sort((a, b) => a.name.localeCompare(b.name));
 
   const favorite = competitionFavorite(competition, name);
   const calendarHref = `/?view=all&sport=football&competition=${encodeURIComponent(competition)}`;
 
   return (
     <main id="main-content" className="v2-calendar">
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Football", href: "/football" },
+          { label: name },
+        ]}
+      />
+
       <section className="v2-calendar-hero" aria-labelledby="competition-title">
         <p className="v2-eyebrow">Football competition</p>
         <h1 id="competition-title">{name}</h1>
         <p className="v2-hero-copy">
-          Upcoming fixtures and verified official broadcasters for {name}.
+          Upcoming fixtures, participating teams and verified official broadcasters for {name}.
         </p>
         <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "1rem" }}>
           <FavoriteButton favorite={favorite} />
           <Link href={calendarHref}>Open full calendar</Link>
         </div>
       </section>
+
+      {clubs.length > 0 ? (
+        <section className="v2-results" aria-labelledby="participants-title">
+          <div className="v2-results-heading">
+            <div>
+              <p className="v2-eyebrow">Participants</p>
+              <h2 id="participants-title">Teams</h2>
+            </div>
+            <p>{clubs.length} clubs</p>
+          </div>
+          <div className="v2-entity-grid">
+            {clubs.map((club) => (
+              <Link key={club.id} href={`/football/club/${clubSlug(club.name)}`}>
+                <strong>{club.name}</strong>
+                <span>Club</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="v2-results" aria-labelledby="upcoming-title">
         <div className="v2-results-heading">
@@ -184,40 +219,19 @@ export default async function CompetitionPage({ params }: PageProps) {
             </div>
           </div>
           <div className="v2-event-list">
-            {recent.map((event) => {
-              const homeHref = participantLink(event.participant1?.name);
-              const awayHref = participantLink(event.participant2?.name);
-
-              return (
-                <article className="v2-event-card" key={event.id}>
-                  <div className="v2-event-main">
-                    <p className="v2-event-competition">{event.stage ?? name}</p>
-                    <h3>
-                      {homeHref && event.participant1 ? (
-                        <Link href={homeHref}>{event.participant1.name}</Link>
-                      ) : (
-                        event.participant1?.name ?? event.title
-                      )}
-                      {event.participant2 ? (
-                        <>
-                          <span aria-hidden="true"> vs </span>
-                          {awayHref ? (
-                            <Link href={awayHref}>{event.participant2.name}</Link>
-                          ) : (
-                            event.participant2.name
-                          )}
-                        </>
-                      ) : null}
-                    </h3>
-                    <p className="v2-event-stage">{formatEventDate(event.eventDate)}</p>
-                  </div>
-                  <Link className="v2-broadcast-link" href={event.detailPath}>
-                    <span>Event archive</span>
-                    <strong>Open event →</strong>
-                  </Link>
-                </article>
-              );
-            })}
+            {recent.map((event) => (
+              <article className="v2-event-card" key={event.id}>
+                <div className="v2-event-main">
+                  <p className="v2-event-competition">{event.stage ?? name}</p>
+                  <h3>{event.title}</h3>
+                  <p className="v2-event-stage">{formatEventDate(event.eventDate)}</p>
+                </div>
+                <Link className="v2-broadcast-link" href={event.detailPath}>
+                  <span>Event archive</span>
+                  <strong>Open event →</strong>
+                </Link>
+              </article>
+            ))}
           </div>
         </section>
       ) : null}
