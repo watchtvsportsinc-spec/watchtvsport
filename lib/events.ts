@@ -4,6 +4,7 @@ import {
   type MatchData,
   type BroadcastInfo,
 } from "./matches";
+import { clubSlug } from "./club-aliases";
 import { championsLeague202627LeaguePhase } from "../source/champions-league-2026-27-league-phase";
 
 export type EntityType = "national_team" | "club" | "player" | "event";
@@ -34,6 +35,29 @@ export type EventData = {
   title: string;
   broadcasts: BroadcastInfo[];
 };
+
+export function participantEntityId(participant: Participant, sport: string): string {
+  if (participant.type === "club") {
+    return `club:${sport}:${clubSlug(participant.name)}`;
+  }
+
+  return participant.id;
+}
+
+function normalizeParticipant(participant: Participant | undefined, sport: string): Participant | undefined {
+  if (!participant) return undefined;
+
+  const id = participantEntityId(participant, sport);
+  return id === participant.id ? participant : { ...participant, id };
+}
+
+export function normalizeEventParticipants(event: EventData): EventData {
+  return {
+    ...event,
+    participant1: normalizeParticipant(event.participant1, event.sport),
+    participant2: normalizeParticipant(event.participant2, event.sport),
+  };
+}
 
 export function mapMatchToEvent(match: MatchData): EventData {
   return {
@@ -70,7 +94,7 @@ export function mapMatchToEvent(match: MatchData): EventData {
 
 export function getAllEvents(): EventData[] {
   return [
-    ...championsLeague202627LeaguePhase,
+    ...championsLeague202627LeaguePhase.map(normalizeEventParticipants),
     ...getAllMatches().map(mapMatchToEvent),
   ];
 }
@@ -79,7 +103,7 @@ export function getEventBySlug(slug: string): EventData | null {
   const genericEvent = championsLeague202627LeaguePhase.find(
     (event) => event.slug === slug
   );
-  if (genericEvent) return genericEvent;
+  if (genericEvent) return normalizeEventParticipants(genericEvent);
 
   const match = getMatchBySlug(slug);
   return match ? mapMatchToEvent(match) : null;
