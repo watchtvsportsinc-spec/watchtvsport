@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import type { KeyboardEvent } from "react";
+import type { CSSProperties, KeyboardEvent } from "react";
 import type { SearchSuggestion } from "@/lib/search-suggestions";
 
 type Props = {
@@ -10,6 +10,35 @@ type Props = {
   competition?: string;
   timeZone?: string;
   suggestions: SearchSuggestion[];
+};
+
+const suggestionPanelStyle: CSSProperties = {
+  position: "absolute",
+  top: "calc(100% + 6px)",
+  left: 0,
+  right: 0,
+  zIndex: 40,
+  overflow: "hidden",
+  border: "1px solid rgba(147, 197, 253, 0.25)",
+  borderRadius: 12,
+  background: "#0b1220",
+  boxShadow: "0 18px 48px rgba(0, 0, 0, 0.35)",
+};
+
+const suggestionButtonStyle: CSSProperties = {
+  display: "flex",
+  width: "100%",
+  minHeight: 44,
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 12,
+  border: 0,
+  borderBottom: "1px solid rgba(255, 255, 255, 0.07)",
+  borderRadius: 0,
+  background: "transparent",
+  color: "#f8fafc",
+  padding: "10px 12px",
+  textAlign: "left",
 };
 
 function normalize(value: string): string {
@@ -100,7 +129,7 @@ export default function SearchAutocomplete({
   return (
     <form className="v2-search" action="/" method="get" role="search">
       <label htmlFor="event-search">Team, competition or event</label>
-      <div className="v2-search-autocomplete">
+      <div style={{ position: "relative" }}>
         <div className="v2-search-row">
           <input
             ref={inputRef}
@@ -129,23 +158,37 @@ export default function SearchAutocomplete({
         </div>
 
         {isOpen ? (
-          <div className="v2-search-suggestions" id="search-suggestions" role="listbox">
+          <div id="search-suggestions" role="listbox" style={suggestionPanelStyle}>
             {matches.map((suggestion, index) => (
               <button
                 type="button"
                 id={`search-suggestion-${index}`}
                 role="option"
                 aria-selected={index === activeIndex}
-                className={index === activeIndex ? "is-active" : undefined}
                 key={suggestion.id}
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => chooseSuggestion(index)}
+                style={{
+                  ...suggestionButtonStyle,
+                  background: index === activeIndex ? "#1e3a8a" : "transparent",
+                }}
               >
-                <span>{suggestion.label}</span>
-                <small>{suggestion.kind}</small>
+                <span style={{ fontWeight: 800 }}>{suggestion.label}</span>
+                <small style={{ color: "#93c5fd", fontWeight: 800 }}>
+                  {suggestion.kind}
+                </small>
               </button>
             ))}
-            <p className="v2-search-shortcuts" aria-hidden="true">
+            <p
+              aria-hidden="true"
+              style={{
+                margin: 0,
+                padding: "8px 12px",
+                color: "#94a3b8",
+                fontSize: 12,
+                fontWeight: 700,
+              }}
+            >
               ↑↓ navigate · Enter select · Esc close
             </p>
           </div>
