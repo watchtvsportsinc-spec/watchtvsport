@@ -5,7 +5,7 @@ export type SearchSuggestion = {
   id: string;
   label: string;
   value: string;
-  kind: "Team" | "Competition" | "Event";
+  kind: "Club" | "Nation";
   href: string;
   searchTerms: string[];
 };
@@ -51,25 +51,23 @@ function participantHref(participant: Participant, sport: string): string {
 }
 
 export function buildSearchSuggestions(events: EventData[]): SearchSuggestion[] {
-  const teams = new Map<string, SearchSuggestion>();
-  const competitions = new Map<string, SearchSuggestion>();
-  const eventSuggestions: SearchSuggestion[] = [];
-  const seenEvents = new Set<string>();
+  const participants = new Map<string, SearchSuggestion>();
 
   for (const event of events) {
     for (const participant of [event.participant1, event.participant2]) {
       if (!participant) continue;
+      if (participant.type !== "club" && participant.type !== "national_team") continue;
 
-      // A club name may exist in several sports (for example PSG football and handball),
-      // so sport is part of the suggestion identity and is always shown to the user.
-      const teamKey = `${event.sport}:${participant.id}`;
-      if (teams.has(teamKey)) continue;
+      // The same organization name may exist in several sports (for example PSG
+      // football and handball), so sport is part of the suggestion identity.
+      const participantKey = `${event.sport}:${participant.id}`;
+      if (participants.has(participantKey)) continue;
 
-      teams.set(teamKey, {
-        id: `team:${event.sport}:${participant.id}`,
+      participants.set(participantKey, {
+        id: `participant:${event.sport}:${participant.id}`,
         label: `${participant.name} (${sportLabel(event.sport)})`,
         value: participant.name,
-        kind: "Team",
+        kind: participant.type === "club" ? "Club" : "Nation",
         href: participantHref(participant, event.sport),
         searchTerms: unique([
           ...participantSearchTerms(participant),
@@ -78,53 +76,9 @@ export function buildSearchSuggestions(events: EventData[]): SearchSuggestion[] 
         ]),
       });
     }
-
-    if (!competitions.has(event.competitionSlug)) {
-      const params = new URLSearchParams({
-        view: "all",
-        competition: event.competitionSlug,
-      });
-
-      competitions.set(event.competitionSlug, {
-        id: `competition:${event.competitionSlug}`,
-        label: event.competition,
-        value: event.competition,
-        kind: "Competition",
-        href: `/?${params.toString()}`,
-        searchTerms: unique([
-          event.competition,
-          event.competitionSlug.replaceAll("-", " "),
-        ]),
-      });
-    }
-
-    if (!seenEvents.has(event.id) && eventSuggestions.length < 160) {
-      seenEvents.add(event.id);
-      eventSuggestions.push({
-        id: `event:${event.id}`,
-        label: event.title,
-        value: event.title,
-        kind: "Event",
-        href: event.detailPath,
-        searchTerms: unique([
-          event.title,
-          event.participant1?.name ?? "",
-          event.participant2?.name ?? "",
-          event.competition,
-          ...(event.participant1?.type === "club"
-            ? getClubSearchNames(event.participant1.name)
-            : []),
-          ...(event.participant2?.type === "club"
-            ? getClubSearchNames(event.participant2.name)
-            : []),
-        ]),
-      });
-    }
   }
 
-  return [
-    ...Array.from(teams.values()).sort((a, b) => a.label.localeCompare(b.label)),
-    ...Array.from(competitions.values()).sort((a, b) => a.label.localeCompare(b.label)),
-    ...eventSuggestions,
-  ];
+  return Array.from(participants.values()).sort((a, b) =>
+    a.label.localeCompare(b.label)
+  );
 }
