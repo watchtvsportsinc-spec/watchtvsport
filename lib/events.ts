@@ -4,6 +4,7 @@ import {
   type MatchData,
   type BroadcastInfo,
 } from "./matches";
+import { championsLeague202627LeaguePhase } from "../source/champions-league-2026-27-league-phase";
 
 export type EntityType = "national_team" | "club" | "player" | "event";
 export type VisualType = "flag" | "crest" | "player" | "generic";
@@ -68,12 +69,24 @@ export function mapMatchToEvent(match: MatchData): EventData {
 }
 
 export function getAllEvents(): EventData[] {
-  return getAllMatches().map(mapMatchToEvent);
+  return [
+    ...championsLeague202627LeaguePhase,
+    ...getAllMatches().map(mapMatchToEvent),
+  ];
 }
 
 export function getEventBySlug(slug: string): EventData | null {
+  const genericEvent = championsLeague202627LeaguePhase.find(
+    (event) => event.slug === slug
+  );
+  if (genericEvent) return genericEvent;
+
   const match = getMatchBySlug(slug);
   return match ? mapMatchToEvent(match) : null;
+}
+
+export function getEventByDetailPath(detailPath: string): EventData | null {
+  return getAllEvents().find((event) => event.detailPath === detailPath) ?? null;
 }
 
 export function getEventTitle(event: EventData): string {
