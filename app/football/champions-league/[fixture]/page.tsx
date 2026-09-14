@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import FavoriteButton from "@/components/FavoriteButton";
-import { getClubAliases, getFixtureSeoAliases } from "@/lib/club-aliases";
+import {
+  clubSlug,
+  getClubAliases,
+  getFixtureSeoAliases,
+} from "@/lib/club-aliases";
 import { getAllEvents, getEventByDetailPath, type Participant } from "@/lib/events";
 import type { FavoriteCandidate } from "@/lib/favorites";
 
@@ -122,6 +126,7 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
         ? {
             "@type": "SportsTeam",
             name: event.participant1.name,
+            url: `https://watchtvsport.com/football/club/${clubSlug(event.participant1.name)}`,
             ...(homeAliases.length ? { alternateName: homeAliases } : {}),
           }
         : null,
@@ -129,6 +134,7 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
         ? {
             "@type": "SportsTeam",
             name: event.participant2.name,
+            url: `https://watchtvsport.com/football/club/${clubSlug(event.participant2.name)}`,
             ...(awayAliases.length ? { alternateName: awayAliases } : {}),
           }
         : null,
@@ -149,6 +155,22 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
         <p className="v2-hero-copy">
           {formatDateTime(event.eventDate)}. Times will be localized from the calendar view.
         </p>
+
+        <div
+          aria-label="Teams"
+          style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "1rem" }}
+        >
+          {event.participant1 ? (
+            <Link href={`/football/club/${clubSlug(event.participant1.name)}`}>
+              {event.participant1.name} club page
+            </Link>
+          ) : null}
+          {event.participant2 ? (
+            <Link href={`/football/club/${clubSlug(event.participant2.name)}`}>
+              {event.participant2.name} club page
+            </Link>
+          ) : null}
+        </div>
 
         <div
           aria-label="Follow teams"
