@@ -54,6 +54,10 @@ function formatEventDate(value: string): string {
   }).format(new Date(value));
 }
 
+function competitionHref(event: EventData): string {
+  return `/football/competition/${event.competitionSlug}`;
+}
+
 export async function generateStaticParams() {
   return getAllClubNames().map((name) => ({ club: clubSlug(name) }));
 }
@@ -155,7 +159,9 @@ export default async function ClubPage({ params }: PageProps) {
             {upcoming.map((event) => (
               <article className="v2-event-card" key={event.id}>
                 <div className="v2-event-main">
-                  <p className="v2-event-competition">{event.competition}</p>
+                  <p className="v2-event-competition">
+                    <Link href={competitionHref(event)}>{event.competition}</Link>
+                  </p>
                   <h3>{event.title}</h3>
                   <p className="v2-event-stage">
                     {formatEventDate(event.eventDate)} · {event.stage ?? "Scheduled"}
@@ -183,7 +189,9 @@ export default async function ClubPage({ params }: PageProps) {
             {recent.map((event) => (
               <article className="v2-event-card" key={event.id}>
                 <div className="v2-event-main">
-                  <p className="v2-event-competition">{event.competition}</p>
+                  <p className="v2-event-competition">
+                    <Link href={competitionHref(event)}>{event.competition}</Link>
+                  </p>
                   <h3>{event.title}</h3>
                   <p className="v2-event-stage">{formatEventDate(event.eventDate)}</p>
                 </div>
