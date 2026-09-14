@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import FavoriteButton from "@/components/FavoriteButton";
 import {
   clubSlug,
@@ -11,19 +12,14 @@ import { getAllEvents, getEventByDetailPath, type Participant } from "@/lib/even
 import type { FavoriteCandidate } from "@/lib/favorites";
 
 type PageProps = {
-  params: Promise<{
-    fixture: string;
-  }>;
-  searchParams?: Promise<{
-    returnTo?: string;
-  }>;
+  params: Promise<{ fixture: string }>;
+  searchParams?: Promise<{ returnTo?: string }>;
 };
 
 function safeReturnTo(value?: string): string {
   if (!value || value.length > 1500 || !value.startsWith("/") || value.startsWith("//")) {
     return "/";
   }
-
   try {
     const parsed = new URL(value, "https://watchtvsport.com");
     if (parsed.origin !== "https://watchtvsport.com") return "/";
@@ -38,7 +34,7 @@ function participantFavorite(participant?: Participant): FavoriteCandidate | nul
   return {
     kind: "participant",
     entityId: participant.id,
-    label: participant.name,
+    label: `${participant.name} (Football)`,
   };
 }
 
@@ -68,7 +64,6 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { fixture } = await params;
   const event = getEventByDetailPath(eventPath(fixture));
-
   if (!event) {
     return {
       title: "Event not found | WatchTVSport",
@@ -76,10 +71,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  const homeName = event.participant1?.name;
-  const awayName = event.participant2?.name;
-  const aliases = getFixtureSeoAliases(homeName, awayName);
-
+  const aliases = getFixtureSeoAliases(event.participant1?.name, event.participant2?.name);
   return {
     title: `${event.title} – Official broadcasters | WatchTVSport`,
     description: `Find official TV channels and streaming platforms for ${event.title} in the UEFA Champions League.`,
@@ -106,15 +98,15 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
   const competitionFavorite: FavoriteCandidate = {
     kind: "competition",
     entityId: `${event.sport}:${event.competitionSlug}`,
-    label: `${event.competition} (${event.sport === "football" ? "Football" : event.sport})`,
+    label: `${event.competition} (Football)`,
   };
   const competitionHref = `/football/competition/${event.competitionSlug}`;
   const confirmedBroadcasts = event.broadcasts.filter(
     (broadcast) => broadcast.coverageStatus === "confirmed"
   );
-
   const homeAliases = event.participant1 ? getClubAliases(event.participant1.name) : [];
   const awayAliases = event.participant2 ? getClubAliases(event.participant2.name) : [];
+
   const sportsEventJsonLd = {
     "@context": "https://schema.org",
     "@type": "SportsEvent",
@@ -153,21 +145,24 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(sportsEventJsonLd) }}
       />
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Football", href: "/football" },
+          { label: event.competition, href: competitionHref },
+          { label: event.title },
+        ]}
+      />
 
       <section className="v2-calendar-hero" aria-labelledby="event-title">
-        <p className="v2-eyebrow">
-          <Link href={competitionHref}>{event.competition}</Link>
-        </p>
+        <p className="v2-eyebrow"><Link href={competitionHref}>{event.competition}</Link></p>
         <h1 id="event-title">{event.title}</h1>
         <p className="v2-signature">{event.stage}</p>
         <p className="v2-hero-copy">
           {formatDateTime(event.eventDate)}. Times will be localized from the calendar view.
         </p>
 
-        <div
-          aria-label="Teams"
-          style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "1rem" }}
-        >
+        <div aria-label="Teams" style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "1rem" }}>
           {event.participant1 ? (
             <Link href={`/football/club/${clubSlug(event.participant1.name)}`}>
               {event.participant1.name} club page
@@ -180,10 +175,7 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
           ) : null}
         </div>
 
-        <div
-          aria-label="Follow teams and competition"
-          style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "1rem" }}
-        >
+        <div aria-label="Follow teams and competition" style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "1rem" }}>
           {homeFavorite ? <FavoriteButton favorite={homeFavorite} /> : null}
           {awayFavorite ? <FavoriteButton favorite={awayFavorite} /> : null}
           <FavoriteButton favorite={competitionFavorite} />
@@ -203,23 +195,17 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
           <div className="v2-empty-state" role="status">
             <h3>Broadcast information pending</h3>
             <p>
-              This fixture is confirmed, but WatchTVSport has not yet verified an official
-              broadcaster for this event. No viewing option will be shown until it is confirmed.
+              This fixture is confirmed, but WatchTVSport has not yet verified an official broadcaster for this event. No viewing option will be shown until it is confirmed.
             </p>
           </div>
         ) : (
           <div className="v2-event-list">
             {confirmedBroadcasts.map((broadcast) => (
-              <article
-                className="v2-event-card"
-                key={`${broadcast.countryCode}-${broadcast.broadcaster}-${broadcast.url}`}
-              >
+              <article className="v2-event-card" key={`${broadcast.countryCode}-${broadcast.broadcaster}-${broadcast.url}`}>
                 <div className="v2-event-main">
                   <p className="v2-event-competition">{broadcast.countryName}</p>
                   <h3>{broadcast.broadcaster}</h3>
-                  <p className="v2-event-stage">
-                    {broadcast.access} · {broadcast.broadcastType ?? "live"}
-                  </p>
+                  <p className="v2-event-stage">{broadcast.access} · {broadcast.broadcastType ?? "live"}</p>
                 </div>
                 <a
                   className="v2-broadcast-link"
