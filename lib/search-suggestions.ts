@@ -50,6 +50,19 @@ function participantHref(participant: Participant, sport: string): string {
   return `/?${params.toString()}`;
 }
 
+function competitionHref(sport: string, competitionSlug: string): string {
+  if (sport === "football") {
+    return `/football/competition/${competitionSlug}`;
+  }
+
+  const params = new URLSearchParams({
+    view: "all",
+    sport,
+    competition: competitionSlug,
+  });
+  return `/?${params.toString()}`;
+}
+
 export function buildSearchSuggestions(events: EventData[]): SearchSuggestion[] {
   const participants = new Map<string, SearchSuggestion>();
   const competitions = new Map<string, SearchSuggestion>();
@@ -78,18 +91,12 @@ export function buildSearchSuggestions(events: EventData[]): SearchSuggestion[] 
 
     const competitionKey = `${event.sport}:${event.competitionSlug}`;
     if (!competitions.has(competitionKey)) {
-      const params = new URLSearchParams({
-        view: "all",
-        sport: event.sport,
-        competition: event.competitionSlug,
-      });
-
       competitions.set(competitionKey, {
         id: `competition:${competitionKey}`,
         label: `${event.competition} (${sportLabel(event.sport)})`,
         value: event.competition,
         kind: "Competition",
-        href: `/?${params.toString()}`,
+        href: competitionHref(event.sport, event.competitionSlug),
         searchTerms: unique([
           event.competition,
           event.competitionSlug.replaceAll("-", " "),
