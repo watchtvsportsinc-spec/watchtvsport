@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import FavoriteButton from "@/components/FavoriteButton";
 import SearchAutocomplete from "@/components/SearchAutocomplete";
 import TimezoneSync from "@/components/TimezoneSync";
-import type { FavoriteCandidate } from "@/lib/favorites";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 import { buildSearchSuggestions } from "@/lib/search-suggestions";
 import {
@@ -67,24 +65,6 @@ function eventStage(event: CalendarEvent): string {
   return [event.stage, event.group ? `Group ${event.group}` : ""]
     .filter(Boolean)
     .join(" · ");
-}
-
-function eventFavorite(event: CalendarEvent): FavoriteCandidate {
-  return {
-    kind: "event",
-    entityId: event.id,
-    label: event.title,
-    event: {
-      detailPath: event.detailPath,
-      eventDate: event.eventDate,
-      sport: event.sport,
-      competition: event.competition,
-      participantNames: [
-        event.participant1?.name,
-        event.participant2?.name,
-      ].filter((name): name is string => Boolean(name)),
-    },
-  };
 }
 
 function hiddenInput(name: string, value: string | undefined) {
@@ -194,62 +174,62 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
         {showCategoryFilters ? (
           <form className="v2-filter-form" action="/" method="get">
-          {filters.view !== "today"
-            ? hiddenInput("view", filters.view)
-            : null}
-          {filters.view === "date" ? hiddenInput("date", filters.date) : null}
-          {hiddenInput("q", filters.query)}
-          {filters.timeZone !== "UTC"
-            ? hiddenInput("tz", filters.timeZone)
-            : null}
+            {filters.view !== "today"
+              ? hiddenInput("view", filters.view)
+              : null}
+            {filters.view === "date" ? hiddenInput("date", filters.date) : null}
+            {hiddenInput("q", filters.query)}
+            {filters.timeZone !== "UTC"
+              ? hiddenInput("tz", filters.timeZone)
+              : null}
 
-          <label htmlFor="sport-filter">
-            Sport
-            <select
-              id="sport-filter"
-              name="sport"
-              defaultValue={filters.sport}
-            >
-              <option value="">All sports</option>
-              {options.sports.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
+            <label htmlFor="sport-filter">
+              Sport
+              <select
+                id="sport-filter"
+                name="sport"
+                defaultValue={filters.sport}
+              >
+                <option value="">All sports</option>
+                {options.sports.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          <label htmlFor="competition-filter">
-            Competition
-            <select
-              id="competition-filter"
-              name="competition"
-              defaultValue={filters.competition}
-            >
-              <option value="">All competitions</option>
-              {options.competitions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
+            <label htmlFor="competition-filter">
+              Competition
+              <select
+                id="competition-filter"
+                name="competition"
+                defaultValue={filters.competition}
+              >
+                <option value="">All competitions</option>
+                {options.competitions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          <button type="submit">Apply filters</button>
+            <button type="submit">Apply filters</button>
 
-          {hasFilters ? (
-            <Link
-              className="v2-reset-link"
-              href={buildCalendarHref(filters, {
-                query: "",
-                sport: "",
-                competition: "",
-                page: 1,
-              })}
-            >
-              Clear filters
-            </Link>
-          ) : null}
+            {hasFilters ? (
+              <Link
+                className="v2-reset-link"
+                href={buildCalendarHref(filters, {
+                  query: "",
+                  sport: "",
+                  competition: "",
+                  page: 1,
+                })}
+              >
+                Clear filters
+              </Link>
+            ) : null}
           </form>
         ) : null}
       </section>
@@ -351,10 +331,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
                           <p className="v2-event-stage">
                             {eventStage(event)}
                           </p>
-                          <FavoriteButton
-                            compact
-                            favorite={eventFavorite(event)}
-                          />
                         </div>
 
                         <Link
