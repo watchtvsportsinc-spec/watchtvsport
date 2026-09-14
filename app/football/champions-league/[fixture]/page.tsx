@@ -108,6 +108,7 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
     entityId: `${event.sport}:${event.competitionSlug}`,
     label: `${event.competition} (${event.sport === "football" ? "Football" : event.sport})`,
   };
+  const competitionHref = `/football/competition/${event.competitionSlug}`;
   const confirmedBroadcasts = event.broadcasts.filter(
     (broadcast) => broadcast.coverageStatus === "confirmed"
   );
@@ -154,7 +155,9 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
       />
 
       <section className="v2-calendar-hero" aria-labelledby="event-title">
-        <p className="v2-eyebrow">{event.competition}</p>
+        <p className="v2-eyebrow">
+          <Link href={competitionHref}>{event.competition}</Link>
+        </p>
         <h1 id="event-title">{event.title}</h1>
         <p className="v2-signature">{event.stage}</p>
         <p className="v2-hero-copy">
