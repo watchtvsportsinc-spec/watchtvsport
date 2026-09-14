@@ -331,3 +331,43 @@ export function getFavoriteEventFeed(
 
   return { exactEvents, upcomingEvents };
 }
+
+export function buildCalendarHref(
+  filters: CalendarFilters,
+  changes: Partial<CalendarFilters> = {},
+  hash?: string
+): string {
+  const next = { ...filters, ...changes };
+  const params = new URLSearchParams();
+
+  if (next.view !== "today") params.set("view", next.view);
+  if (next.view === "date" && next.date) params.set("date", next.date);
+  if (next.query) params.set("q", next.query);
+  if (next.sport) params.set("sport", next.sport);
+  if (next.competition) params.set("competition", next.competition);
+  if (next.timeZone !== "UTC") params.set("tz", next.timeZone);
+  if (next.page > 1) params.set("page", String(next.page));
+
+  const query = params.toString();
+  const fragment = hash ? `#${encodeURIComponent(hash)}` : "";
+  return `${query ? `/?${query}` : "/"}${fragment}`;
+}
+
+export function formatCalendarDay(date: string, timeZone: string): string {
+  return new Intl.DateTimeFormat("en", {
+    timeZone,
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(date));
+}
+
+export function formatCalendarTime(date: string, timeZone: string): string {
+  return new Intl.DateTimeFormat("en", {
+    timeZone,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date(date));
+}
