@@ -41,6 +41,25 @@ function unique(values: readonly string[]): string[] {
   return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
 }
 
+export function clubSlug(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ø/gi, "o")
+    .replace(/æ/gi, "ae")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export function getAllClubNames(): string[] {
+  return Object.keys(CLUB_ALIASES);
+}
+
+export function getClubNameBySlug(slug: string): string | null {
+  return getAllClubNames().find((name) => clubSlug(name) === slug) ?? null;
+}
+
 export function getClubAliases(name: string): string[] {
   return unique(CLUB_ALIASES[name] ?? []);
 }
