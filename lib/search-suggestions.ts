@@ -1,4 +1,5 @@
 import { clubSlug, getClubSearchNames } from "./club-aliases";
+import { entitySlug } from "./entity-pages";
 import type { EventData, Participant } from "./events";
 
 export type SearchSuggestion = {
@@ -38,27 +39,19 @@ function participantSearchTerms(participant: Participant): string[] {
 }
 
 function participantHref(participant: Participant, sport: string): string {
-  if (participant.type === "club" && sport === "football") {
-    return `/football/club/${clubSlug(participant.name)}`;
+  if (sport === "football") {
+    if (participant.type === "club") {
+      return `/football/club/${clubSlug(participant.name)}`;
+    }
+    if (participant.type === "national_team") {
+      return `/football/nation/${entitySlug(participant.name)}`;
+    }
   }
 
   const params = new URLSearchParams({
     view: "all",
     q: participant.name,
     sport,
-  });
-  return `/?${params.toString()}`;
-}
-
-function competitionHref(sport: string, competitionSlug: string): string {
-  if (sport === "football") {
-    return `/football/competition/${competitionSlug}`;
-  }
-
-  const params = new URLSearchParams({
-    view: "all",
-    sport,
-    competition: competitionSlug,
   });
   return `/?${params.toString()}`;
 }
@@ -91,12 +84,21 @@ export function buildSearchSuggestions(events: EventData[]): SearchSuggestion[] 
 
     const competitionKey = `${event.sport}:${event.competitionSlug}`;
     if (!competitions.has(competitionKey)) {
+      const href =
+        event.sport === "football"
+          ? `/football/competition/${event.competitionSlug}`
+          : `/?${new URLSearchParams({
+              view: "all",
+              sport: event.sport,
+              competition: event.competitionSlug,
+            }).toString()}`;
+
       competitions.set(competitionKey, {
         id: `competition:${competitionKey}`,
         label: `${event.competition} (${sportLabel(event.sport)})`,
         value: event.competition,
         kind: "Competition",
-        href: competitionHref(event.sport, event.competitionSlug),
+        href,
         searchTerms: unique([
           event.competition,
           event.competitionSlug.replaceAll("-", " "),
