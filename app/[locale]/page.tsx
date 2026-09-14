@@ -6,18 +6,19 @@ type PageProps = {
   params: Promise<{
     locale: string;
   }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export default async function LocalizedHomePage({ params }: PageProps) {
+export default async function LocalizedHomePage({ params, searchParams }: PageProps) {
   const { locale } = await params;
 
   if (!isValidLocale(locale)) {
     notFound();
   }
 
-  return <HomePage />;
+  return <HomePage searchParams={searchParams} />;
 }

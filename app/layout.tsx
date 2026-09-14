@@ -4,15 +4,16 @@ import Link from "next/link";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
+import HeaderNav from "./HeaderNav";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://watchtvsport.com"),
   title: {
-    default: "WatchTVSport | Where to Watch Football Matches Legally",
+    default: "WatchTVSport | Official Sports Broadcasters Worldwide",
     template: "%s | WatchTVSport",
   },
   description:
-    "Find where to watch football matches legally by country. Compare official broadcasters, TV channels, and free or paid viewing options for FIFA World Cup 2026 matches.",
+    "Find where to watch sports legally. Compare official TV channels and streaming platforms by event and territory.",
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
@@ -20,12 +21,12 @@ export const metadata: Metadata = {
   },
   applicationName: "WatchTVSport",
   keywords: [
-    "where to watch football",
+    "where to watch sports",
     "official broadcasters",
-    "world cup 2026 TV channels",
-    "watch football by country",
-    "free football broadcast",
-    "legal football streaming options",
+    "sports TV channels",
+    "watch sports by country",
+    "free sports broadcast",
+    "legal sports streaming options",
     "FIFA World Cup 2026",
     "TV channels by country",
   ],
@@ -38,24 +39,24 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "WatchTVSport",
-    title: "WatchTVSport | Where to Watch Football Matches Legally",
+    title: "WatchTVSport | Official Sports Broadcasters Worldwide",
     description:
-      "Compare official football broadcasters by country and see where FIFA World Cup 2026 matches are available for free or paid.",
+      "Compare official sports broadcasters by event and territory, including free and paid viewing options.",
     url: "/",
     images: [
       {
         url: "https://watchtvsport.com/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "WatchTVSport - Official football broadcasters by country",
+        alt: "WatchTVSport - Official sports broadcasters worldwide",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "WatchTVSport | Where to Watch Football Matches Legally",
+    title: "WatchTVSport | Official Sports Broadcasters Worldwide",
     description:
-      "Find official football broadcasters by country and compare legal viewing options worldwide.",
+      "Find official sports broadcasters and compare legal viewing options worldwide.",
     images: ["https://watchtvsport.com/og-image.jpg"],
   },
   robots: {
@@ -79,7 +80,7 @@ export default function RootLayout({
     url: "https://watchtvsport.com",
 logo: "https://watchtvsport.com/logo-watchtvsport-v3.png",
     description:
-      "WatchTVSport helps users find where to watch football matches legally by country using official broadcaster information only.",
+      "WatchTVSport helps users find where to watch sports legally using official broadcaster information only.",
   };
 
   const websiteSchema = {
@@ -88,18 +89,12 @@ logo: "https://watchtvsport.com/logo-watchtvsport-v3.png",
     name: "WatchTVSport",
     url: "https://watchtvsport.com",
     description:
-      "Find where to watch football matches legally by country.",
+      "Find official sports broadcasters by event and territory.",
   };
 
 return (
   <html lang="en">
  <head>
-  <link
-    rel="preload"
-    as="image"
-    href="/hero-stadium-bg.webp"
-  />
-
   <script
     async
     src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5316440056832386"
@@ -117,6 +112,13 @@ return (
     >
 <style>{`
   @media (max-width: 768px) {
+    .headerLogo {
+      width: 132px !important;
+      height: 25px !important;
+    }
+  }
+
+  @media (min-width: 390px) and (max-width: 768px) {
     .headerLogo {
       width: 160px !important;
       height: 30px !important;
@@ -190,47 +192,7 @@ return (
 />
               </Link>
 
-              <nav
-  style={{
-    display: "flex",
-    alignItems: "center",
-    gap: "1rem",
-    flexWrap: "nowrap",
-  }}
->
-  <Link
-    href="/"
-    style={{
-      textDecoration: "none",
-      color: "#CBD5E1",
-      fontWeight: 600,
-    }}
-  >
-    Home
-  </Link>
-
-  <Link
-    href="/schedule"
-    style={{
-      textDecoration: "none",
-      color: "#CBD5E1",
-      fontWeight: 600,
-    }}
-  >
-    Schedule
-  </Link>
-
-  <Link
-    href="/country"
-    style={{
-      textDecoration: "none",
-      color: "#CBD5E1",
-      fontWeight: 600,
-    }}
-  >
-    Countries
-  </Link>
-</nav>
+              <HeaderNav />
             </div>
           </header>
 
@@ -272,9 +234,9 @@ return (
                     fontSize: "0.95rem",
                   }}
                 >
-                  Find where to watch football matches legally by country.
-                  Compare official broadcasters, TV channels, and free or paid
-                  viewing options worldwide.
+                  Find where to watch sports legally. Compare official
+                  broadcasters, TV channels, and platforms by event and
+                  territory.
                 </p>
               </div>
 
@@ -307,13 +269,13 @@ return (
                   </Link>
 
                   <Link
-                    href="/"
+                    href="/?view=archive&competition=fifa-world-cup-2026"
                     style={{
                       textDecoration: "none",
                       color: "#CBD5E1",
                     }}
                   >
-                    FIFA World Cup 2026
+                    FIFA World Cup 2026 archive
                   </Link>
                 </div>
               </div>
@@ -372,7 +334,7 @@ return (
 >
   <span>© 2026 WatchTVSport</span>
 
-  <a
+  <Link
     href="/calendar"
     style={{
       color: "#60A5FA",
@@ -381,7 +343,7 @@ return (
     }}
   >
     📅 World Cup 2026 Calendar
-  </a>
+  </Link>
 </div>
 
 <span>Legal viewing information only</span>

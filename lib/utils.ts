@@ -141,12 +141,16 @@ export function getSafeBroadcasts(match: MatchData): SafeBroadcastInfo[] {
     );
   };
 
+  const isConfirmed = (broadcast: BroadcastInfo) =>
+    broadcast.coverageStatus === "confirmed";
+
   const embeddedBroadcasts = Array.isArray(match.broadcasts)
-    ? match.broadcasts.filter(isBroadcastAvailableForMatch)
+    ? match.broadcasts.filter(isConfirmed).filter(isBroadcastAvailableForMatch)
     : [];
 
   const sourceOfTruthBroadcasts = Object.values(broadcastsByCountry)
     .flat()
+    .filter(isConfirmed)
     .filter(isBroadcastAvailableForMatch);
 
   const seen = new Set<string>();

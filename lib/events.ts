@@ -25,6 +25,7 @@ export type EventData = {
   stage?: string;
   group?: string;
   eventDate: string;
+  status?: "scheduled" | "live" | "finished";
   participant1?: Participant;
   participant2?: Participant;
   title: string;
@@ -41,6 +42,7 @@ export function mapMatchToEvent(match: MatchData): EventData {
     stage: match.stage,
     group: match.group,
     eventDate: match.matchDate,
+    status: match.status,
     participant1: {
       name: match.homeTeam.name,
       shortName: match.homeTeam.code,

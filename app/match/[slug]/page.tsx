@@ -30,8 +30,28 @@ type PageProps = {
     country?: string;
     countries?: string;
     search?: string;
+    returnTo?: string;
   }>;
 };
+
+function getSafeReturnTo(value?: string): string {
+  if (
+    !value ||
+    value.length > 1500 ||
+    !value.startsWith("/") ||
+    value.startsWith("//")
+  ) {
+    return "/";
+  }
+
+  try {
+    const parsed = new URL(value, "https://watchtvsport.com");
+    if (parsed.origin !== "https://watchtvsport.com") return "/";
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return "/";
+  }
+}
 
 function getWatchButtonLabel(countryCode: string, broadcaster: string) {
   const code = countryCode.toLowerCase();
@@ -88,12 +108,14 @@ function buildFilterHref({
   countries,
   languages,
   search,
+  returnTo,
 }: {
   slug: string;
   access: string[];
   countries: string[];
   languages: string[];
   search?: string;
+  returnTo: string;
 }) {
   const params = new URLSearchParams();
 
@@ -112,6 +134,8 @@ function buildFilterHref({
   if (search && search.trim().length > 0) {
     params.set("search", search.trim());
   }
+
+  params.set("returnTo", returnTo);
 
   const query = params.toString();
 
@@ -211,6 +235,7 @@ export default async function MatchPage({ params, searchParams }: PageProps) {
     resolvedSearchParams.languages ?? resolvedSearchParams.language
   );
   const selectedSearch = (resolvedSearchParams.search || "").trim();
+  const returnTo = getSafeReturnTo(resolvedSearchParams.returnTo);
 
   const { slug } = await params;
   const normalizedSlug = normalizeSlug(slug);
@@ -613,6 +638,23 @@ const sportsEventSchema = {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
+
+      <Link
+        href={returnTo}
+        prefetch={false}
+        style={{
+          display: "inline-flex",
+          minHeight: "44px",
+          alignItems: "center",
+          marginBottom: "0.75rem",
+          color: "#93C5FD",
+          fontSize: "0.88rem",
+          fontWeight: 850,
+          textDecoration: "none",
+        }}
+      >
+        ← Back to calendar
+      </Link>
 
       <style
         dangerouslySetInnerHTML={{
@@ -1212,6 +1254,7 @@ flagStyle={{
               "0 18px 42px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.04)",
           }}
         >
+          <input type="hidden" name="returnTo" value={returnTo} />
           <div style={{ display: "grid", gap: "0.48rem" }}>
             <div
               style={{
@@ -1251,6 +1294,7 @@ alignItems: "center",
                       countries: selectedCountries,
                       languages: selectedLanguages,
                       search: selectedSearch,
+                      returnTo,
                     })}
                     style={{
                       textDecoration: "none",
@@ -1426,7 +1470,13 @@ justifyContent: "center",
 
           {hasActiveFilters ? (
             <Link
-              href={`/match/${safeMatch.slug}`}
+              href={buildFilterHref({
+                slug: safeMatch.slug,
+                access: [],
+                countries: [],
+                languages: [],
+                returnTo,
+              })}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
