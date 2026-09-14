@@ -15,11 +15,17 @@ type PageProps = {
   params: Promise<{ club: string }>;
 };
 
+function clubEntityId(clubName: string): string {
+  return `club:football:${clubSlug(clubName)}`;
+}
+
 function clubEvents(clubName: string): EventData[] {
-  const id = `club:${clubSlug(clubName)}`;
+  const id = clubEntityId(clubName);
   return getAllEvents()
     .filter(
-      (event) => event.participant1?.id === id || event.participant2?.id === id
+      (event) =>
+        event.sport === "football" &&
+        (event.participant1?.id === id || event.participant2?.id === id)
     )
     .sort(
       (a, b) =>
@@ -30,8 +36,8 @@ function clubEvents(clubName: string): EventData[] {
 function favoriteForClub(clubName: string): FavoriteCandidate {
   return {
     kind: "participant",
-    entityId: `club:${clubSlug(clubName)}`,
-    label: clubName,
+    entityId: clubEntityId(clubName),
+    label: `${clubName} (Football)`,
   };
 }
 
@@ -69,7 +75,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `${clubName} TV schedule & official broadcasters | WatchTVSport`,
     description: `Find upcoming ${clubName} matches, official TV channels and streaming options${aliasText ? ` for searches including ${aliasText}` : ""}.`,
-    keywords: [clubName, ...aliases, `${clubName} TV`, `${clubName} live stream`, `${clubName} schedule`],
+    keywords: [
+      clubName,
+      ...aliases,
+      `${clubName} TV`,
+      `${clubName} live stream`,
+      `${clubName} schedule`,
+    ],
     alternates: { canonical: `/football/club/${club}` },
   };
 }
@@ -83,10 +95,15 @@ export default async function ClubPage({ params }: PageProps) {
   const events = clubEvents(clubName);
   const now = Date.now();
   const upcoming = events.filter(
-    (event) => event.status === "live" || new Date(event.eventDate).getTime() >= now
+    (event) =>
+      event.status === "live" ||
+      (event.status !== "finished" && new Date(event.eventDate).getTime() >= now)
   );
   const recent = events
-    .filter((event) => new Date(event.eventDate).getTime() < now)
+    .filter(
+      (event) =>
+        event.status === "finished" || new Date(event.eventDate).getTime() < now
+    )
     .reverse()
     .slice(0, 8);
   const favorite = favoriteForClub(clubName);
