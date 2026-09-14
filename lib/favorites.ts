@@ -70,6 +70,19 @@ function isTechnicalId(value: string): boolean {
   return /^[a-zA-Z0-9][a-zA-Z0-9:._/-]*$/.test(value);
 }
 
+function migrateLegacyParticipantId(kind: FavoriteKind, entityId: string): string {
+  if (kind !== "participant") return entityId;
+
+  // Early V2 builds stored football clubs as `club:<slug>`. Club identities are
+  // now scoped by sport so organizations such as PSG football and PSG handball
+  // can coexist safely. Existing local favorites are normalized on read.
+  if (/^club:[^:]+$/.test(entityId)) {
+    return entityId.replace(/^club:/, "club:football:");
+  }
+
+  return entityId;
+}
+
 function sanitizeEventContext(value: unknown): FavoriteEventContext | undefined {
   if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
 
@@ -103,20 +116,21 @@ function sanitizeFavoriteItem(value: unknown): FavoriteItem | null {
 
   const candidate = value as Record<string, unknown>;
   const kind = candidate.kind;
-  const entityId = safeString(candidate.entityId, 180);
+  const rawEntityId = safeString(candidate.entityId, 180);
   const label = safeString(candidate.label, 200);
   const savedAt = safeString(candidate.savedAt, 40);
 
   if (
     !isFavoriteKind(kind) ||
-    !entityId ||
-    !isTechnicalId(entityId) ||
+    !rawEntityId ||
+    !isTechnicalId(rawEntityId) ||
     !label ||
     !savedAt
   ) {
     return null;
   }
 
+  const entityId = migrateLegacyParticipantId(kind, rawEntityId);
   const parsedDate = new Date(savedAt);
   if (Number.isNaN(parsedDate.getTime())) return null;
 
