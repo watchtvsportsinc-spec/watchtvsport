@@ -14,6 +14,21 @@ function unique(values: string[]): string[] {
   return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
 }
 
+function sportLabel(sport: string): string {
+  if (sport === "football") return "Football";
+  if (sport === "handball") return "Handball";
+  if (sport === "basketball") return "Basketball";
+  if (sport === "tennis") return "Tennis";
+  if (sport === "formula-1") return "Formula 1";
+  if (sport === "motogp") return "MotoGP";
+
+  return sport
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 function participantSearchTerms(participant: Participant): string[] {
   if (participant.type === "club") {
     return getClubSearchNames(participant.name);
@@ -22,12 +37,16 @@ function participantSearchTerms(participant: Participant): string[] {
   return unique([participant.name, participant.shortName ?? ""]);
 }
 
-function participantHref(participant: Participant): string {
-  if (participant.type === "club") {
+function participantHref(participant: Participant, sport: string): string {
+  if (participant.type === "club" && sport === "football") {
     return `/football/club/${clubSlug(participant.name)}`;
   }
 
-  const params = new URLSearchParams({ view: "all", q: participant.name });
+  const params = new URLSearchParams({
+    view: "all",
+    q: participant.name,
+    sport,
+  });
   return `/?${params.toString()}`;
 }
 
@@ -40,15 +59,23 @@ export function buildSearchSuggestions(events: EventData[]): SearchSuggestion[] 
   for (const event of events) {
     for (const participant of [event.participant1, event.participant2]) {
       if (!participant) continue;
-      if (teams.has(participant.id)) continue;
 
-      teams.set(participant.id, {
-        id: participant.id,
-        label: participant.name,
+      // A club name may exist in several sports (for example PSG football and handball),
+      // so sport is part of the suggestion identity and is always shown to the user.
+      const teamKey = `${event.sport}:${participant.id}`;
+      if (teams.has(teamKey)) continue;
+
+      teams.set(teamKey, {
+        id: `team:${event.sport}:${participant.id}`,
+        label: `${participant.name} (${sportLabel(event.sport)})`,
         value: participant.name,
         kind: "Team",
-        href: participantHref(participant),
-        searchTerms: participantSearchTerms(participant),
+        href: participantHref(participant, event.sport),
+        searchTerms: unique([
+          ...participantSearchTerms(participant),
+          event.sport,
+          sportLabel(event.sport),
+        ]),
       });
     }
 
