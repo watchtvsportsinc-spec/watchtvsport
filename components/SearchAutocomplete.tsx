@@ -72,6 +72,15 @@ function scoreSuggestion(suggestion: SearchSuggestion, query: string): number {
   return best;
 }
 
+function withTimeZone(href: string, timeZone?: string): string {
+  if (!timeZone || timeZone === "UTC") return href;
+
+  const url = new URL(href, window.location.origin);
+  if (url.origin !== window.location.origin) return href;
+  if (url.pathname === "/") url.searchParams.set("tz", timeZone);
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
 export default function SearchAutocomplete({
   defaultValue,
   sport,
@@ -101,9 +110,10 @@ export default function SearchAutocomplete({
   function chooseSuggestion(index: number) {
     const suggestion = matches[index];
     if (!suggestion) return;
+
     setValue(suggestion.value);
     setActiveIndex(-1);
-    requestAnimationFrame(() => inputRef.current?.form?.requestSubmit());
+    window.location.assign(withTimeZone(suggestion.href, timeZone));
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {
@@ -189,7 +199,7 @@ export default function SearchAutocomplete({
                 fontWeight: 700,
               }}
             >
-              ↑↓ navigate · Enter select · Esc close
+              ↑↓ navigate · Enter open · Esc close
             </p>
           </div>
         ) : null}
