@@ -5,14 +5,16 @@ import { createJiti } from "jiti";
 import { validateImportBundle } from "./import-validation.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const DEFAULT_OUTPUT = resolve(ROOT, "data/imports/seed-2026-ucl-f1.json");
-const OBSERVED_AT = "2026-09-14T21:00:00-04:00";
+const DEFAULT_OUTPUT = resolve(ROOT, "data/imports/seed-2026-ucl-f1-ufc.json");
+const OBSERVED_AT = "2026-09-14T22:50:00-04:00";
 
 const UEFA_EVIDENCE =
   "https://www.uefa.com/uefachampionsleague/news/02a8-2174c9e9019d-f909a77bd77a-1000--2026-27-champions-league-all-the-league-phase-fixtures/";
 const F1_CALENDAR_EVIDENCE = "https://www.formula1.com/en/racing/2026";
 const F1_FORMAT_EVIDENCE =
   "https://www.formula1.com/en/latest/article/the-beginners-guide-to-the-formula-1-weekend.5RFZzGXNhEi9AEuMXwo987";
+const UFC_EVENTS_EVIDENCE = "https://www.ufc.com/events";
+const UFC_WATCH_EVIDENCE = "https://www.ufc.com/watch/schedule";
 
 function record(entityType, externalKey, evidenceUrl, payload) {
   return { entityType, externalKey, evidenceUrl, payload };
@@ -35,6 +37,9 @@ export async function buildV2MultisportSeed() {
     formula1Season2026Weekends,
     getFormula1SessionPlan2026,
   } = await jiti.import(resolve(ROOT, "source/formula-1-2026-season.ts"));
+  const { ufc2026UpcomingCards } = await jiti.import(
+    resolve(ROOT, "source/ufc-2026-upcoming.ts")
+  );
 
   const records = [];
 
@@ -51,6 +56,13 @@ export async function buildV2MultisportSeed() {
       name: "Formula 1",
       registryId: "formula-1",
       eventModel: "race_session",
+      participantPages: "none",
+    }),
+    record("sport", "sport:ufc", UFC_EVENTS_EVIDENCE, {
+      slug: "ufc",
+      name: "UFC",
+      registryId: "ufc",
+      eventModel: "fight_card",
       participantPages: "none",
     }),
     record("competition", "competition:football:champions-league", UEFA_EVIDENCE, {
@@ -71,6 +83,17 @@ export async function buildV2MultisportSeed() {
     }),
     record("season", "season:formula-1:formula-1:2026", F1_CALENDAR_EVIDENCE, {
       competitionExternalKey: "competition:formula-1:formula-1",
+      slug: "2026",
+      label: "2026",
+      isCurrent: true,
+    }),
+    record("competition", "competition:ufc:ufc", UFC_EVENTS_EVIDENCE, {
+      sportExternalKey: "sport:ufc",
+      slug: "ufc",
+      name: "UFC",
+    }),
+    record("season", "season:ufc:ufc:2026", UFC_EVENTS_EVIDENCE, {
+      competitionExternalKey: "competition:ufc:ufc",
       slug: "2026",
       label: "2026",
       isCurrent: true,
@@ -166,9 +189,7 @@ export async function buildV2MultisportSeed() {
     );
 
     const sessionPlan = getFormula1SessionPlan2026(weekend);
-    if (sessionPlan.length !== 5) {
-      throw new Error(`${weekend.slug} must contain exactly five F1 weekend sessions`);
-    }
+    if (sessionPlan.length !== 5) throw new Error(`${weekend.slug} must contain exactly five F1 weekend sessions`);
 
     for (const session of sessionPlan) {
       const evidenceUrl = session.eventDate ? F1_CALENDAR_EVIDENCE : F1_FORMAT_EVIDENCE;
@@ -197,19 +218,71 @@ export async function buildV2MultisportSeed() {
     }
   }
 
+  for (const card of ufc2026UpcomingCards) {
+    const pageKey = `page:ufc:event:${card.slug}`;
+    const editionKey = `edition:ufc:${card.slug}:${card.date}`;
+    const canonicalPath = `/ufc/event/${card.slug}`;
+    records.push(
+      record("event_page", pageKey, UFC_EVENTS_EVIDENCE, {
+        sportExternalKey: "sport:ufc",
+        competitionExternalKey: "competition:ufc:ufc",
+        pageType: "multi_session",
+        eventGroupType: "fight_card",
+        slug: card.slug,
+        title: card.name,
+        canonicalPath,
+        isPublished: true,
+        verificationStatus: "confirmed",
+      }),
+      record("event_edition", editionKey, UFC_EVENTS_EVIDENCE, {
+        eventPageExternalKey: pageKey,
+        seasonExternalKey: "season:ufc:ufc:2026",
+        editionKey: card.date,
+        label: card.date,
+        venueName: card.venue,
+        countryName: card.country,
+        status: "scheduled",
+        isPublished: true,
+        verificationStatus: "confirmed",
+      })
+    );
+
+    for (const [index, session] of card.sessions.entries()) {
+      records.push(
+        record("event", `event:ufc:2026:${card.slug}:${session.type}`, UFC_WATCH_EVIDENCE, {
+          sportExternalKey: "sport:ufc",
+          competitionExternalKey: "competition:ufc:ufc",
+          seasonExternalKey: "season:ufc:ufc:2026",
+          eventPageExternalKey: pageKey,
+          eventEditionExternalKey: editionKey,
+          eventKind: "session",
+          sessionType: session.type,
+          sessionLabel: session.label,
+          sequenceNumber: index + 1,
+          slug: `${card.slug}-${session.type.replaceAll("_", "-")}`,
+          title: `${card.name} — ${session.label}`,
+          eventDate: session.eventDate,
+          status: "scheduled",
+          venueName: card.venue,
+          countryName: card.country,
+          canonicalPath: `${canonicalPath}#${session.type.replaceAll("_", "-")}`,
+          verificationStatus: "confirmed",
+          timingStatus: "confirmed",
+        })
+      );
+    }
+  }
+
   const bundle = {
     schemaVersion: 1,
     source: "watchtvsport-curated-2026",
-    idempotencyKey: "seed-ucl-2026-27-f1-2026-v1",
+    idempotencyKey: "seed-ucl-2026-27-f1-2026-ufc-2026-v1",
     observedAt: OBSERVED_AT,
     records,
   };
 
   const validation = validateImportBundle(bundle);
-  if (!validation.ok) {
-    throw new Error(`Generated seed is invalid:\n${JSON.stringify(validation.issues, null, 2)}`);
-  }
-
+  if (!validation.ok) throw new Error(`Generated seed is invalid:\n${JSON.stringify(validation.issues, null, 2)}`);
   return bundle;
 }
 
