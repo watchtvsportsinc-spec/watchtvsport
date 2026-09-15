@@ -23,13 +23,15 @@ export async function generateStaticParams(){return Object.keys(SPORT_CONFIG).ma
 export async function generateMetadata({params}:PageProps):Promise<Metadata>{
   const {sport}=await params; const cfg=SPORT_CONFIG[sport];
   if(!cfg)return{title:"Sport not found",robots:{index:false,follow:false}};
-  const snapshot=await getPublicEventsSnapshot();
+  const [snapshot,participants]=await Promise.all([getPublicEventsSnapshot(),getPublicParticipantsForSport(cfg.filter)]);
   const hasEvents=snapshot.events.some(e=>e.sport===cfg.filter);
+  const hasVerifiedDirectory=Boolean(cfg.league&&participants.some(p=>p.type==="team"||p.type==="club"));
   return{
     title:`${cfg.label} TV schedule, teams & official broadcasters`,
     description:`Find ${cfg.label} teams, schedules and where to watch legally with official TV channels and streaming platforms by country.`,
     alternates:{canonical:`/sports/${sport}`},
-    robots:hasEvents?{index:true,follow:true}:{index:false,follow:true},
+    robots:hasEvents||hasVerifiedDirectory?{index:true,follow:true}:{index:false,follow:true},
+    openGraph:{title:`${cfg.label} teams, schedule & where to watch`,description:cfg.description,url:`/sports/${sport}`,type:"website"},
   };
 }
 
@@ -38,7 +40,9 @@ export default async function SportLandingPage({params}:PageProps){
   const [snapshot,participants]=await Promise.all([getPublicEventsSnapshot(),getPublicParticipantsForSport(cfg.filter)]);
   const events=snapshot.events.filter(e=>e.sport===cfg.filter).sort((a,b)=>Date.parse(a.eventDate)-Date.parse(b.eventDate));
   const teams=participants.filter(p=>p.type==="team"||p.type==="club");
+  const leagueJsonLd=cfg.league&&teams.length?{"@context":"https://schema.org","@type":"SportsOrganization",name:cfg.league,sport:cfg.name,url:`https://watchtvsport.com/sports/${sport}`,member:teams.map(team=>({"@type":"SportsTeam",name:team.name,url:`https://watchtvsport.com/sports/${sport}/team/${team.slug}`}))}:null;
   return <main id="main-content" className="v2-calendar">
+    {leagueJsonLd?<script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(leagueJsonLd)}}/>:null}
     <Breadcrumbs items={[{label:"Home",href:"/"},{label:"Sports",href:"/#sports"},{label:cfg.label}]}/>
     <section className="v2-calendar-hero">
       <p className="v2-eyebrow">{cfg.name}</p><h1>{cfg.label}</h1><p className="v2-hero-copy">{cfg.description}</p>
