@@ -12,7 +12,13 @@ type Props = {
   suggestions: SearchSuggestion[];
 };
 
-const GROUP_ORDER = ["Club", "Nation", "Grand Prix", "Competition"] as const;
+const GROUP_ORDER: SearchSuggestion["kind"][] = [
+  "Club",
+  "Nation",
+  "Grand Prix",
+  "UFC Event",
+  "Competition",
+];
 
 const FORM_STYLE = {
   marginTop: "1.25rem",
@@ -84,6 +90,7 @@ function scoreSuggestion(suggestion: SearchSuggestion, query: string): number {
 
   if (best >= 0) {
     if (suggestion.kind === "Club" || suggestion.kind === "Nation") best += 8;
+    if (suggestion.kind === "UFC Event" || suggestion.kind === "Grand Prix") best += 6;
     if (suggestion.kind === "Competition") best += 4;
   }
 
@@ -113,11 +120,8 @@ export default function SearchAutocomplete({
   const rootRef = useRef<HTMLDivElement>(null);
 
   const matches = useMemo(() => {
-    const scored = suggestions
-      .map((suggestion) => ({
-        suggestion,
-        score: scoreSuggestion(suggestion, query),
-      }))
+    return suggestions
+      .map((suggestion) => ({ suggestion, score: scoreSuggestion(suggestion, query) }))
       .filter((item) => item.score >= 0)
       .sort((a, b) => {
         if (b.score !== a.score) return b.score - a.score;
@@ -128,8 +132,6 @@ export default function SearchAutocomplete({
       })
       .slice(0, 12)
       .map((item) => item.suggestion);
-
-    return scored;
   }, [query, suggestions]);
 
   useEffect(() => {
@@ -164,32 +166,25 @@ export default function SearchAutocomplete({
       style={FORM_STYLE}
       onSubmit={(event) => {
         event.preventDefault();
-        if (activeIndex >= 0 && matches[activeIndex]) {
-          selectSuggestion(matches[activeIndex]);
-        } else {
-          submitSearch();
-        }
+        if (activeIndex >= 0 && matches[activeIndex]) selectSuggestion(matches[activeIndex]);
+        else submitSearch();
       }}
     >
       <div ref={rootRef}>
         <label className="sr-only" htmlFor="global-sports-search">
-          Search clubs, nations, competitions or Grand Prix
+          Search clubs, nations, competitions, Grand Prix or UFC events
         </label>
         <input
           id="global-sports-search"
           type="search"
           autoComplete="off"
           value={query}
-          placeholder="Search a club, nation, competition or Grand Prix"
+          placeholder="Search a club, nation, competition, Grand Prix or UFC event"
           style={INPUT_STYLE}
           aria-autocomplete="list"
           aria-expanded={open && matches.length > 0}
           aria-controls="global-sports-search-results"
-          aria-activedescendant={
-            activeIndex >= 0 && matches[activeIndex]
-              ? `search-result-${activeIndex}`
-              : undefined
-          }
+          aria-activedescendant={activeIndex >= 0 && matches[activeIndex] ? `search-result-${activeIndex}` : undefined}
           onFocus={() => setOpen(true)}
           onChange={(event) => {
             setQuery(event.target.value);
@@ -214,26 +209,15 @@ export default function SearchAutocomplete({
         {open && matches.length > 0 ? (
           <ul id="global-sports-search-results" role="listbox" style={LIST_STYLE}>
             {matches.map((suggestion, index) => (
-              <li
-                key={suggestion.id}
-                id={`search-result-${index}`}
-                role="option"
-                aria-selected={index === activeIndex}
-              >
+              <li key={suggestion.id} id={`search-result-${index}`} role="option" aria-selected={index === activeIndex}>
                 <button
                   type="button"
-                  style={{
-                    ...BUTTON_STYLE,
-                    background:
-                      index === activeIndex ? "rgba(255,255,255,0.1)" : "transparent",
-                  }}
+                  style={{ ...BUTTON_STYLE, background: index === activeIndex ? "rgba(255,255,255,0.1)" : "transparent" }}
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => selectSuggestion(suggestion)}
                 >
                   <strong>{suggestion.label}</strong>
-                  <span style={{ display: "block", opacity: 0.68, marginTop: 2 }}>
-                    {suggestion.kind}
-                  </span>
+                  <span style={{ display: "block", opacity: 0.68, marginTop: 2 }}>{suggestion.kind}</span>
                 </button>
               </li>
             ))}
