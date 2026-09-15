@@ -21,6 +21,13 @@ export type PreviewFixture = {
   away: PreviewFixtureParticipant;
 };
 
+export type PreviewFootballOverview = {
+  totalCount: number;
+  upcomingDatedCount: number;
+  tbcCount: number;
+  nextFixtures: PreviewFixture[];
+};
+
 const DEFAULT_SUPABASE_URL = "https://jywqhiiwsmudthaujhmi.supabase.co";
 const REQUEST_TIMEOUT_MS = 5_000;
 
@@ -50,6 +57,26 @@ async function rest<T>(path: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+async function restCount(path: string): Promise<number> {
+  const config = readConfig();
+  if (!config) return 0;
+  const response = await fetch(`${config.url}/rest/v1/${path}`, {
+    headers: {
+      apikey: config.key,
+      Authorization: `Bearer ${config.key}`,
+      Prefer: "count=exact",
+      Range: "0-0",
+    },
+    cache: "no-store",
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  });
+  if (!response.ok) throw new Error(`Preview Supabase count request failed with ${response.status}`);
+  const contentRange = response.headers.get("content-range");
+  const total = contentRange?.match(/\/(\d+)$/)?.[1];
+  if (!total) throw new Error("Preview Supabase count response is missing an exact total");
+  return Number(total);
+}
+
 function encodeIn(values: string[]): string {
   return `in.(${values.map((value) => `"${value.replaceAll('"', '')}"`).join(",")})`;
 }
@@ -72,7 +99,6 @@ type EventRow = {
 
 type ParticipantRow = { id: string; slug: string; name: string; short_name: string | null };
 type CompetitionRow = { id: string; slug: string; name: string };
-
 type SportRow = { id: string; slug: string };
 
 async function hydrateFixtures(rows: EventRow[], competitions: CompetitionRow[]): Promise<PreviewFixture[]> {
@@ -113,20 +139,36 @@ async function hydrateFixtures(rows: EventRow[], competitions: CompetitionRow[])
   });
 }
 
-export async function getPreviewFootballFixtures(): Promise<PreviewFixture[]> {
-  if (!isPreviewFixtureMode()) return [];
+async function getFootballCompetitions(): Promise<CompetitionRow[]> {
   const sports = await rest<SportRow[]>("sports?select=id,slug&slug=eq.football&limit=1");
   const football = sports[0];
   if (!football) return [];
-  const competitions = await rest<CompetitionRow[]>(
-    `competitions?select=id,slug,name&sport_id=eq.${football.id}&is_active=eq.true&limit=100`
-  );
-  if (!competitions.length) return [];
-  const competitionIds = competitions.map((competition) => competition.id);
-  const rows = await rest<EventRow[]>(
-    `events?select=id,slug,phase,event_date,status,is_published,competition_id,home_participant_id,away_participant_id&competition_id=${encodeURIComponent(encodeIn(competitionIds))}&verification_status=eq.confirmed&is_published=eq.false&order=event_date.asc.nullslast,slug.asc&limit=5000`
-  );
-  return hydrateFixtures(rows, competitions);
+  return rest<CompetitionRow[]>(`competitions?select=id,slug,name&sport_id=eq.${football.id}&is_active=eq.true&limit=100`);
+}
+
+export async function getPreviewFootballOverview(): Promise<PreviewFootballOverview> {
+  if (!isPreviewFixtureMode()) return { totalCount: 0, upcomingDatedCount: 0, tbcCount: 0, nextFixtures: [] };
+  const competitions = await getFootballCompetitions();
+  if (!competitions.length) return { totalCount: 0, upcomingDatedCount: 0, tbcCount: 0, nextFixtures: [] };
+
+  const competitionFilter = `competition_id=${encodeURIComponent(encodeIn(competitions.map((competition) => competition.id)))}`;
+  const baseFilter = `${competitionFilter}&verification_status=eq.confirmed&is_published=eq.false`;
+  const now = new Date().toISOString();
+  const [totalCount, tbcCount, upcomingDatedCount, rows] = await Promise.all([
+    restCount(`events?select=id&${baseFilter}`),
+    restCount(`events?select=id&${baseFilter}&event_date=is.null`),
+    restCount(`events?select=id&${baseFilter}&event_date=gte.${encodeURIComponent(now)}`),
+    rest<EventRow[]>(
+      `events?select=id,slug,phase,event_date,status,is_published,competition_id,home_participant_id,away_participant_id&${baseFilter}&event_date=gte.${encodeURIComponent(now)}&order=event_date.asc,slug.asc&limit=24`
+    ),
+  ]);
+
+  return {
+    totalCount,
+    tbcCount,
+    upcomingDatedCount,
+    nextFixtures: await hydrateFixtures(rows, competitions),
+  };
 }
 
 export async function getPreviewCompetitionFixtures(competitionSlug: string): Promise<PreviewFixture[]> {
