@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - refonte/watchtvsport-v2
+      - audit/universal-club-media
     paths:
       - '.github/workflows/validate-v2-build.yml'
       - 'app/**'
@@ -12,6 +13,8 @@ on:
       - 'source/**'
       - 'scripts/**'
       - 'supabase*.sql'
+      - 'supabase/functions/**'
+      - 'tsconfig.json'
       - 'package.json'
       - 'package-lock.json'
 
@@ -23,8 +26,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: refonte/watchtvsport-v2
       - uses: actions/setup-node@v4
         with:
           node-version: 24

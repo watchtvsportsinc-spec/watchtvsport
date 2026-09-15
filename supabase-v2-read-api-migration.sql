@@ -165,7 +165,7 @@ AS $function$
           AND eb.access_type IN ('Free', 'Paid')
           AND COALESCE(eb.official_url, p.url, b.website_url) ~ '^https://'
         ORDER BY t.name, COALESCE(p.name, b.name), eb.broadcast_type, eb.id
-        LIMIT 301
+        LIMIT 300
       ) offer
     ) public_broadcasts ON true
     WHERE e.is_published = true
@@ -173,7 +173,7 @@ AS $function$
       AND e.event_date IS NOT NULL
       AND c.id IS NOT NULL
     ORDER BY e.event_date, e.id
-    LIMIT 2501
+    LIMIT 2500
   ) event_record;
 $function$;
 
