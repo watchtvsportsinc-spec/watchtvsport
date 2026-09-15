@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WatchTVSport V2
 
-## Getting Started
+WatchTVSport is a legal sports broadcast discovery product: event schedule + territory + verified official broadcaster/platform.
 
-First, run the development server:
-
+## Local development
 ```bash
+npm ci
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+Open `http://localhost:3000`.
+
+## Quality gate
+```bash
+npm test
+npm run build
+```
+`npm test` validates imports, public event payloads, the multisport seed/apply plan and V2 structural quality rules.
+
+## Current V2 launch models
+- Football / UEFA Champions League: team matches, club pages, competition pages, permanent fixture pages.
+- Formula 1: permanent Grand Prix pages with five session slots per weekend.
+- UFC: fight-card pages with Early Prelims / Prelims / Main Card sessions where applicable.
+
+The registry is already prepared for basketball/NBA, hockey/NHL, American football/NFL, MLS-style football competitions, MotoGP, tennis and cycling without forcing player/driver/rider page generation.
+
+## Data
+Supabase is the preferred V2 read source. `lib/public-events.ts` falls back to bundled data during migration or read failure. Broadcaster offers are public only when explicitly confirmed at event/session level.
+
+Useful commands:
+```bash
+npm run export:v2-seed
+npm run validate:import -- data/imports/seed-2026-ucl-f1.json
+npm run plan:v2-seed
+# write operations require explicit environment credentials:
+npm run apply:v2-seed
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Architecture and policy
+Read these before structural changes:
+- `docs/v2-product-architecture.md`
+- `docs/seo-quality-policy.md`
+- `docs/data-sources.md`
+- `AGENTS.md`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Production safety
+The `refonte/watchtvsport-v2` branch is the development line. Do not replace the current `watchtvsport.com` production deployment until the visual, SEO and release checks are explicitly approved.
