@@ -1,21 +1,28 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  extractCalendarFixtures,
+  extractCalendarJsonFixtures,
   extractGameweekResults,
   mergeConfirmedKickoffs,
   validateFixtures,
 } from "./discover-laliga-fixtures.mjs";
 
-test("parses full official LaLiga calendar into home-away fixtures", () => {
-  const html = `
-    <h2>Matchday 1 | 16.08.2026</h2>
-    <div>Deportivo Alavés</div><div>Getafe CF</div>
-    <div>FC Barcelona</div><div>Athletic Club</div>
-    <h2>Matchday 2 | 23.08.2026</h2>
-    <div>Athletic Club</div><div>Sevilla FC</div>
-  `;
-  const fixtures = extractCalendarFixtures(html);
+test("parses official LaLiga calendar JSON into home-away fixtures", () => {
+  const fixtures = extractCalendarJsonFixtures({
+    one: {
+      gameweek_week: 1,
+      gameweek_date: "16.08.2026",
+      matches: [
+        { local_name: "Deportivo Alavés", away_name: "Getafe CF" },
+        { local_name: "FC Barcelona", away_name: "Athletic Club" },
+      ],
+    },
+    two: {
+      gameweek_week: 2,
+      gameweek_date: "23.08.2026",
+      matches: [{ local_name: "Athletic Club", away_name: "Sevilla FC" }],
+    },
+  });
   assert.deepEqual(fixtures.map(({ gameweek, localDate, localTime, home, away }) => ({ gameweek, localDate, localTime, home, away })), [
     { gameweek: 1, localDate: "2026-08-16", localTime: null, home: "Deportivo Alaves", away: "Getafe CF" },
     { gameweek: 1, localDate: "2026-08-16", localTime: null, home: "FC Barcelona", away: "Athletic Club" },
