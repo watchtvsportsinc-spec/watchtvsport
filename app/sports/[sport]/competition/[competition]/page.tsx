@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 
@@ -8,11 +8,16 @@ type PageProps={params:Promise<{sport:string;competition:string}>};
 
 function slugify(value:string){return value.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/&/g," and ").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");}
 function sportLabel(value:string){return value==="basketball"?"Basketball":value==="hockey"?"Ice hockey":value==="formula-1"?"Formula 1":value==="motogp"?"MotoGP":value==="ufc"?"UFC":value.charAt(0).toUpperCase()+value.slice(1);}
+function canonicalCompetitionPath(sport:string,competition:string){if(sport==="football")return `/football/competition/${competition}`;if(sport==="formula-1")return "/formula-1";if(sport==="ufc")return "/ufc";return `/sports/${sport}/competition/${competition}`;}
 
-export async function generateMetadata({params}:PageProps):Promise<Metadata>{const {sport,competition}=await params;const snapshot=await getPublicEventsSnapshot();const event=snapshot.events.find(e=>e.sport===sport&&e.competitionSlug===competition);if(!event)return{title:"Competition not found",robots:{index:false,follow:false}};return{title:`${event.competition} schedule & official broadcasters`,description:`Upcoming ${event.competition} events, participating teams and official TV and streaming options by country.`,alternates:{canonical:`/sports/${sport}/competition/${competition}`}};}
+export async function generateMetadata({params}:PageProps):Promise<Metadata>{const {sport,competition}=await params;const snapshot=await getPublicEventsSnapshot();const event=snapshot.events.find(e=>e.sport===sport&&e.competitionSlug===competition);if(!event)return{title:"Competition not found",robots:{index:false,follow:false}};return{title:`${event.competition} schedule & official broadcasters`,description:`Upcoming ${event.competition} events, participating teams and official TV and streaming options by country.`,alternates:{canonical:canonicalCompetitionPath(sport,competition)}};}
 
 export default async function CompetitionPage({params}:PageProps){
- const {sport,competition}=await params;const snapshot=await getPublicEventsSnapshot();const events=snapshot.events.filter(e=>e.sport===sport&&e.competitionSlug===competition).sort((a,b)=>Date.parse(a.eventDate)-Date.parse(b.eventDate));if(!events.length)notFound();
+ const {sport,competition}=await params;
+ if(sport==="football")redirect(`/football/competition/${competition}`);
+ if(sport==="formula-1")redirect("/formula-1");
+ if(sport==="ufc")redirect("/ufc");
+ const snapshot=await getPublicEventsSnapshot();const events=snapshot.events.filter(e=>e.sport===sport&&e.competitionSlug===competition).sort((a,b)=>Date.parse(a.eventDate)-Date.parse(b.eventDate));if(!events.length)notFound();
  const name=events[0].competition;const now=Date.now();const upcoming=events.filter(e=>Date.parse(e.eventDate)>=now&&e.status!=="finished");const recent=events.filter(e=>Date.parse(e.eventDate)<now||e.status==="finished").slice(-12).reverse();
  const participants=new Map<string,{name:string;slug:string}>();for(const e of events){for(const p of [e.participant1,e.participant2]){if(p&&(p.type==="club"||p.type==="national_team")){const slug=p.id.startsWith("club:")?p.id.split(":").slice(2).join(":"):slugify(p.name);participants.set(`${p.name}:${slug}`,{name:p.name,slug});}}}
  const teams=Array.from(participants.values()).sort((a,b)=>a.name.localeCompare(b.name));
