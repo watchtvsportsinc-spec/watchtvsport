@@ -28,7 +28,7 @@ function requestInit(key: string) {
     headers: { apikey: key, Authorization: `Bearer ${key}` },
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     next: { revalidate: 86400, tags: ["public-participants"] },
-  } as const;
+  };
 }
 
 async function loadParticipants(): Promise<PublicParticipant[]> {
