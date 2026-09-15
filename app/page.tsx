@@ -3,6 +3,7 @@ import Link from "next/link";
 import FavoriteButton from "@/components/FavoriteButton";
 import SearchAutocomplete from "@/components/SearchAutocomplete";
 import TimezoneSync from "@/components/TimezoneSync";
+import type { EventData } from "@/lib/events";
 import type { FavoriteCandidate } from "@/lib/favorites";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 import { buildSearchSuggestions } from "@/lib/search-suggestions";
@@ -16,9 +17,7 @@ type HomePageProps = { searchParams?: Promise<Record<string, string | string[] |
 
 export async function generateMetadata({ searchParams }: HomePageProps): Promise<Metadata> {
   const params = (await searchParams) ?? {};
-  const hasUtilityParams = Object.values(params).some((value) =>
-    Array.isArray(value) ? value.some(Boolean) : Boolean(value)
-  );
+  const hasUtilityParams = Object.values(params).some((value) => Array.isArray(value) ? value.some(Boolean) : Boolean(value));
   return {
     title: "Where to watch sports – official TV & streaming guide",
     description: "Find official TV channels and streaming platforms for football, Formula 1, UFC and more, by event and country.",
@@ -34,6 +33,10 @@ const SPORT_SHORTCUTS = [
   ["", "All"], ["football", "Football"], ["formula-1", "Formula 1"], ["ufc", "UFC"],
   ["basketball", "NBA"], ["tennis", "Tennis"], ["motogp", "MotoGP"], ["hockey", "NHL"],
 ] as const;
+const COUNTRIES = [
+  ["🇨🇦", "Canada"], ["🇫🇷", "France"], ["🇺🇸", "United States"], ["🇬🇧", "United Kingdom"],
+  ["🇪🇸", "Spain"], ["🇩🇪", "Germany"], ["🇮🇹", "Italy"], ["🌐", "More countries"],
+] as const;
 
 function pageTitle(filters: CalendarFilters): string {
   if (filters.view === "all") return filters.query ? "Search results" : "All events";
@@ -45,6 +48,9 @@ function pageTitle(filters: CalendarFilters): string {
 function eventHref(event: CalendarEvent, returnTo: string) { const p = new URLSearchParams({ returnTo }); return `${event.detailPath}${event.detailPath.includes("?") ? "&" : "?"}${p}`; }
 function eventStage(event: CalendarEvent) { return [event.stage, event.group ? `Group ${event.group}` : ""].filter(Boolean).join(" · "); }
 function hiddenInput(name: string, value?: string) { return value ? <input type="hidden" name={name} value={value} /> : null; }
+function sportName(sport: string) { return sport === "football" ? "Football" : sport === "formula-1" ? "Formula 1" : sport === "ufc" ? "UFC" : sport; }
+function eventVisualClass(event: EventData) { return event.sport === "formula-1" ? "is-f1" : event.sport === "ufc" ? "is-ufc" : "is-football"; }
+function confirmedOffers(event: EventData) { return event.broadcasts.filter((b) => b.coverageStatus === "confirmed").length; }
 
 export default async function HomePage({ searchParams }: HomePageProps) {
   const filters = parseCalendarFilters((await searchParams) ?? {});
@@ -59,6 +65,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const hasFilters = Boolean(filters.query || filters.sport || filters.competition);
   const selectedCompetitionEvent = filters.competition ? dataSnapshot.events.find(e => e.competitionSlug === filters.competition && (!filters.sport || e.sport === filters.sport)) : undefined;
   const competitionFavorite: FavoriteCandidate | null = selectedCompetitionEvent ? { kind: "competition", entityId: `${selectedCompetitionEvent.sport}:${selectedCompetitionEvent.competitionSlug}`, label: selectedCompetitionEvent.competition } : null;
+  const featuredEvents = dataSnapshot.events
+    .filter((event) => new Date(event.eventDate).getTime() >= now.getTime())
+    .sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime())
+    .slice(0, 4);
 
   return <main id="main-content" className="v2-calendar v2-home">
     <TimezoneSync />
@@ -69,20 +79,63 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       <div className="v2-hero-content">
         <p className="v2-eyebrow">Official sports broadcast guide</p>
         <h1 id="calendar-title">Every sport.<br />Every screen.<br /><span>Anywhere in the world.</span></h1>
-        <p className="v2-hero-copy">Find where to watch your sports events legally. Compare official TV channels and streaming platforms by country.</p>
+        <p className="v2-hero-copy">Discover where to watch your sports legally in your country. Simple, independent and built for fans.</p>
         <SearchAutocomplete defaultValue={filters.query} sport={filters.sport} competition={filters.competition} timeZone={filters.timeZone} suggestions={searchSuggestions} />
         <nav className="v2-sport-pills" aria-label="Sports shortcuts">
           {SPORT_SHORTCUTS.map(([value,label]) => <Link key={label} className={filters.sport === value ? "is-active" : undefined} href={buildCalendarHref(filters,{ sport:value, page:1 })}>{label}</Link>)}
         </nav>
       </div>
-      <div className="v2-hero-art" aria-hidden="true"><span>FOOTBALL</span><span>F1</span><span>UFC</span></div>
+      <div className="v2-hero-collage" aria-hidden="true">
+        <div className="v2-hero-photo v2-photo-football"><span>Football</span></div>
+        <div className="v2-hero-photo v2-photo-f1"><span>Formula 1</span></div>
+        <div className="v2-hero-photo v2-photo-ufc"><span>UFC</span><em>Sport has no borders.</em></div>
+      </div>
     </section>
 
     <section className="v2-trust-strip" aria-label="WatchTVSport principles">
-      <div><strong>◎ By country</strong><span>Official options near you</span></div>
-      <div><strong>✓ Verified</strong><span>No invented broadcasters</span></div>
-      <div><strong>◷ Up to date</strong><span>TBC stays clearly marked</span></div>
-      <div><strong>♡ For fans</strong><span>Legal viewing information</span></div>
+      <div><b>◎</b><strong>By country</strong><span>Find official broadcasters near you</span></div>
+      <div><b>▣</b><strong>Independent</strong><span>Clear access information</span></div>
+      <div><b>ϟ</b><strong>Always current</strong><span>Verified data, TBC when unknown</span></div>
+      <div><b>♡</b><strong>For every fan</strong><span>Sports from around the world</span></div>
+    </section>
+
+    <section className="v2-featured" aria-labelledby="featured-title">
+      <div className="v2-section-heading"><div><p className="v2-eyebrow">Coming up</p><h2 id="featured-title">Next events</h2></div><Link href="/?view=all#calendar-results">View full calendar →</Link></div>
+      <div className="v2-featured-grid">
+        {featuredEvents.map((event) => <Link className={`v2-featured-card ${eventVisualClass(event)}`} href={event.detailPath} key={event.id}>
+          <div className="v2-featured-image"><span>{sportName(event.sport)}</span></div>
+          <div className="v2-featured-body">
+            <p>{sportName(event.sport)} · {event.competition}</p>
+            <h3>{event.eventGroupName ?? event.title}</h3>
+            <time dateTime={event.eventDate}>{new Intl.DateTimeFormat("en", { weekday:"short", month:"short", day:"numeric", hour:"2-digit", minute:"2-digit" }).format(new Date(event.eventDate))}</time>
+            <div><span>{confirmedOffers(event)} confirmed</span><strong>Where to watch →</strong></div>
+          </div>
+        </Link>)}
+      </div>
+    </section>
+
+    <section id="sports" className="v2-visual-section" aria-labelledby="sports-title">
+      <div className="v2-section-heading"><div><p className="v2-eyebrow">Explore</p><h2 id="sports-title">Choose your sport</h2></div><Link href="/?view=all">View all sports →</Link></div>
+      <div className="v2-sport-gallery">
+        <Link className="football" href="/?view=all&sport=football"><span>⚽</span><strong>Football</strong></Link>
+        <Link className="f1" href="/formula-1"><span>F1</span><strong>Formula 1</strong></Link>
+        <Link className="ufc" href="/ufc"><span>UFC</span><strong>UFC</strong></Link>
+        <Link className="nba" href="/?view=all&sport=basketball"><span>●</span><strong>NBA</strong></Link>
+        <Link className="tennis" href="/?view=all&sport=tennis"><span>●</span><strong>Tennis</strong></Link>
+        <Link className="motogp" href="/?view=all&sport=motogp"><span>GP</span><strong>MotoGP</strong></Link>
+        <Link className="nhl" href="/?view=all&sport=hockey"><span>◆</span><strong>NHL</strong></Link>
+      </div>
+    </section>
+
+    <section id="countries" className="v2-visual-section" aria-labelledby="countries-title">
+      <div className="v2-section-heading"><div><p className="v2-eyebrow">Worldwide</p><h2 id="countries-title">Browse by country</h2></div></div>
+      <div className="v2-country-grid">{COUNTRIES.map(([flag,name]) => <div key={name}><span>{flag}</span><strong>{name}</strong></div>)}</div>
+    </section>
+
+    <section className="v2-promo-grid" aria-label="Featured sports">
+      <Link className="v2-promo-card champions" href="/?view=all&sport=football&competition=champions-league"><span>Football</span><h2>Champions League</h2><p>The biggest clubs. Every official screen.</p><strong>View calendar →</strong></Link>
+      <Link className="v2-promo-card formula" href="/formula-1"><span>Formula 1</span><h2>Every Grand Prix</h2><p>Practice, qualifying, sprints and races.</p><strong>View Grand Prix →</strong></Link>
+      <Link className="v2-promo-card fight" href="/ufc"><span>UFC</span><h2>Every fight night</h2><p>Prelims, main cards and official broadcasters.</p><strong>View UFC →</strong></Link>
     </section>
 
     <section className="v2-calendar-controls" aria-label="Calendar filters">
@@ -92,7 +145,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     </section>
 
     <section id="calendar-results" className="v2-results" aria-labelledby="results-title">
-      <div className="v2-results-heading"><div><p className="v2-eyebrow">Next events</p><h2 id="results-title">{pageTitle(filters)}</h2></div><p>{calendar.total} {calendar.total===1?"event":"events"}</p></div>
+      <div className="v2-results-heading"><div><p className="v2-eyebrow">Full schedule</p><h2 id="results-title">{pageTitle(filters)}</h2></div><p>{calendar.total} {calendar.total===1?"event":"events"}</p></div>
       {competitionFavorite?<div className="v2-follow-row"><FavoriteButton favorite={competitionFavorite}/></div>:null}
       <p className="v2-timezone-note">Times shown in {filters.timeZone.replaceAll("_"," ")}. Your device timezone is detected when available.</p>
       {calendar.total===0?<div className="v2-empty-state" role="status"><h3>{hasFilters?"No matching events":"No events on this date"}</h3><p>Confirmed schedules appear here as soon as they are available. Missing broadcaster information is never guessed.</p><Link href={hasFilters?buildCalendarHref(filters,{query:"",sport:"",competition:"",page:1}):buildCalendarHref(filters,{view:"all",page:1})}>{hasFilters?"Clear filters":"Browse all events"}</Link></div>:
@@ -100,6 +153,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       {calendar.pageCount>1?<nav className="v2-pagination" aria-label="Event list pages">{calendar.page>1?<Link prefetch={false} href={buildCalendarHref(filters,{page:calendar.page-1},"calendar-results")}>← Previous</Link>:<span/>}<span>Page {calendar.page} of {calendar.pageCount}</span>{calendar.page<calendar.pageCount?<Link prefetch={false} href={buildCalendarHref(filters,{page:calendar.page+1},"calendar-results")}>Next →</Link>:<span/>}</nav>:null}
     </section>
 
-    <section className="v2-discovery"><div><p className="v2-eyebrow">Explore</p><h2>Choose your sport</h2></div><div className="v2-discovery-grid"><Link href="/?view=all&sport=football"><strong>⚽ Football</strong><span>Champions League and more</span></Link><Link href="/?view=all&sport=formula-1"><strong>🏎 Formula 1</strong><span>Grand Prix & sessions</span></Link><Link href="/?view=all&sport=ufc"><strong>🥊 UFC</strong><span>Fight cards, prelims & main cards</span></Link><Link href="/?view=all"><strong>＋ More sports</strong><span>Architecture ready to expand</span></Link></div></section>
+    <section className="v2-world-banner"><div><p>The world watches sport differently.</p><h2>We help you find the right screen.</h2></div><div className="v2-world-stats"><span><strong>200+</strong> territories ready</span><span><strong>Official</strong> broadcasters only</span><span><strong>Multi-sport</strong> by design</span><span><strong>Independent</strong> guide</span></div></section>
   </main>;
 }
