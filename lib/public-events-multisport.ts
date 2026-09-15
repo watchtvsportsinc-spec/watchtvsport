@@ -45,10 +45,12 @@ export function parseMultisportPublicEventsPayload(
   value: unknown
 ): PublicEventsPayload {
   const base = parsePublicEventsPayload(value);
-  if (!isRecord(value) || !Array.isArray(value.events)) return base;
+  if (!isRecord(value)) return base;
+  const rawEvents = value.events;
+  if (!Array.isArray(rawEvents)) return base;
 
   const events: EventData[] = base.events.map((event, index) => {
-    const raw = value.events[index];
+    const raw = rawEvents[index];
     if (!isRecord(raw)) return event;
 
     return {
