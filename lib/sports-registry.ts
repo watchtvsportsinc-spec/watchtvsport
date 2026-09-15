@@ -1,4 +1,9 @@
-export type SportEventModel = "team_match" | "tournament_match" | "race_session" | "cycling_race";
+export type SportEventModel =
+  | "team_match"
+  | "tournament_match"
+  | "race_session"
+  | "cycling_race"
+  | "fight_card";
 
 export type SportRegistryEntry = {
   id: string;
@@ -82,6 +87,18 @@ export const sportsRegistry: SportRegistryEntry[] = [
     aliases: ["motogp", "moto gp"],
     enabled: true,
     eventModel: "race_session",
+    participantPages: "none",
+    competitionPages: true,
+    eventPages: true,
+  },
+  {
+    id: "ufc",
+    slug: "ufc",
+    defaultLabel: "UFC",
+    labels: { "fr-FR": "UFC", "fr-CA": "UFC", "en-CA": "UFC", "en-US": "UFC", "en-GB": "UFC" },
+    aliases: ["ufc", "mma", "mixed martial arts", "arts martiaux mixtes"],
+    enabled: true,
+    eventModel: "fight_card",
     participantPages: "none",
     competitionPages: true,
     eventPages: true,
