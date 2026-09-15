@@ -1,123 +1,110 @@
 import type { MetadataRoute } from "next";
-import { matches, type MatchData, type BroadcastInfo } from "@/lib/matches";
+import { clubSlug } from "@/lib/club-aliases";
+import { entitySlug, getFootballNations } from "@/lib/entity-pages";
+import { getAllEvents } from "@/lib/events";
+import { getAllMatches, type MatchData } from "@/lib/matches";
 
-type SafeBroadcastInfo = {
-  countryCode: string;
-  countryName: string;
-  broadcaster: string;
-  access: "Free" | "Paid";
-  url: string;
-};
+const BASE_URL = "https://watchtvsport.com";
 
-type SafeMatchData = MatchData & {
-  slug: string;
-  matchDate: string;
-};
-
-function ensureMatch(match: MatchData): SafeMatchData {
+function sitemapEntry(
+  path: string,
+  priority: number,
+  changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"],
+  lastModified: Date = new Date()
+): MetadataRoute.Sitemap[number] {
   return {
-    ...match,
-    slug: typeof match.slug === "string" && match.slug.trim() ? match.slug : "",
-    matchDate:
-      typeof match.matchDate === "string" && match.matchDate.trim()
-        ? match.matchDate
-        : new Date().toISOString(),
+    url: `${BASE_URL}${path}`,
+    lastModified,
+    changeFrequency,
+    priority,
   };
 }
 
-function normalizeBroadcast(item: BroadcastInfo): SafeBroadcastInfo | null {
-  const countryCode =
-    typeof item.countryCode === "string" && item.countryCode.trim()
-      ? item.countryCode.toLowerCase()
-      : "";
-
-  const countryName =
-    typeof item.countryName === "string" && item.countryName.trim()
-      ? item.countryName
-      : "";
-
-  const broadcaster =
-    typeof item.broadcaster === "string" && item.broadcaster.trim()
-      ? item.broadcaster
-      : "";
-
-  const url =
-    typeof item.url === "string" && item.url.trim()
-      ? item.url
-      : "";
-
-  const access = item.access === "Free" || item.access === "Paid" ? item.access : null;
-
-  if (!countryCode || !countryName || !broadcaster || !url || !access) {
-    return null;
-  }
-
-  return {
-    countryCode,
-    countryName,
-    broadcaster,
-    access,
-    url,
-  };
-}
-
-function getSafeBroadcasts(match: MatchData): SafeBroadcastInfo[] {
-  const broadcasts = Array.isArray(match.broadcasts) ? match.broadcasts : [];
-
-  return broadcasts
-    .map((item) => normalizeBroadcast(item))
-    .filter((item): item is SafeBroadcastInfo => item !== null);
+function confirmedCountryCodes(match: MatchData): string[] {
+  return Array.from(
+    new Set(
+      match.broadcasts
+        .filter(
+          (broadcast) =>
+            broadcast.coverageStatus === "confirmed" &&
+            broadcast.countryCode &&
+            broadcast.broadcaster &&
+            broadcast.url
+        )
+        .map((broadcast) => broadcast.countryCode.toLowerCase())
+    )
+  );
 }
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://watchtvsport.com";
-
-  const safeMatches: SafeMatchData[] = Object.values(matches)
-    .filter(Boolean)
-    .map((match) => ensureMatch(match))
-    .filter((match) => Boolean(match.slug));
+  const events = getAllEvents();
+  const worldCupMatches = getAllMatches();
 
   const staticPages: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}/`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 1,
-    },
+    sitemapEntry("/", 1, "daily"),
+    sitemapEntry("/football", 0.95, "daily"),
   ];
 
-  const matchPages: MetadataRoute.Sitemap = safeMatches.map((match) => ({
-    url: `${baseUrl}/match/${match.slug}`,
-    lastModified: new Date(match.matchDate),
-    changeFrequency: "daily",
-    priority: 0.9,
-  }));
-
-  const watchPages: MetadataRoute.Sitemap = safeMatches.flatMap((match) => {
-    const broadcasts = getSafeBroadcasts(match);
-
-    return broadcasts.map((broadcast) => ({
-      url: `${baseUrl}/watch/${match.slug}/${broadcast.countryCode}`,
-      lastModified: new Date(match.matchDate),
-      changeFrequency: "daily" as const,
-      priority: 0.8,
-    }));
-  });
-
-  const countryCodes = Array.from(
+  const competitionPages = Array.from(
     new Set(
-      safeMatches.flatMap((match) =>
-        getSafeBroadcasts(match).map((broadcast) => broadcast.countryCode)
+      events
+        .filter((event) => event.sport === "football")
+        .map((event) => event.competitionSlug)
+    )
+  ).map((slug) => sitemapEntry(`/football/competition/${slug}`, 0.9, "daily"));
+
+  const clubPages = Array.from(
+    new Map(
+      events
+        .filter((event) => event.sport === "football")
+        .flatMap((event) => [event.participant1, event.participant2])
+        .filter((participant) => participant?.type === "club")
+        .map((participant) => [participant!.id, participant!] as const)
+    ).values()
+  ).map((club) => sitemapEntry(`/football/club/${clubSlug(club.name)}`, 0.85, "daily"));
+
+  const nationPages = getFootballNations(events).map((nation) =>
+    sitemapEntry(`/football/nation/${entitySlug(nation.name)}`, 0.85, "daily")
+  );
+
+  const permanentEventPages = Array.from(
+    new Map(
+      events
+        .filter((event) => event.detailPath.startsWith("/football/"))
+        .map((event) => [event.detailPath, event] as const)
+    ).values()
+  ).map((event) =>
+    sitemapEntry(event.detailPath, 0.9, "daily", new Date(event.eventDate))
+  );
+
+  // Preserve the already indexed World Cup archive URLs.
+  const archiveMatchPages = worldCupMatches.map((match) =>
+    sitemapEntry(`/match/${match.slug}`, 0.85, "monthly", new Date(match.matchDate))
+  );
+
+  const watchPages = worldCupMatches.flatMap((match) =>
+    confirmedCountryCodes(match).map((countryCode) =>
+      sitemapEntry(
+        `/watch/${match.slug}/${countryCode}`,
+        0.75,
+        "monthly",
+        new Date(match.matchDate)
       )
     )
-  ).sort();
+  );
 
-  const countryPages: MetadataRoute.Sitemap = countryCodes.map((countryCode) => ({
-    url: `${baseUrl}/country/${countryCode}`,
-    lastModified: new Date(),
-    changeFrequency: "daily",
-    priority: 0.85,
-  }));
+  const countryPages = Array.from(
+    new Set(worldCupMatches.flatMap((match) => confirmedCountryCodes(match)))
+  ).map((countryCode) => sitemapEntry(`/country/${countryCode}`, 0.8, "daily"));
 
-  return [...staticPages, ...matchPages, ...watchPages, ...countryPages];
+  return [
+    ...staticPages,
+    ...competitionPages,
+    ...clubPages,
+    ...nationPages,
+    ...permanentEventPages,
+    ...archiveMatchPages,
+    ...watchPages,
+    ...countryPages,
+  ];
 }
