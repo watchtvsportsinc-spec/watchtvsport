@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import EntityVisual from "@/components/EntityVisual";
 import FavoriteButton from "@/components/FavoriteButton";
 import SearchAutocomplete from "@/components/SearchAutocomplete";
 import TimezoneSync from "@/components/TimezoneSync";
@@ -52,6 +53,16 @@ function sportName(sport: string) { return sport === "football" ? "Football" : s
 function eventVisualClass(event: EventData) { return event.sport === "formula-1" ? "is-f1" : event.sport === "ufc" ? "is-ufc" : "is-football"; }
 function confirmedOffers(event: EventData) { return event.broadcasts.filter((b) => b.coverageStatus === "confirmed").length; }
 
+function EventIdentityVisuals({ event, size = "sm" }: { event: EventData; size?: "sm" | "md" }) {
+  if (event.participant1 || event.participant2) {
+    return <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }} aria-hidden="true">
+      {event.participant1 ? <EntityVisual entityId={event.participant1.id} label={event.participant1.name} size={size} imageUrl={event.participant1.logoUrl} imageAlt="" /> : null}
+      {event.participant2 ? <EntityVisual entityId={event.participant2.id} label={event.participant2.name} size={size} imageUrl={event.participant2.logoUrl} imageAlt="" /> : null}
+    </span>;
+  }
+  return <EntityVisual entityId={`competition:${event.sport}:${event.competitionSlug}`} label={event.competition} size={size} imageUrl={event.competitionLogoUrl} imageAlt="" />;
+}
+
 export default async function HomePage({ searchParams }: HomePageProps) {
   const filters = parseCalendarFilters((await searchParams) ?? {});
   const now = new Date();
@@ -103,7 +114,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       <div className="v2-section-heading"><div><p className="v2-eyebrow">Coming up</p><h2 id="featured-title">Next events</h2></div><Link href="/?view=all#calendar-results">View full calendar →</Link></div>
       <div className="v2-featured-grid">
         {featuredEvents.map((event) => <Link className={`v2-featured-card ${eventVisualClass(event)}`} href={event.detailPath} key={event.id}>
-          <div className="v2-featured-image"><span>{sportName(event.sport)}</span></div>
+          <div className="v2-featured-image"><span>{sportName(event.sport)}</span><EventIdentityVisuals event={event} size="md" /></div>
           <div className="v2-featured-body">
             <p>{sportName(event.sport)} · {event.competition}</p>
             <h3>{event.eventGroupName ?? event.title}</h3>
@@ -149,7 +160,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       {competitionFavorite?<div className="v2-follow-row"><FavoriteButton favorite={competitionFavorite}/></div>:null}
       <p className="v2-timezone-note">Times shown in {filters.timeZone.replaceAll("_"," ")}. Your device timezone is detected when available.</p>
       {calendar.total===0?<div className="v2-empty-state" role="status"><h3>{hasFilters?"No matching events":"No events on this date"}</h3><p>Confirmed schedules appear here as soon as they are available. Missing broadcaster information is never guessed.</p><Link href={hasFilters?buildCalendarHref(filters,{query:"",sport:"",competition:"",page:1}):buildCalendarHref(filters,{view:"all",page:1})}>{hasFilters?"Clear filters":"Browse all events"}</Link></div>:
-      <div className="v2-event-groups">{Array.from(groupedEvents.entries()).map(([dateKey,events])=><section className="v2-event-group" key={dateKey}><h3>{formatCalendarDay(events[0].eventDate,filters.timeZone)}</h3><div className="v2-event-list">{events.map(event=>{const anchor=`event-${event.id}`;const href=eventHref(event,buildCalendarHref(filters,{},anchor));return <article className="v2-event-card" id={anchor} key={event.id}><div className="v2-event-time"><time dateTime={event.eventDate}>{formatCalendarTime(event.eventDate,filters.timeZone)}</time><span className={`v2-status v2-status-${event.statusLabel.toLowerCase().replaceAll(" ","-")}`}>{event.statusLabel}</span></div><div className="v2-event-main"><p className="v2-event-competition">{event.sportLabel} · {event.competition}</p><h4><Link prefetch={false} href={href}>{event.title}</Link></h4><p className="v2-event-stage">{eventStage(event)||"Event"}</p></div><Link prefetch={false} className="v2-broadcast-link" href={href}><span>{event.confirmedBroadcastCount} confirmed official {event.confirmedBroadcastCount===1?"listing":"listings"}</span><strong>Where to watch →</strong></Link></article>})}</div></section>)}</div>}
+      <div className="v2-event-groups">{Array.from(groupedEvents.entries()).map(([dateKey,events])=><section className="v2-event-group" key={dateKey}><h3>{formatCalendarDay(events[0].eventDate,filters.timeZone)}</h3><div className="v2-event-list">{events.map(event=>{const anchor=`event-${event.id}`;const href=eventHref(event,buildCalendarHref(filters,{},anchor));return <article className="v2-event-card" id={anchor} key={event.id}><div className="v2-event-time"><time dateTime={event.eventDate}>{formatCalendarTime(event.eventDate,filters.timeZone)}</time><span className={`v2-status v2-status-${event.statusLabel.toLowerCase().replaceAll(" ","-")}`}>{event.statusLabel}</span></div><div className="v2-event-main"><p className="v2-event-competition">{event.sportLabel} · {event.competition}</p><div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 5 }}><EventIdentityVisuals event={event} /><h4 style={{ margin: 0 }}><Link prefetch={false} href={href}>{event.title}</Link></h4></div><p className="v2-event-stage">{eventStage(event)||"Event"}</p></div><Link prefetch={false} className="v2-broadcast-link" href={href}><span>{event.confirmedBroadcastCount} confirmed official {event.confirmedBroadcastCount===1?"listing":"listings"}</span><strong>Where to watch →</strong></Link></article>})}</div></section>)}</div>}
       {calendar.pageCount>1?<nav className="v2-pagination" aria-label="Event list pages">{calendar.page>1?<Link prefetch={false} href={buildCalendarHref(filters,{page:calendar.page-1},"calendar-results")}>← Previous</Link>:<span/>}<span>Page {calendar.page} of {calendar.pageCount}</span>{calendar.page<calendar.pageCount?<Link prefetch={false} href={buildCalendarHref(filters,{page:calendar.page+1},"calendar-results")}>Next →</Link>:<span/>}</nav>:null}
     </section>
 
