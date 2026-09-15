@@ -22,3 +22,29 @@ test("competition pages use approved competition logos", () => {
   assert.match(page, /logo:\s*logo\?\.url/);
   assert.match(page, /<img src=\{logo\.url\}/);
 });
+
+test("reusable entity visuals render only an explicitly supplied public image before fallback", () => {
+  const component = read("components/EntityVisual.tsx");
+  assert.match(component, /imageUrl\?: string/);
+  assert.match(component, /if \(imageUrl\)/);
+  assert.match(component, /<img[\s\S]*src=\{imageUrl\}/);
+  assert.match(component, /getEntityVisual\(entityId, label\)/);
+});
+
+test("football browse and schedule cards consume logo URLs from the validated public event contract", () => {
+  const page = read("app/football/page.tsx");
+  assert.match(page, /logoUrl: event\.competitionLogoUrl/);
+  assert.match(page, /imageUrl=\{competition\.logoUrl\}/);
+  assert.match(page, /imageUrl=\{club\.logoUrl\}/);
+  assert.match(page, /imageUrl=\{event\.participant1\.logoUrl\}/);
+  assert.match(page, /imageUrl=\{event\.participant2\.logoUrl\}/);
+  assert.doesNotMatch(page, /getPublicParticipantProfile/);
+});
+
+test("competition participant and match cards reuse validated participant logos", () => {
+  const page = read("app/football/competition/[competition]/page.tsx");
+  assert.match(page, /eventClubBySlug/);
+  assert.match(page, /imageUrl=\{club\.participant\?\.logoUrl\}/);
+  assert.match(page, /imageUrl=\{event\.participant1\.logoUrl\}/);
+  assert.match(page, /imageUrl=\{event\.participant2\.logoUrl\}/);
+});
