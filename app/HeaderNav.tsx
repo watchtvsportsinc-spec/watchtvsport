@@ -3,26 +3,26 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const LINKS = [
-  { href: "/", label: "Home", match: (path: string) => path === "/" },
-  { href: "/?view=all&sport=football", label: "Football", match: (path: string) => path.startsWith("/football") },
-  { href: "/formula-1", label: "F1", match: (path: string) => path.startsWith("/formula-1") },
-  { href: "/ufc", label: "UFC", match: (path: string) => path.startsWith("/ufc") },
-  { href: "/favorites", label: "Favorites", match: (path: string) => path === "/favorites" },
+const links = [
+  { href: "/#sports", label: "Sports" },
+  { href: "/#calendar-results", label: "Calendar" },
+  { href: "/?view=all#calendar-results", label: "Broadcasters" },
+  { href: "/#countries", label: "Countries" },
 ];
 
 export default function HeaderNav() {
   const pathname = usePathname();
+  const homeIsActive = pathname === "/";
+
   return (
     <nav className="wts-primary-nav" aria-label="Primary navigation">
-      {LINKS.map((link) => {
-        const active = link.match(pathname);
-        return (
-          <Link key={link.label} href={link.href} className={active ? "is-active" : undefined} aria-current={active ? "page" : undefined}>
-            {link.label}
-          </Link>
-        );
-      })}
+      <div className="wts-nav-links">
+        <Link className={homeIsActive ? "is-active" : undefined} href="/">Home</Link>
+        {links.map((link) => <Link key={link.label} href={link.href}>{link.label}</Link>)}
+      </div>
+      <div className="wts-nav-actions">
+        <Link aria-label="Open favorites" className={pathname === "/favorites" ? "is-active" : undefined} href="/favorites">♡ <span>Favorites</span></Link>
+      </div>
     </nav>
   );
 }
