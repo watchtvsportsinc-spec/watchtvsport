@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import BroadcastOffers from "@/components/BroadcastOffers";
 import FavoriteButton from "@/components/FavoriteButton";
 import LocalTime from "@/components/LocalTime";
 import {
@@ -20,7 +21,7 @@ import { getPublicEventsSnapshot } from "@/lib/public-events";
 
 type PageProps = {
   params: Promise<{ fixture: string }>;
-  searchParams?: Promise<{ returnTo?: string }>;
+  searchParams?: Promise<{ returnTo?: string; country?: string }>;
 };
 
 function safeReturnTo(value?: string): string {
@@ -104,9 +105,6 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
     label: `${event.competition} (Football)`,
   };
   const competitionHref = `/football/competition/${event.competitionSlug}`;
-  const confirmedBroadcasts = event.broadcasts.filter(
-    (broadcast) => broadcast.coverageStatus === "confirmed"
-  );
   const homeAliases = event.participant1 ? getClubAliases(event.participant1.name) : [];
   const awayAliases = event.participant2 ? getClubAliases(event.participant2.name) : [];
 
@@ -232,55 +230,15 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
         </section>
       ) : null}
 
-      <section className="v2-results" aria-labelledby="broadcasts-title">
-        <div className="v2-results-heading">
-          <div>
-            <p className="v2-eyebrow">Official viewing options</p>
-            <h2 id="broadcasts-title">Broadcasters</h2>
-          </div>
-          <p>{confirmedBroadcasts.length} confirmed</p>
-        </div>
+      <BroadcastOffers
+        events={[event]}
+        selectedCountry={resolvedSearch.country}
+        title="Where to watch this match"
+      />
 
-        {confirmedBroadcasts.length === 0 ? (
-          <div className="v2-empty-state" role="status">
-            <h3>Broadcast information pending</h3>
-            <p>
-              This fixture is confirmed, but WatchTVSport has not yet verified an official
-              broadcaster for this event. No viewing option will be shown until it is confirmed.
-            </p>
-          </div>
-        ) : (
-          <div className="v2-event-list">
-            {confirmedBroadcasts.map((broadcast) => (
-              <article
-                className="v2-event-card"
-                key={`${broadcast.countryCode}-${broadcast.broadcaster}-${broadcast.url}`}
-              >
-                <div className="v2-event-main">
-                  <p className="v2-event-competition">{broadcast.countryName}</p>
-                  <h3>{broadcast.broadcaster}</h3>
-                  <p className="v2-event-stage">
-                    {broadcast.access} · {broadcast.broadcastType ?? "live"}
-                  </p>
-                </div>
-                <a
-                  className="v2-broadcast-link"
-                  href={broadcast.affiliateUrl ?? broadcast.url}
-                  rel="noopener noreferrer sponsored"
-                  target="_blank"
-                >
-                  <span>Official broadcaster</span>
-                  <strong>Open official service →</strong>
-                </a>
-              </article>
-            ))}
-          </div>
-        )}
-
-        <p style={{ marginTop: "1rem" }}>
-          <Link href={returnTo}>← Back to calendar</Link>
-        </p>
-      </section>
+      <p style={{ margin: "1rem 0 2rem" }}>
+        <Link href={returnTo}>← Back to calendar</Link>
+      </p>
     </main>
   );
 }
