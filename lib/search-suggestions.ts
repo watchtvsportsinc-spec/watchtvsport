@@ -7,7 +7,7 @@ export type SearchSuggestion = {
   id: string;
   label: string;
   value: string;
-  kind: "Club" | "Nation" | "Competition" | "Grand Prix";
+  kind: "Club" | "Nation" | "Competition" | "Grand Prix" | "UFC Event";
   href: string;
   searchTerms: string[];
 };
@@ -34,6 +34,7 @@ export function buildSearchSuggestions(events: EventData[]): SearchSuggestion[] 
   const participants = new Map<string, SearchSuggestion>();
   const competitions = new Map<string, SearchSuggestion>();
   const raceWeekends = new Map<string, SearchSuggestion>();
+  const fightCards = new Map<string, SearchSuggestion>();
 
   for (const event of events) {
     const sport = getSportBySlug(event.sport);
@@ -88,13 +89,43 @@ export function buildSearchSuggestions(events: EventData[]): SearchSuggestion[] 
       }
     }
 
+    if (
+      sport?.eventModel === "fight_card" &&
+      event.eventGroupId &&
+      event.eventGroupName &&
+      event.eventGroupSlug
+    ) {
+      const cardKey = `${event.sport}:${event.eventGroupId}`;
+      if (!fightCards.has(cardKey)) {
+        fightCards.set(cardKey, {
+          id: `fight-card:${cardKey}`,
+          label: `${event.eventGroupName} (${sportLabel})`,
+          value: event.eventGroupName,
+          kind: "UFC Event",
+          href: `/ufc/event/${event.eventGroupSlug}`,
+          searchTerms: unique([
+            event.eventGroupName,
+            event.eventGroupSlug.replaceAll("-", " "),
+            event.country ?? "",
+            event.venue ?? "",
+            event.sport,
+            event.competition,
+            sportLabel,
+            ...(sport.aliases ?? []),
+          ]),
+        });
+      }
+    }
+
     const competitionKey = `${event.sport}:${event.competitionSlug}`;
     if (!competitions.has(competitionKey)) {
       const href = event.sport === "football"
         ? `/football/competition/${event.competitionSlug}`
         : event.sport === "formula-1"
           ? "/formula-1"
-          : `/?${new URLSearchParams({ view: "all", sport: event.sport, competition: event.competitionSlug }).toString()}`;
+          : event.sport === "ufc"
+            ? "/ufc"
+            : `/?${new URLSearchParams({ view: "all", sport: event.sport, competition: event.competitionSlug }).toString()}`;
       competitions.set(competitionKey, {
         id: `competition:${competitionKey}`,
         label: `${event.competition} (${sportLabel})`,
@@ -115,6 +146,7 @@ export function buildSearchSuggestions(events: EventData[]): SearchSuggestion[] 
   return [
     ...Array.from(participants.values()).sort((a, b) => a.label.localeCompare(b.label)),
     ...Array.from(raceWeekends.values()).sort((a, b) => a.label.localeCompare(b.label)),
+    ...Array.from(fightCards.values()).sort((a, b) => a.label.localeCompare(b.label)),
     ...Array.from(competitions.values()).sort((a, b) => a.label.localeCompare(b.label)),
   ];
 }
