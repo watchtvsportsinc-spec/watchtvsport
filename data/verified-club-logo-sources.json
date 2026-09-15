@@ -1,0 +1,10 @@
+[
+  {"competition":"premier-league","entityKey":"arsenal","name":"Arsenal","officialWebsiteUrl":"https://www.arsenal.com/"},
+  {"competition":"premier-league","entityKey":"aston-villa","name":"Aston Villa","officialWebsiteUrl":"https://www.avfc.co.uk/"},
+  {"competition":"premier-league","entityKey":"liverpool","name":"Liverpool","officialWebsiteUrl":"https://www.liverpoolfc.com/"},
+  {"competition":"premier-league","entityKey":"manchester-city","name":"Manchester City","officialWebsiteUrl":"https://www.mancity.com/"},
+  {"competition":"premier-league","entityKey":"manchester-united","name":"Manchester United","officialWebsiteUrl":"https://www.manutd.com/"},
+  {"competition":"ligue-1","entityKey":"lille","name":"LOSC","officialWebsiteUrl":"https://www.losc.fr/"},
+  {"competition":"ligue-1","entityKey":"paris-saint-germain","name":"Paris Saint-Germain","officialWebsiteUrl":"https://www.psg.fr/"},
+  {"competition":"ligue-1","entityKey":"lens","name":"RC Lens","officialWebsiteUrl":"https://www.rclens.fr/"}
+]
