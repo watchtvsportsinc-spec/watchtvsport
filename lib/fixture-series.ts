@@ -26,6 +26,13 @@ function selectCurrent(events: EventData[], now = new Date()): EventData {
   return sorted.at(-1)!;
 }
 
+function europeanSeasonKey(value: string): string {
+  const date = new Date(value);
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth() + 1;
+  return month >= 7 ? `${year}-${year + 1}` : `${year - 1}-${year}`;
+}
+
 export function getFixtureSeries(
   events: EventData[],
   detailPath: string,
@@ -37,6 +44,7 @@ export function getFixtureSeries(
   const current = selectCurrent(editions, now);
   const homeId = current.participant1?.id;
   const awayId = current.participant2?.id;
+  const currentSeason = europeanSeasonKey(current.eventDate);
 
   const reverseMeetings = homeId && awayId
     ? sortByDate(
@@ -44,6 +52,7 @@ export function getFixtureSeries(
           (event) =>
             event.sport === current.sport &&
             event.competitionSlug === current.competitionSlug &&
+            europeanSeasonKey(event.eventDate) === currentSeason &&
             event.participant1?.id === awayId &&
             event.participant2?.id === homeId
         )
