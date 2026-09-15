@@ -21,6 +21,7 @@ export default function HeaderNav() {
         {links.map((link) => <Link key={link.label} href={link.href}>{link.label}</Link>)}
       </div>
       <div className="wts-nav-actions">
+        <Link className="wts-nav-search-link" aria-label="Search teams, competitions and events" href="/#global-sports-search">⌕ <span>Search</span></Link>
         <Link aria-label="Open favorites" className={pathname === "/favorites" ? "is-active" : undefined} href="/favorites">♡ <span>Favorites</span></Link>
       </div>
     </nav>
