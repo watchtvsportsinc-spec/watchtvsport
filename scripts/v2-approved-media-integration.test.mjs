@@ -11,6 +11,8 @@ test("club pages use approved media assets for logos and hero imagery", () => {
   assert.match(page, /images:\s*hero\?\.url\s*\?\s*\[hero\.url\]/);
   assert.match(page, /backgroundImage:.*hero\.url/s);
   assert.match(page, /logo\?\.url\s*\?\s*<img src=\{logo\.url\}/);
+  assert.match(page, /imageUrl=\{nextMatch\.participant1\.logoUrl\}/);
+  assert.match(page, /imageUrl=\{nextMatch\.participant2\.logoUrl\}/);
   assert.doesNotMatch(page, /profile\?\.logoUrl/);
   assert.doesNotMatch(page, /profile\?\.heroImageUrl/);
 });
