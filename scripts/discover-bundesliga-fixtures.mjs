@@ -27,7 +27,6 @@ const TEAM_ALIASES = new Map([
 
 export const TEAMS = [...TEAM_ALIASES.values()];
 const ABBR_RE = [...TEAM_ALIASES.keys()].join("|");
-const FIXTURE_RE = new RegExp(`(?:Friday|Saturday|Sunday|Monday|Tuesday|Wednesday|Thursday)(?:\\s+-\\s+(?:Friday|Saturday|Sunday|Monday|Tuesday|Wednesday|Thursday))?\\s+([^\\n<]{3,40}?)(?:\\s+\\d{1,2}:\\d{2})?\\s+(${ABBR_RE})\\s*(?:\\d+)?\\s*(${ABBR_RE})`, "gi");
 
 function decodeHtml(value) {
   return value
@@ -35,15 +34,15 @@ function decodeHtml(value) {
     .replaceAll("&nbsp;", " ")
     .replaceAll("&#39;", "'")
     .replaceAll("&quot;", '"')
-    .replace(/&#(\\d+);/g, (_, n) => String.fromCodePoint(Number(n)));
+    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)));
 }
 
 export function htmlToSearchText(html) {
   return decodeHtml(html
-    .replace(/<script\\b[\\s\\S]*?<\\/script>/gi, " ")
-    .replace(/<style\\b[\\s\\S]*?<\\/style>/gi, " ")
+    .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[\s\S]*?<\/style>/gi, " ")
     .replace(/<[^>]+>/g, " ")
-    .replace(/\\s+/g, " "));
+    .replace(/\s+/g, " "));
 }
 
 function canonicalTeam(abbr) {
@@ -58,8 +57,8 @@ export function extractMatchdayFixtures(html, matchday) {
   const text = htmlToSearchText(html);
   const fixtures = [];
   const seen = new Set();
-
   const loose = new RegExp(`(${ABBR_RE})\\s*(?:\\d+)?\\s*(${ABBR_RE})`, "g");
+
   for (const match of text.matchAll(loose)) {
     const home = canonicalTeam(match[1]);
     const away = canonicalTeam(match[2]);
