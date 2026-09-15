@@ -13,6 +13,8 @@ on:
       - 'source/**'
       - 'scripts/**'
       - 'supabase*.sql'
+      - 'supabase/functions/**'
+      - 'tsconfig.json'
       - 'package.json'
       - 'package-lock.json'
 
