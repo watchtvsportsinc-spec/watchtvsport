@@ -14,9 +14,13 @@ permissions:
   contents: read
 
 jobs:
-  discover-laliga:
+  discover:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        league: [laliga, premierleague, ligue1, bundesliga]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,18 +28,18 @@ jobs:
           node-version: 22
       - name: Validate parser
         run: node --test scripts/discover-official-team-logos.test.mjs
-      - name: Discover LALIGA official team logos
+      - name: Discover official team logos
         id: discover
         shell: bash
         run: |
           set +e
-          node scripts/discover-official-team-logos.mjs --league laliga > team-logos-laliga.json
+          node scripts/discover-official-team-logos.mjs --league "${{ matrix.league }}" > "team-logos-${{ matrix.league }}.json"
           code=$?
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"
-          test -s team-logos-laliga.json
+          test -s "team-logos-${{ matrix.league }}.json"
       - name: Upload discovery audit
         uses: actions/upload-artifact@v4
         with:
-          name: team-logos-laliga
-          path: team-logos-laliga.json
+          name: team-logos-${{ matrix.league }}
+          path: team-logos-${{ matrix.league }}.json
           if-no-files-found: error
