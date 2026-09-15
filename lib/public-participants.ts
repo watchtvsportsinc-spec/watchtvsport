@@ -14,6 +14,7 @@ export type PublicParticipant = {
   name: string;
   shortName?: string;
   countryCode?: string;
+  logoUrl?: string;
 };
 
 function config() {
@@ -22,25 +23,38 @@ function config() {
   return { url, key };
 }
 
+function requestInit(key: string) {
+  return {
+    headers: { apikey: key, Authorization: `Bearer ${key}` },
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    next: { revalidate: 86400, tags: ["public-participants"] },
+  } as const;
+}
+
 async function loadParticipants(): Promise<PublicParticipant[]> {
   try {
     const { url, key } = config();
-    const sportsResponse = await fetch(`${url}/rest/v1/sports?select=id,slug`, {
-      headers: { apikey: key, Authorization: `Bearer ${key}` },
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      next: { revalidate: 86400, tags: ["public-participants"] },
-    });
-    if (!sportsResponse.ok) return [];
+    const [sportsResponse, participantsResponse, mediaResponse] = await Promise.all([
+      fetch(`${url}/rest/v1/sports?select=id,slug`, requestInit(key)),
+      fetch(`${url}/rest/v1/participants?select=id,sport_id,participant_type,slug,name,short_name,country_code&is_active=eq.true&order=name.asc`, requestInit(key)),
+      fetch(`${url}/rest/v1/media_assets?select=entity_key,storage_url,verified_at&entity_type=eq.participant&asset_kind=eq.team_logo&verification_status=eq.approved&is_current=eq.true&storage_url=not.is.null&order=verified_at.desc`, requestInit(key)),
+    ]);
+
+    if (!sportsResponse.ok || !participantsResponse.ok) return [];
+
     const sports = await sportsResponse.json() as Array<{ id: string; slug: string }>;
     const sportById = new Map(sports.map((sport) => [sport.id, sport.slug]));
 
-    const response = await fetch(`${url}/rest/v1/participants?select=id,sport_id,participant_type,slug,name,short_name,country_code&is_active=eq.true&order=name.asc`, {
-      headers: { apikey: key, Authorization: `Bearer ${key}` },
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      next: { revalidate: 86400, tags: ["public-participants"] },
-    });
-    if (!response.ok) return [];
-    const rows = await response.json() as Array<Record<string, unknown>>;
+    const logoBySlug = new Map<string, string>();
+    if (mediaResponse.ok) {
+      const mediaRows = await mediaResponse.json() as Array<Record<string, unknown>>;
+      for (const row of mediaRows) {
+        if (typeof row.entity_key !== "string" || typeof row.storage_url !== "string") continue;
+        if (!logoBySlug.has(row.entity_key)) logoBySlug.set(row.entity_key, row.storage_url);
+      }
+    }
+
+    const rows = await participantsResponse.json() as Array<Record<string, unknown>>;
     return rows.flatMap((row) => {
       const id = typeof row.id === "string" ? row.id : "";
       const sport = typeof row.sport_id === "string" ? sportById.get(row.sport_id) ?? "" : "";
@@ -56,6 +70,7 @@ async function loadParticipants(): Promise<PublicParticipant[]> {
         name,
         shortName: typeof row.short_name === "string" ? row.short_name : undefined,
         countryCode: typeof row.country_code === "string" ? row.country_code : undefined,
+        logoUrl: logoBySlug.get(slug),
       } satisfies PublicParticipant];
     });
   } catch {
