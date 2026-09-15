@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import LocalTime from "@/components/LocalTime";
 import { getAllEvents, type EventData } from "@/lib/events";
+import { getPublicEventsSnapshot } from "@/lib/public-events";
 import {
   getFormula1SessionPlan2026,
   getFormula1Weekend2026,
@@ -12,16 +13,19 @@ type PageProps = {
   params: Promise<{ grandPrix: string }>;
 };
 
-function grandPrixEvents(slug: string): EventData[] {
-  return getAllEvents()
-    .filter((event) => event.sport === "formula-1" && event.eventGroupSlug === slug)
+function grandPrixEvents(events: EventData[], slug: string): EventData[] {
+  return events
+    .filter(
+      (event) => event.sport === "formula-1" && event.eventGroupSlug === slug
+    )
     .sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
 }
 
 function selectEdition(events: EventData[], now = new Date()): EventData[] {
   const editions = new Map<string, EventData[]>();
   for (const event of events) {
-    const key = event.eventEditionKey ?? new Date(event.eventDate).getUTCFullYear().toString();
+    const key =
+      event.eventEditionKey ?? new Date(event.eventDate).getUTCFullYear().toString();
     const bucket = editions.get(key) ?? [];
     bucket.push(event);
     editions.set(key, bucket);
@@ -30,7 +34,9 @@ function selectEdition(events: EventData[], now = new Date()): EventData[] {
   const sorted = Array.from(editions.entries())
     .map(([key, editionEvents]) => ({
       key,
-      events: editionEvents.sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()),
+      events: editionEvents.sort(
+        (a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
+      ),
     }))
     .sort((a, b) => {
       const aStart = new Date(a.events[0]?.eventDate ?? 0).getTime();
@@ -38,7 +44,9 @@ function selectEdition(events: EventData[], now = new Date()): EventData[] {
       return aStart - bStart;
     });
 
-  const live = sorted.find((edition) => edition.events.some((event) => event.status === "live"));
+  const live = sorted.find((edition) =>
+    edition.events.some((event) => event.status === "live")
+  );
   if (live) return live.events;
 
   const upcoming = sorted.find((edition) =>
@@ -61,7 +69,8 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { grandPrix } = await params;
-  const events = selectEdition(grandPrixEvents(grandPrix));
+  const snapshot = await getPublicEventsSnapshot();
+  const events = selectEdition(grandPrixEvents(snapshot.events, grandPrix));
   const first = events[0];
 
   if (!first) {
@@ -81,14 +90,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function Formula1GrandPrixPage({ params }: PageProps) {
   const { grandPrix } = await params;
-  const allEvents = grandPrixEvents(grandPrix);
+  const snapshot = await getPublicEventsSnapshot();
+  const allEvents = grandPrixEvents(snapshot.events, grandPrix);
   const events = selectEdition(allEvents);
   const first = events[0];
   const weekend = getFormula1Weekend2026(grandPrix);
   if (!first || !weekend) notFound();
 
   const race = events.find((event) => event.sessionType === "race");
-  const editionLabel = first.eventEditionLabel;
+  const editionLabel = first.eventEditionLabel ?? "2026";
   const availableEditions = Array.from(
     new Set(allEvents.map((event) => event.eventEditionLabel).filter(Boolean))
   );
@@ -100,16 +110,19 @@ export default async function Formula1GrandPrixPage({ params }: PageProps) {
         items={[
           { label: "Home", href: "/" },
           { label: "Formula 1", href: "/formula-1" },
-          { label: first.eventGroupName ?? "Grand Prix" },
+          { label: first.eventGroupName ?? weekend.name },
         ]}
       />
 
       <section className="v2-calendar-hero" aria-labelledby="gp-title">
         <p className="v2-eyebrow">Formula 1 Grand Prix weekend</p>
-        <h1 id="gp-title">{first.eventGroupName}</h1>
-        {editionLabel ? <p className="v2-signature">Edition {editionLabel}</p> : null}
+        <h1 id="gp-title">{first.eventGroupName ?? weekend.name}</h1>
+        <p className="v2-signature">Edition {editionLabel}</p>
         <p className="v2-hero-copy">
-          {[first.country, first.venue].filter(Boolean).join(" · ")}. Every official Formula 1 session is represented, even when broadcast information or an exact session time is still pending.
+          {[first.country ?? weekend.country, first.venue ?? weekend.venue]
+            .filter(Boolean)
+            .join(" · ")}. Every official Formula 1 session is represented, even when
+          broadcast information or an exact session time is still pending.
         </p>
         {race ? (
           <p className="v2-signature">
@@ -117,7 +130,9 @@ export default async function Formula1GrandPrixPage({ params }: PageProps) {
           </p>
         ) : null}
         {availableEditions.length > 1 ? (
-          <p className="v2-signature">Available editions: {availableEditions.join(" · ")}</p>
+          <p className="v2-signature">
+            Available editions: {availableEditions.join(" · ")}
+          </p>
         ) : null}
       </section>
 
@@ -132,10 +147,13 @@ export default async function Formula1GrandPrixPage({ params }: PageProps) {
 
         <div className="v2-event-list">
           {sessionPlan.map((session) => {
-            const event = events.find((candidate) => candidate.sequenceNumber === session.sequenceNumber);
-            const confirmedBroadcasts = event?.broadcasts.filter(
-              (broadcast) => broadcast.coverageStatus === "confirmed"
-            ) ?? [];
+            const event = events.find(
+              (candidate) => candidate.sequenceNumber === session.sequenceNumber
+            );
+            const confirmedBroadcasts =
+              event?.broadcasts.filter(
+                (broadcast) => broadcast.coverageStatus === "confirmed"
+              ) ?? [];
 
             return (
               <article className="v2-event-card" id={session.slug} key={session.slug}>
