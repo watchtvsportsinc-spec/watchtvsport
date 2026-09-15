@@ -6,6 +6,28 @@ export const LEAGUES = {
     clubsUrl: "https://www.laliga.com/laliga-easports/clubes",
     allowedHosts: ["laliga.com", "www.laliga.com", "assets.laliga.com", "iaas-public-front-pro.laliga.com"],
     clubPathMarkers: ["/clubes/", "/clubs/"],
+    slugMode: "after-marker",
+  },
+  premierleague: {
+    name: "Premier League",
+    clubsUrl: "https://www.premierleague.com/en/clubs",
+    allowedHosts: ["premierleague.com", "www.premierleague.com", "resources.premierleague.com", "static.premierleague.com"],
+    clubPathMarkers: ["/en/clubs/", "/clubs/"],
+    slugMode: "after-id",
+  },
+  bundesliga: {
+    name: "Bundesliga",
+    clubsUrl: "https://www.bundesliga.com/en/bundesliga/clubs",
+    allowedHosts: ["bundesliga.com", "www.bundesliga.com", "assets.bundesliga.com"],
+    clubPathMarkers: ["/bundesliga/clubs/"],
+    slugMode: "after-marker",
+  },
+  ligue1: {
+    name: "Ligue 1",
+    clubsUrl: "https://ligue1.com/en/articles/squads-overview?competitionId=1&gameweek=3",
+    allowedHosts: ["ligue1.com", "www.ligue1.com", "assets.ligue1.com", "media.ligue1.com"],
+    clubPathMarkers: ["/club-sheet/"],
+    slugMode: "label",
   },
 };
 
@@ -54,10 +76,32 @@ function textFromHtml(value) {
   return decodeHtml(value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim());
 }
 
-function slugFromClubUrl(url) {
+function normalizeSlug(value) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function slugFromClubUrl(url, label, config) {
+  if (config.slugMode === "label") return normalizeSlug(label);
   const parts = new URL(url).pathname.split("/").filter(Boolean);
-  const markerIndex = parts.findIndex((part) => part === "clubes" || part === "clubs");
-  return markerIndex >= 0 ? parts[markerIndex + 1] ?? "" : "";
+  const markerParts = config.clubPathMarkers
+    .map((marker) => marker.split("/").filter(Boolean))
+    .sort((a, b) => b.length - a.length);
+
+  for (const marker of markerParts) {
+    for (let index = 0; index <= parts.length - marker.length; index += 1) {
+      if (!marker.every((part, offset) => parts[index + offset] === part)) continue;
+      const nextIndex = index + marker.length;
+      if (config.slugMode === "after-id") return parts[nextIndex + 1] ?? "";
+      return parts[nextIndex] ?? "";
+    }
+  }
+  return "";
 }
 
 export function extractClubLinks(html, config) {
@@ -69,10 +113,11 @@ export function extractClubLinks(html, config) {
     if (!url || !allowedHost(url, config.allowedHosts)) continue;
     const path = new URL(url).pathname;
     if (!config.clubPathMarkers.some((marker) => path.includes(marker))) continue;
-    const slug = slugFromClubUrl(url);
-    if (!slug || ["calendario", "calendar", "clubes", "clubs"].includes(slug)) continue;
-    const label = textFromHtml(match[3]) || slug.replaceAll("-", " ");
-    if (!links.has(slug)) links.set(slug, { slug, label, url });
+    const label = textFromHtml(match[3]);
+    const slug = slugFromClubUrl(url, label, config);
+    if (!slug || ["calendario", "calendar", "clubes", "clubs", "overview", "info"].includes(slug)) continue;
+    const finalLabel = label || slug.replaceAll("-", " ");
+    if (!links.has(slug)) links.set(slug, { slug, label: finalLabel, url });
   }
   return [...links.values()];
 }
@@ -92,13 +137,14 @@ function scoreCandidate(candidate, club) {
   const haystack = `${candidate.alt} ${candidate.title} ${candidate.url}`.toLowerCase();
   const clubTokens = club.slug.split("-").filter((token) => token.length > 2);
   let score = 0;
-  if (/escudo|shield|crest|logo/.test(haystack)) score += 8;
-  if (/club|team/.test(haystack)) score += 2;
+  if (/escudo|shield|crest|badge|logo|wappen/.test(haystack)) score += 8;
+  if (/club|team|verein/.test(haystack)) score += 2;
   for (const token of clubTokens) if (haystack.includes(token)) score += 2;
-  if (/player|jugador|stadium|estadio|kit|shirt|banner|hero|news/.test(haystack)) score -= 7;
+  if (/player|jugador|spieler|stadium|estadio|stadion|kit|shirt|banner|hero|news/.test(haystack)) score -= 7;
+  if (/league|liga|bundesliga|ligue-1-logo|premier-league-logo/.test(haystack) && !clubTokens.some((token) => haystack.includes(token))) score -= 10;
   if (/\.svg(?:\?|$)/i.test(candidate.url)) score += 3;
   if (/\.png(?:\?|$)/i.test(candidate.url)) score += 2;
-  if (/assets\./i.test(candidate.url)) score += 1;
+  if (/assets\.|resources\.|static\.|media\./i.test(candidate.url)) score += 1;
   return score;
 }
 
