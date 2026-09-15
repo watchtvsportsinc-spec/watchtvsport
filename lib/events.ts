@@ -6,9 +6,16 @@ import {
 } from "./matches";
 import { clubSlug } from "./club-aliases";
 import { championsLeague202627LeaguePhase } from "../source/champions-league-2026-27-league-phase";
+import { formula1Canada2026Sessions } from "../source/formula-1-canada-2026";
 
 export type EntityType = "national_team" | "club" | "player" | "event";
 export type VisualType = "flag" | "crest" | "player" | "generic";
+export type SessionType =
+  | "practice"
+  | "sprint_qualifying"
+  | "sprint"
+  | "qualifying"
+  | "race";
 
 export type Participant = {
   id: string;
@@ -34,6 +41,12 @@ export type EventData = {
   participant2?: Participant;
   title: string;
   broadcasts: BroadcastInfo[];
+  eventGroupId?: string;
+  eventGroupName?: string;
+  eventGroupSlug?: string;
+  sessionType?: SessionType;
+  venue?: string;
+  country?: string;
 };
 
 export function participantEntityId(participant: Participant, sport: string): string {
@@ -95,14 +108,13 @@ export function mapMatchToEvent(match: MatchData): EventData {
 export function getAllEvents(): EventData[] {
   return [
     ...championsLeague202627LeaguePhase.map(normalizeEventParticipants),
+    ...formula1Canada2026Sessions,
     ...getAllMatches().map(mapMatchToEvent),
   ];
 }
 
 export function getEventBySlug(slug: string): EventData | null {
-  const genericEvent = championsLeague202627LeaguePhase.find(
-    (event) => event.slug === slug
-  );
+  const genericEvent = getAllEvents().find((event) => event.slug === slug);
   if (genericEvent) return normalizeEventParticipants(genericEvent);
 
   const match = getMatchBySlug(slug);
