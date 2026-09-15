@@ -50,3 +50,13 @@ test("competition participant and match cards reuse validated participant logos"
   assert.match(page, /imageUrl=\{event\.participant1\.logoUrl\}/);
   assert.match(page, /imageUrl=\{event\.participant2\.logoUrl\}/);
 });
+
+test("homepage featured and calendar cards reuse the validated public event visual contract", () => {
+  const page = read("app/page.tsx");
+  assert.match(page, /function EventIdentityVisuals/);
+  assert.match(page, /imageUrl=\{event\.participant1\.logoUrl\}/);
+  assert.match(page, /imageUrl=\{event\.participant2\.logoUrl\}/);
+  assert.match(page, /imageUrl=\{event\.competitionLogoUrl\}/);
+  assert.match(page, /<EventIdentityVisuals event=\{event\} size="md" \/>/);
+  assert.match(page, /<EventIdentityVisuals event=\{event\} \/>/);
+});
