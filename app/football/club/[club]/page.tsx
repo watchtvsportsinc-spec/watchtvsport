@@ -99,6 +99,8 @@ export default async function ClubPage({ params }: PageProps) {
   const previewDated = previewFixtures.filter((fixture) => fixture.eventDate).sort((a, b) => Date.parse(a.eventDate!) - Date.parse(b.eventDate!));
   const previewTbc = previewFixtures.filter((fixture) => !fixture.eventDate);
   const previewDisplay = [...previewDated, ...previewTbc];
+  const previewHomeCount = previewFixtures.filter((fixture) => fixture.home.slug === club).length;
+  const previewAwayCount = previewFixtures.filter((fixture) => fixture.away.slug === club).length;
   const competitionMap = new Map<string, string>();
   for (const event of publishedEvents) competitionMap.set(event.competitionSlug, event.competition);
   for (const fixture of previewFixtures) competitionMap.set(fixture.competitionSlug, fixture.competitionName);
@@ -148,7 +150,7 @@ export default async function ClubPage({ params }: PageProps) {
     <section id="overview" className={styles.stats} aria-label={`${clubName} summary`}>
       <div><strong>{previewMode ? previewFixtures.length : upcoming.length}</strong><span>{previewMode ? "Verified season fixtures" : "Upcoming matches"}</span></div>
       <div><strong>{competitionMap.size}</strong><span>Competitions</span></div>
-      <div><strong>{confirmedListings}</strong><span>Confirmed listings</span></div>
+      <div><strong>{previewMode ? `${previewHomeCount}/${previewAwayCount}` : confirmedListings}</strong><span>{previewMode ? "Home / away" : "Confirmed listings"}</span></div>
       {profile?.foundedYear ? <div><strong>{profile.foundedYear}</strong><span>Founded</span></div> : null}
     </section>
 
@@ -161,7 +163,10 @@ export default async function ClubPage({ params }: PageProps) {
             const other = previewOpponent(fixture, club);
             return <article className={styles.matchRow} key={fixture.id}>
               <div className={styles.dateCell}>{fixture.eventDate ? <LocalTime date={fixture.eventDate} /> : <span>Kickoff TBC</span>}</div>
-              <div className={styles.fixtureCell}><small>{home ? "Home" : "Away"}</small><strong>{home ? `${clubName} vs ${other.name}` : `${other.name} vs ${clubName}`}</strong><span>{fixture.competitionName}{fixture.phase ? ` · ${fixture.phase}` : ""}</span></div>
+              <div className={styles.fixtureIdentity}>
+                <EntityVisual entityId={other.id} label={other.name} size="sm" imageUrl={other.logoUrl} imageAlt={`${other.name} logo`} />
+                <div className={styles.fixtureCell}><small>{home ? "Home" : "Away"}</small><strong>{home ? `${clubName} vs ${other.name}` : `${other.name} vs ${clubName}`}</strong><span>{fixture.competitionName}{fixture.phase ? ` · ${fixture.phase}` : ""}</span></div>
+              </div>
               <div className={styles.broadcastCell}><span>Unpublished</span><Link href={`/football/competition/${fixture.competitionSlug}`}>Competition →</Link></div>
             </article>;
           })}</div>
@@ -173,7 +178,7 @@ export default async function ClubPage({ params }: PageProps) {
             const home = event.participant1 && clubSlug(event.participant1.name) === club;
             const other = home ? event.participant2 : event.participant1;
             const confirmed = event.broadcasts.filter((broadcast) => broadcast.coverageStatus === "confirmed").length;
-            return <article className={styles.matchRow} key={event.id}><div className={styles.dateCell}><LocalTime date={event.eventDate} /></div><div className={styles.fixtureCell}><small>{home ? "Home" : "Away"}</small><strong>{home ? `${clubName} vs ${other?.name ?? "TBC"}` : `${other?.name ?? "TBC"} vs ${clubName}`}</strong><span>{event.competition}{event.stage ? ` · ${event.stage}` : ""}</span></div><div className={styles.broadcastCell}><span>{confirmed} confirmed</span><Link href={event.detailPath}>Where to watch →</Link></div></article>;
+            return <article className={styles.matchRow} key={event.id}><div className={styles.dateCell}><LocalTime date={event.eventDate} /></div><div className={styles.fixtureIdentity}>{other ? <EntityVisual entityId={other.id} label={other.name} size="sm" imageUrl={other.logoUrl} imageAlt={`${other.name} logo`} /> : null}<div className={styles.fixtureCell}><small>{home ? "Home" : "Away"}</small><strong>{home ? `${clubName} vs ${other?.name ?? "TBC"}` : `${other?.name ?? "TBC"} vs ${clubName}`}</strong><span>{event.competition}{event.stage ? ` · ${event.stage}` : ""}</span></div></div><div className={styles.broadcastCell}><span>{confirmed} confirmed</span><Link href={event.detailPath}>Where to watch →</Link></div></article>;
           })}</div>}
         </section>
 
