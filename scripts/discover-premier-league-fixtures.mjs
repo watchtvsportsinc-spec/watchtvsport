@@ -16,12 +16,24 @@ export const TEAMS = [
   "Newcastle United", "Nottingham Forest", "Sunderland", "Tottenham Hotspur",
 ];
 
-const teamAlternation = TEAMS
-  .slice()
+const TEAM_ALIASES = new Map([
+  ["Brighton", "Brighton & Hove Albion"],
+  ["Coventry", "Coventry City"],
+  ["Hull", "Hull City"],
+  ["Ipswich", "Ipswich Town"],
+  ["Leeds", "Leeds United"],
+  ["Man City", "Manchester City"],
+  ["Man Utd", "Manchester United"],
+  ["Newcastle", "Newcastle United"],
+  ["Nott'm Forest", "Nottingham Forest"],
+  ["Spurs", "Tottenham Hotspur"],
+]);
+
+const rawTeamNames = [...TEAMS, ...TEAM_ALIASES.keys()]
   .sort((a, b) => b.length - a.length)
   .map((team) => team.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
   .join("|");
-const FIXTURE_RE = new RegExp(`^(?:(\\d{1,2}:\\d{2})\\s+)?(${teamAlternation})\\s+v\\s+(${teamAlternation})(?:\\s+\\([^)]*\\))?$`);
+const FIXTURE_RE = new RegExp(`^(?:(\\d{1,2}:\\d{2})\\s+)?(?:(?:GMT|BST)\\s+)?(${rawTeamNames})\\s+v\\s+(${rawTeamNames})(?:\\s+\\([^)]*\\))?\\*?$`);
 const DATE_RE = /^(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+(\d{1,2})\s+([A-Z][a-z]+)(?:\s+(\d{4}))?$/;
 
 function decodeHtml(value) {
@@ -31,6 +43,10 @@ function decodeHtml(value) {
     .replaceAll("&#39;", "'")
     .replaceAll("&quot;", '"')
     .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)));
+}
+
+function canonicalTeam(value) {
+  return TEAM_ALIASES.get(value) ?? value;
 }
 
 export function htmlToLines(html) {
@@ -56,7 +72,7 @@ function isoDate(day, month, year) {
 export function extractFixturesFromLines(lines, defaultYear = 2026) {
   let currentDate = null;
   let currentYear = defaultYear;
-  const fixtures = [];
+  const byMatchup = new Map();
   for (const line of lines) {
     const dateMatch = line.match(DATE_RE);
     if (dateMatch) {
@@ -68,8 +84,10 @@ export function extractFixturesFromLines(lines, defaultYear = 2026) {
     if (!currentDate) continue;
     const fixtureMatch = line.match(FIXTURE_RE);
     if (!fixtureMatch) continue;
-    const [, localTime, home, away] = fixtureMatch;
-    fixtures.push({
+    const [, localTime, rawHome, rawAway] = fixtureMatch;
+    const home = canonicalTeam(rawHome);
+    const away = canonicalTeam(rawAway);
+    byMatchup.set(`${home}|${away}`, {
       competition: "premier-league",
       season: "2026-27",
       localDate: currentDate,
@@ -81,19 +99,24 @@ export function extractFixturesFromLines(lines, defaultYear = 2026) {
       verificationStatus: "confirmed",
     });
   }
-  return fixtures;
+  return [...byMatchup.values()];
 }
 
 export function validateFixtures(fixtures) {
   const issues = [];
-  if (fixtures.length !== EXPECTED_FIXTURES) issues.push(`expected ${EXPECTED_FIXTURES} fixtures, found ${fixtures.length}`);
-  const keys = new Set();
+  if (fixtures.length !== EXPECTED_FIXTURES) issues.push(`expected ${EXPECTED_FIXTURES} unique fixtures, found ${fixtures.length}`);
+  const directed = new Set();
   for (const fixture of fixtures) {
     if (!TEAMS.includes(fixture.home) || !TEAMS.includes(fixture.away)) issues.push(`unknown team in ${fixture.home} v ${fixture.away}`);
     if (fixture.home === fixture.away) issues.push(`same home/away team: ${fixture.home}`);
-    const key = `${fixture.localDate}|${fixture.home}|${fixture.away}`;
-    if (keys.has(key)) issues.push(`duplicate fixture ${key}`);
-    keys.add(key);
+    const key = `${fixture.home}|${fixture.away}`;
+    if (directed.has(key)) issues.push(`duplicate directed matchup ${key}`);
+    directed.add(key);
+  }
+  for (const home of TEAMS) {
+    for (const away of TEAMS) {
+      if (home !== away && !directed.has(`${home}|${away}`)) issues.push(`missing matchup ${home} v ${away}`);
+    }
   }
   return { ok: issues.length === 0, issues };
 }
