@@ -34,9 +34,7 @@ function readConfig() {
   if (!previewEnabled()) return null;
   const url = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/$/, "");
   const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!key) {
-    throw new Error("V2 local preview requires SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY in .env.local");
-  }
+  if (!key) throw new Error("V2 local preview requires SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY in .env.local");
   return { url, key };
 }
 
@@ -72,14 +70,10 @@ type EventRow = {
   away_participant_id: string | null;
 };
 
-type ParticipantRow = {
-  id: string;
-  slug: string;
-  name: string;
-  short_name: string | null;
-};
-
+type ParticipantRow = { id: string; slug: string; name: string; short_name: string | null };
 type CompetitionRow = { id: string; slug: string; name: string };
+
+type SportRow = { id: string; slug: string };
 
 async function hydrateFixtures(rows: EventRow[], competitions: CompetitionRow[]): Promise<PreviewFixture[]> {
   const participantIds = Array.from(new Set(rows.flatMap((row) => [row.home_participant_id, row.away_participant_id]).filter((value): value is string => Boolean(value))));
@@ -119,6 +113,22 @@ async function hydrateFixtures(rows: EventRow[], competitions: CompetitionRow[])
   });
 }
 
+export async function getPreviewFootballFixtures(): Promise<PreviewFixture[]> {
+  if (!isPreviewFixtureMode()) return [];
+  const sports = await rest<SportRow[]>("sports?select=id,slug&slug=eq.football&limit=1");
+  const football = sports[0];
+  if (!football) return [];
+  const competitions = await rest<CompetitionRow[]>(
+    `competitions?select=id,slug,name&sport_id=eq.${football.id}&is_active=eq.true&limit=100`
+  );
+  if (!competitions.length) return [];
+  const competitionIds = competitions.map((competition) => competition.id);
+  const rows = await rest<EventRow[]>(
+    `events?select=id,slug,phase,event_date,status,is_published,competition_id,home_participant_id,away_participant_id&competition_id=${encodeURIComponent(encodeIn(competitionIds))}&verification_status=eq.confirmed&is_published=eq.false&order=event_date.asc.nullslast,slug.asc&limit=5000`
+  );
+  return hydrateFixtures(rows, competitions);
+}
+
 export async function getPreviewCompetitionFixtures(competitionSlug: string): Promise<PreviewFixture[]> {
   if (!isPreviewFixtureMode()) return [];
   const competitions = await rest<CompetitionRow[]>(
@@ -126,7 +136,6 @@ export async function getPreviewCompetitionFixtures(competitionSlug: string): Pr
   );
   const competition = competitions[0];
   if (!competition) return [];
-
   const rows = await rest<EventRow[]>(
     `events?select=id,slug,phase,event_date,status,is_published,competition_id,home_participant_id,away_participant_id&competition_id=eq.${competition.id}&verification_status=eq.confirmed&order=event_date.asc.nullslast,slug.asc&limit=1000`
   );
@@ -140,7 +149,6 @@ export async function getPreviewClubFixtures(clubSlug: string): Promise<PreviewF
   );
   const club = participants[0];
   if (!club) return [];
-
   const rows = await rest<EventRow[]>(
     `events?select=id,slug,phase,event_date,status,is_published,competition_id,home_participant_id,away_participant_id&or=${encodeURIComponent(`(home_participant_id.eq.${club.id},away_participant_id.eq.${club.id})`)}&verification_status=eq.confirmed&order=event_date.asc.nullslast,slug.asc&limit=250`
   );
