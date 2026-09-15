@@ -1,0 +1,41 @@
+name: Discover official team logos
+
+on:
+  push:
+    branches:
+      - work/v2-expansion-assets-leagues
+    paths:
+      - scripts/discover-official-team-logos.mjs
+      - scripts/discover-official-team-logos.test.mjs
+      - .github/workflows/discover-team-logos.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover-laliga:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate parser
+        run: node --test scripts/discover-official-team-logos.test.mjs
+      - name: Discover LALIGA official team logos
+        id: discover
+        shell: bash
+        run: |
+          set +e
+          node scripts/discover-official-team-logos.mjs --league laliga > team-logos-laliga.json
+          code=$?
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          test -s team-logos-laliga.json
+      - name: Upload discovery audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: team-logos-laliga
+          path: team-logos-laliga.json
+          if-no-files-found: error
