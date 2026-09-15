@@ -7,7 +7,7 @@ export type SearchSuggestion = {
   id: string;
   label: string;
   value: string;
-  kind: "Club" | "Nation" | "Competition" | "Grand Prix" | "UFC Event";
+  kind: "Sport" | "Club" | "Nation" | "Competition" | "Grand Prix" | "UFC Event";
   href: string;
   searchTerms: string[];
 };
@@ -30,7 +30,14 @@ function participantHref(participant: Participant, sport: string): string {
   return `/?${params.toString()}`;
 }
 
+function sportHref(sport: string): string {
+  if (sport === "formula-1") return "/formula-1";
+  if (sport === "ufc") return "/ufc";
+  return `/?${new URLSearchParams({ view: "all", sport }).toString()}`;
+}
+
 export function buildSearchSuggestions(events: EventData[]): SearchSuggestion[] {
+  const sports = new Map<string, SearchSuggestion>();
   const participants = new Map<string, SearchSuggestion>();
   const competitions = new Map<string, SearchSuggestion>();
   const raceWeekends = new Map<string, SearchSuggestion>();
@@ -39,6 +46,17 @@ export function buildSearchSuggestions(events: EventData[]): SearchSuggestion[] 
   for (const event of events) {
     const sport = getSportBySlug(event.sport);
     const sportLabel = getSportLabel(event.sport);
+
+    if (sport && !sports.has(event.sport)) {
+      sports.set(event.sport, {
+        id: `sport:${event.sport}`,
+        label: sportLabel,
+        value: sportLabel,
+        kind: "Sport",
+        href: sportHref(event.sport),
+        searchTerms: unique([event.sport, sportLabel, ...sport.aliases]),
+      });
+    }
 
     if (sportAllowsParticipantPages(event.sport)) {
       for (const participant of [event.participant1, event.participant2]) {
@@ -144,6 +162,7 @@ export function buildSearchSuggestions(events: EventData[]): SearchSuggestion[] 
   }
 
   return [
+    ...Array.from(sports.values()).sort((a, b) => a.label.localeCompare(b.label)),
     ...Array.from(participants.values()).sort((a, b) => a.label.localeCompare(b.label)),
     ...Array.from(raceWeekends.values()).sort((a, b) => a.label.localeCompare(b.label)),
     ...Array.from(fightCards.values()).sort((a, b) => a.label.localeCompare(b.label)),
