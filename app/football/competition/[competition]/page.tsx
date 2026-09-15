@@ -7,6 +7,7 @@ import FavoriteButton from "@/components/FavoriteButton";
 import LocalTime from "@/components/LocalTime";
 import { clubSlug } from "@/lib/club-aliases";
 import { getPublicCompetitionDirectories, getPublicCompetitionDirectory } from "@/lib/competition-directory";
+import { getPreviewCompetitionFixtures, isPreviewFixtureMode } from "@/lib/dev-preview-fixtures";
 import { getAllEvents, type EventData } from "@/lib/events";
 import type { FavoriteCandidate } from "@/lib/favorites";
 import { getPrimaryMediaAsset } from "@/lib/public-media";
@@ -64,13 +65,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function CompetitionPage({ params }: PageProps) {
   const { competition } = await params;
-  const [snapshot, directory, logo] = await Promise.all([
+  const previewMode = isPreviewFixtureMode();
+  const [snapshot, directory, logo, previewFixtures] = await Promise.all([
     getPublicEventsSnapshot(),
     getPublicCompetitionDirectory("football", competition),
     getPrimaryMediaAsset("competition", competition, "competition_logo"),
+    previewMode ? getPreviewCompetitionFixtures(competition) : Promise.resolve([]),
   ]);
   const events = footballCompetitionEvents(snapshot.events, competition);
-  const name = events[0]?.competition ?? directory?.name;
+  const name = events[0]?.competition ?? directory?.name ?? previewFixtures[0]?.competitionName;
   if (!name) notFound();
 
   const now = Date.now();
@@ -88,6 +91,9 @@ export default async function CompetitionPage({ params }: PageProps) {
 
   const favorite = competitionFavorite(competition, name);
   const calendarHref = `/?view=all&sport=football&competition=${encodeURIComponent(competition)}`;
+  const previewDated = previewFixtures.filter((fixture) => fixture.eventDate).sort((a, b) => Date.parse(a.eventDate!) - Date.parse(b.eventDate!));
+  const previewTbc = previewFixtures.filter((fixture) => !fixture.eventDate);
+  const previewDisplay = [...previewDated, ...previewTbc].slice(0, 60);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -115,6 +121,7 @@ export default async function CompetitionPage({ params }: PageProps) {
       <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "1rem" }}>
         <FavoriteButton favorite={favorite} />
         {events.length ? <Link href={calendarHref}>Open full calendar</Link> : null}
+        {previewMode && previewFixtures.length ? <span style={{ alignSelf: "center", fontSize: ".85rem", fontWeight: 700 }}>Local preview · {previewFixtures.length} verified fixtures</span> : null}
       </div>
     </section>
 
@@ -131,9 +138,29 @@ export default async function CompetitionPage({ params }: PageProps) {
       </div>
     </section> : null}
 
+    {previewMode && previewFixtures.length > 0 ? <section className="v2-results" aria-labelledby="preview-fixtures-title">
+      <div className="v2-results-heading">
+        <div><p className="v2-eyebrow">Local development preview</p><h2 id="preview-fixtures-title">Verified season fixtures</h2></div>
+        <p>{previewFixtures.length} fixtures · {previewDated.length} dated · {previewTbc.length} TBC</p>
+      </div>
+      <div className="v2-event-list">{previewDisplay.map((fixture) => <article className="v2-event-card" key={fixture.id}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }} aria-hidden="true">
+          <EntityVisual entityId={fixture.home.id} label={fixture.home.name} size="sm" imageUrl={fixture.home.logoUrl} imageAlt="" />
+          <EntityVisual entityId={fixture.away.id} label={fixture.away.name} size="sm" imageUrl={fixture.away.logoUrl} imageAlt="" />
+        </div>
+        <div className="v2-event-main">
+          <p className="v2-event-competition">{fixture.phase ?? name}</p>
+          <h3><Link href={`/football/club/${fixture.home.slug}`}>{fixture.home.name}</Link><span aria-hidden="true"> vs </span><Link href={`/football/club/${fixture.away.slug}`}>{fixture.away.name}</Link></h3>
+          <p className="v2-event-stage">{fixture.eventDate ? <LocalTime date={fixture.eventDate} /> : "Kickoff TBC"}</p>
+        </div>
+        <div className="v2-broadcast-link"><span>Unpublished</span><strong>Preview only</strong></div>
+      </article>)}</div>
+      {previewFixtures.length > previewDisplay.length ? <p style={{ marginTop: "1rem", opacity: .72 }}>Showing the first {previewDisplay.length} fixtures in local preview. The full set remains stored and unpublished in Supabase.</p> : null}
+    </section> : null}
+
     <section className="v2-results" aria-labelledby="upcoming-title">
-      <div className="v2-results-heading"><div><p className="v2-eyebrow">Schedule</p><h2 id="upcoming-title">Upcoming events</h2></div><p>{upcoming.length} scheduled</p></div>
-      {upcoming.length === 0 ? <div className="v2-empty-state" role="status"><h3>Fixture ingestion is not complete yet</h3><p>The {name} membership directory is verified. Match pages will appear only after authoritative fixture data has passed validation.</p></div> :
+      <div className="v2-results-heading"><div><p className="v2-eyebrow">Published schedule</p><h2 id="upcoming-title">Upcoming events</h2></div><p>{upcoming.length} scheduled</p></div>
+      {upcoming.length === 0 ? <div className="v2-empty-state" role="status"><h3>No public fixture is published yet</h3><p>The {name} membership directory is verified. Public match pages remain hidden until publication is explicitly approved.</p></div> :
       <div className="v2-event-list">{upcoming.map((event) => {
         const homeHref = participantLink(event.participant1?.name); const awayHref = participantLink(event.participant2?.name);
         return <article className="v2-event-card" key={event.id}>
