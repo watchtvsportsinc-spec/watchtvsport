@@ -9,9 +9,14 @@ import {
   getClubAliases,
   getFixtureSeoAliases,
 } from "@/lib/club-aliases";
-import { getAllEvents, type Participant } from "@/lib/events";
+import {
+  getAllEvents,
+  participantEntityId,
+  type Participant,
+} from "@/lib/events";
 import type { FavoriteCandidate } from "@/lib/favorites";
 import { getFixtureSeries } from "@/lib/fixture-series";
+import { getPublicEventsSnapshot } from "@/lib/public-events";
 
 type PageProps = {
   params: Promise<{ fixture: string }>;
@@ -35,7 +40,7 @@ function participantFavorite(participant?: Participant): FavoriteCandidate | nul
   if (!participant) return null;
   return {
     kind: "participant",
-    entityId: participant.id,
+    entityId: participantEntityId(participant, "football"),
     label: `${participant.name} (Football)`,
   };
 }
@@ -57,7 +62,8 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { fixture } = await params;
-  const series = getFixtureSeries(getAllEvents(), eventPath(fixture));
+  const snapshot = await getPublicEventsSnapshot();
+  const series = getFixtureSeries(snapshot.events, eventPath(fixture));
   const event = series?.current;
   if (!event) {
     return {
@@ -83,7 +89,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function ChampionsLeagueEventPage({ params, searchParams }: PageProps) {
   const { fixture } = await params;
-  const series = getFixtureSeries(getAllEvents(), eventPath(fixture));
+  const snapshot = await getPublicEventsSnapshot();
+  const series = getFixtureSeries(snapshot.events, eventPath(fixture));
   if (!series) notFound();
   const event = series.current;
 
@@ -151,12 +158,19 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
       />
 
       <section className="v2-calendar-hero" aria-labelledby="event-title">
-        <p className="v2-eyebrow"><Link href={competitionHref}>{event.competition}</Link></p>
+        <p className="v2-eyebrow">
+          <Link href={competitionHref}>{event.competition}</Link>
+        </p>
         <h1 id="event-title">{event.title}</h1>
         <p className="v2-signature">{event.stage}</p>
-        <p className="v2-hero-copy"><LocalTime date={event.eventDate} /></p>
+        <p className="v2-hero-copy">
+          <LocalTime date={event.eventDate} />
+        </p>
 
-        <div aria-label="Teams" style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "1rem" }}>
+        <div
+          aria-label="Teams"
+          style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "1rem" }}
+        >
           {event.participant1 ? (
             <Link href={`/football/club/${clubSlug(event.participant1.name)}`}>
               {event.participant1.name} club page
@@ -169,7 +183,10 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
           ) : null}
         </div>
 
-        <div aria-label="Follow teams and competition" style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "1rem" }}>
+        <div
+          aria-label="Follow teams and competition"
+          style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "1rem" }}
+        >
           {homeFavorite ? <FavoriteButton favorite={homeFavorite} /> : null}
           {awayFavorite ? <FavoriteButton favorite={awayFavorite} /> : null}
           <FavoriteButton favorite={competitionFavorite} />
@@ -192,7 +209,9 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
                   <div className="v2-event-main">
                     <p className="v2-event-competition">Same fixture</p>
                     <h3>{edition.title}</h3>
-                    <p className="v2-event-stage"><LocalTime date={edition.eventDate} /></p>
+                    <p className="v2-event-stage">
+                      <LocalTime date={edition.eventDate} />
+                    </p>
                   </div>
                 </article>
               ))}
@@ -200,8 +219,12 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
               <article className="v2-event-card" key={meeting.id}>
                 <div className="v2-event-main">
                   <p className="v2-event-competition">Reverse fixture</p>
-                  <h3><Link href={meeting.detailPath}>{meeting.title}</Link></h3>
-                  <p className="v2-event-stage"><LocalTime date={meeting.eventDate} /></p>
+                  <h3>
+                    <Link href={meeting.detailPath}>{meeting.title}</Link>
+                  </h3>
+                  <p className="v2-event-stage">
+                    <LocalTime date={meeting.eventDate} />
+                  </p>
                 </div>
               </article>
             ))}
@@ -222,17 +245,23 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
           <div className="v2-empty-state" role="status">
             <h3>Broadcast information pending</h3>
             <p>
-              This fixture is confirmed, but WatchTVSport has not yet verified an official broadcaster for this event. No viewing option will be shown until it is confirmed.
+              This fixture is confirmed, but WatchTVSport has not yet verified an official
+              broadcaster for this event. No viewing option will be shown until it is confirmed.
             </p>
           </div>
         ) : (
           <div className="v2-event-list">
             {confirmedBroadcasts.map((broadcast) => (
-              <article className="v2-event-card" key={`${broadcast.countryCode}-${broadcast.broadcaster}-${broadcast.url}`}>
+              <article
+                className="v2-event-card"
+                key={`${broadcast.countryCode}-${broadcast.broadcaster}-${broadcast.url}`}
+              >
                 <div className="v2-event-main">
                   <p className="v2-event-competition">{broadcast.countryName}</p>
                   <h3>{broadcast.broadcaster}</h3>
-                  <p className="v2-event-stage">{broadcast.access} · {broadcast.broadcastType ?? "live"}</p>
+                  <p className="v2-event-stage">
+                    {broadcast.access} · {broadcast.broadcastType ?? "live"}
+                  </p>
                 </div>
                 <a
                   className="v2-broadcast-link"
