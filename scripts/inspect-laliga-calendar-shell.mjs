@@ -18,7 +18,9 @@ for (const scriptUrl of scripts.filter((value) => value.includes("assets.laliga.
     status: scriptResponse.status,
     bytes: text.length,
     candidates: [...new Set(candidates)].slice(0, 200),
-    fetchSnippets: [...text.matchAll(/.{0,180}(?:fetch\(|ajax|\.get\(|\.getJSON\(|axios).{0,300}/gi)].map((match) => match[0]).slice(0, 50),
+    configSnippets: [...text.matchAll(/.{0,250}(?:idSeason|idCompetition|calendar-\$\{idSeason\}|notas-\$\{idSeason\}).{0,500}/gi)].map((match) => match[0]).slice(0, 50),
+    fetchSnippets: [...text.matchAll(/.{0,180}(?:fetch\(|ajax|\.get\(|\.getJSON\(|axios).{0,500}/gi)].map((match) => match[0]).slice(0, 50),
+    source: text,
   });
 }
 
