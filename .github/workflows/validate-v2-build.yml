@@ -6,6 +6,7 @@ on:
       - refonte/watchtvsport-v2
       - audit/universal-club-media
       - ux/friendly-navigation-cards
+      - feature/entity-navigation-v2
     paths:
       - '.github/workflows/validate-v2-build.yml'
       - 'app/**'
