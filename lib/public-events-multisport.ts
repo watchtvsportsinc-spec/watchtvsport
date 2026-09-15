@@ -28,6 +28,9 @@ const SESSION_TYPES = new Set<SessionType>([
   "sprint",
   "qualifying",
   "race",
+  "early_prelims",
+  "prelims",
+  "main_card",
 ]);
 
 function optionalSessionType(value: unknown): SessionType | undefined {
