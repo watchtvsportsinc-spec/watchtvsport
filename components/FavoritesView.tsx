@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import FavoriteButton from "./FavoriteButton";
+import EntityVisual from "./EntityVisual";
 import {
   buildFavoriteLookup,
   toFavoriteCandidate,
@@ -126,9 +127,12 @@ function FollowedItem({ favorite, kind }: { favorite: FavoriteItem; kind: string
   const href = favoriteHref(favorite);
   return (
     <li>
-      <div>
-        <span className="v2-following-kind">{kind}</span>
-        {href ? <strong><Link href={href}>{favorite.label}</Link></strong> : <strong>{favorite.label}</strong>}
+      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", minWidth: 0 }}>
+        <EntityVisual entityId={favorite.entityId} label={favorite.label} size="sm" />
+        <div style={{ minWidth: 0 }}>
+          <span className="v2-following-kind">{kind}</span>
+          {href ? <strong><Link href={href}>{favorite.label}</Link></strong> : <strong>{favorite.label}</strong>}
+        </div>
       </div>
       <FavoriteButton compact favorite={toFavoriteCandidate(favorite)} />
     </li>
