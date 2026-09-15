@@ -23,9 +23,9 @@ AS $function$
         'detailPath', CASE
           WHEN page_url.url_path IS NOT NULL THEN
             page_url.url_path || CASE
-              WHEN e.event_kind = 'session' AND e.session_type IS NOT NULL
-                THEN '#' || replace(e.session_type, '_', '-')
-              ELSE '?event=' || e.id::text
+              WHEN e.event_kind = 'session'
+                THEN '#' || regexp_replace(e.slug, '^' || event_page.slug || '-', '')
+              ELSE ''
             END
           WHEN event_url.url_path IS NOT NULL THEN event_url.url_path
           ELSE '/event/' || e.slug
