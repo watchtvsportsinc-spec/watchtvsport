@@ -1,0 +1,50 @@
+name: Validate private broadcast review
+on:
+  push:
+    branches: [work/private-broadcast-review]
+  pull_request:
+    branches: [refonte/watchtvsport-v2]
+    paths:
+      - 'app/admin/**'
+      - 'lib/private-review/**'
+      - 'scripts/private-review*'
+      - 'docs/private-review*'
+      - '.github/workflows/validate-private-review.yml'
+permissions:
+  contents: read
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: wts_review_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: local-test-only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d wts_review_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: node --test scripts/private-review.test.mjs
+      - name: Isolated SQL contract tests (no remote secrets)
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: 5432
+          PGUSER: postgres
+          PGDATABASE: wts_review_test
+          PGPASSWORD: local-test-only
+        run: |
+          psql -v ON_ERROR_STOP=1 -f scripts/private-review.fixture.sql
+          psql -v ON_ERROR_STOP=1 -f docs/private-review-schema.sql
+          psql -v ON_ERROR_STOP=1 -f scripts/private-review.assertions.sql
+      - run: npm test
+      - run: npm run build
