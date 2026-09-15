@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import LocalTime from "@/components/LocalTime";
-import { getAllEvents } from "@/lib/events";
+import { getPublicEventsSnapshot } from "@/lib/public-events";
 
 export const metadata: Metadata = {
   title: "Formula 1 TV schedule & official broadcasters | WatchTVSport",
@@ -11,15 +11,18 @@ export const metadata: Metadata = {
   alternates: { canonical: "/formula-1" },
 };
 
-export default function Formula1Page() {
-  const events = getAllEvents()
+export default async function Formula1Page() {
+  const snapshot = await getPublicEventsSnapshot();
+  const events = snapshot.events
     .filter((event) => event.sport === "formula-1")
     .sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
 
   const weekends = Array.from(
     new Map(
       events
-        .filter((event) => event.eventGroupId && event.eventGroupName && event.eventGroupSlug)
+        .filter(
+          (event) => event.eventGroupId && event.eventGroupName && event.eventGroupSlug
+        )
         .map((event) => [
           event.eventGroupId!,
           {
@@ -28,8 +31,13 @@ export default function Formula1Page() {
             slug: event.eventGroupSlug!,
             country: event.country,
             venue: event.venue,
-            firstSession: events.find((candidate) => candidate.eventGroupId === event.eventGroupId)?.eventDate ?? event.eventDate,
-            sessionCount: events.filter((candidate) => candidate.eventGroupId === event.eventGroupId).length,
+            firstSession:
+              events.find(
+                (candidate) => candidate.eventGroupId === event.eventGroupId
+              )?.eventDate ?? event.eventDate,
+            sessionCount: events.filter(
+              (candidate) => candidate.eventGroupId === event.eventGroupId
+            ).length,
           },
         ])
     ).values()
@@ -43,7 +51,8 @@ export default function Formula1Page() {
         <p className="v2-eyebrow">Motorsport</p>
         <h1 id="f1-title">Formula 1</h1>
         <p className="v2-hero-copy">
-          Formula 1 is organised around Grand Prix weekends. Each weekend can contain practice, sprint qualifying, sprint, qualifying and race sessions.
+          Formula 1 is organised around Grand Prix weekends. Each weekend can contain
+          practice, sprint qualifying, sprint, qualifying and race sessions.
         </p>
       </section>
 
@@ -68,8 +77,11 @@ export default function Formula1Page() {
                   <LocalTime date={weekend.firstSession} />
                 </p>
               </div>
-              <Link className="v2-broadcast-link" href={`/formula-1/grand-prix/${weekend.slug}`}>
-                <span>{weekend.sessionCount} sessions</span>
+              <Link
+                className="v2-broadcast-link"
+                href={`/formula-1/grand-prix/${weekend.slug}`}
+              >
+                <span>{weekend.sessionCount} timed sessions</span>
                 <strong>Open Grand Prix →</strong>
               </Link>
             </article>
