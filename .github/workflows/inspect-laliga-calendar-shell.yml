@@ -1,0 +1,30 @@
+name: Inspect LaLiga calendar shell
+
+on:
+  push:
+    branches:
+      - work/v2-expansion-assets-leagues
+    paths:
+      - scripts/inspect-laliga-calendar-shell.mjs
+      - .github/workflows/inspect-laliga-calendar-shell.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Inspect calendar shell
+        run: node scripts/inspect-laliga-calendar-shell.mjs > laliga-calendar-shell.json
+      - name: Upload inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: laliga-calendar-shell
+          path: laliga-calendar-shell.json
