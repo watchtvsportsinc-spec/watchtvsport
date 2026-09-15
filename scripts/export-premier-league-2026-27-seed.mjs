@@ -16,8 +16,32 @@ function externalParticipant(name) {
   return `participant:football:${slug}`;
 }
 
+function zoneOffsetMinutes(date, timeZone) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone,
+    timeZoneName: "longOffset",
+    hour: "2-digit",
+  }).formatToParts(date);
+  const zone = parts.find((part) => part.type === "timeZoneName")?.value ?? "GMT";
+  const match = zone.match(/^GMT([+-])(\d{2}):(\d{2})$/);
+  if (!match) return 0;
+  const minutes = Number(match[2]) * 60 + Number(match[3]);
+  return match[1] === "+" ? minutes : -minutes;
+}
+
+function zonedLocalToIso(localDate, localTime, timeZone) {
+  const [year, month, day] = localDate.split("-").map(Number);
+  const [hour, minute] = localTime.split(":").map(Number);
+  const naiveUtc = Date.UTC(year, month - 1, day, hour, minute, 0);
+  let offset = zoneOffsetMinutes(new Date(naiveUtc), timeZone);
+  let instant = new Date(naiveUtc - offset * 60_000);
+  const correctedOffset = zoneOffsetMinutes(instant, timeZone);
+  if (correctedOffset !== offset) instant = new Date(naiveUtc - correctedOffset * 60_000);
+  return instant.toISOString();
+}
+
 function eventDate(fixture) {
-  return fixture.localTime ? `${fixture.localDate}T${fixture.localTime}:00+01:00` : null;
+  return fixture.localTime ? zonedLocalToIso(fixture.localDate, fixture.localTime, fixture.timezone) : null;
 }
 
 export function buildPremierLeagueBundle(discovery, observedAt = new Date().toISOString()) {
@@ -37,6 +61,10 @@ export function buildPremierLeagueBundle(discovery, observedAt = new Date().toIS
     const awaySlug = TEAM_SLUGS.get(fixture.away);
     const slug = `premier-league-2026-27-${homeSlug}-vs-${awaySlug}`;
     const pageKey = `event-page:${slug}`;
+    const notes = fixture.localTime
+      ? `Official Premier League local date/time: ${fixture.localDate} ${fixture.localTime} ${fixture.timezone}.`
+      : `Official Premier League local date: ${fixture.localDate}; kickoff time TBC.`;
+
     records.push({
       entityType: "event_page",
       externalKey: pageKey,
@@ -68,8 +96,8 @@ export function buildPremierLeagueBundle(discovery, observedAt = new Date().toIS
         slug,
         title: `${fixture.home} vs ${fixture.away}`,
         eventDate: eventDate(fixture),
-        officialLocalDate: fixture.localDate,
         timezone: fixture.timezone,
+        notes,
         status: "scheduled",
         eventKind: "match",
         verificationStatus: "confirmed",
