@@ -39,13 +39,16 @@ test("V2 launch sports satisfy runtime structural guardrails", async () => {
   const ufc = events.filter((e) => e.sport === "ufc");
   assert.equal(ucl.length, 144);
   // Runtime local events intentionally contain only F1 sessions with a verified exact timestamp.
-  // The complete 23 x 5 = 115 structural session template, including 63 TBC sessions,
+  // The complete 23 x 5 = 115 structural session template, including TBC sessions,
   // is validated by export-v2-multisport-seed.test.mjs and rendered from the weekend plan.
   assert.ok(datedF1.length > 0 && datedF1.length < 115);
-  assert.equal(ufc.length, 17);
+  assert.equal(ufc.length, 18);
   assert.ok(ucl.every((e) => e.participant1 && e.participant2));
   assert.ok(datedF1.every((e) => !e.participant1 && !e.participant2 && e.eventGroupSlug));
   assert.ok(ufc.every((e) => !e.participant1 && !e.participant2 && e.eventGroupSlug));
+
+  const rosasSessions = ufc.filter((e) => e.eventGroupSlug === "ufc-fight-night-rosas-jr-vs-barcelos");
+  assert.deepEqual(rosasSessions.map((e) => e.sessionType), ["early_prelims", "prelims", "main_card"]);
 });
 
 test("participant-page policy prevents page explosion for individual/race sports", async () => {
