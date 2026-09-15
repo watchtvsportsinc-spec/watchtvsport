@@ -17,6 +17,7 @@ export type FavoriteCandidate = {
   kind: FavoriteKind;
   entityId: string;
   label: string;
+  href?: string;
   event?: FavoriteEventContext;
 };
 
@@ -70,16 +71,17 @@ function isTechnicalId(value: string): boolean {
   return /^[a-zA-Z0-9][a-zA-Z0-9:._/-]*$/.test(value);
 }
 
+function safeInternalHref(value: unknown): string | undefined {
+  const href = safeString(value, 300);
+  if (!href || !href.startsWith("/") || href.startsWith("//")) return undefined;
+  return href;
+}
+
 function migrateLegacyParticipantId(kind: FavoriteKind, entityId: string): string {
   if (kind !== "participant") return entityId;
-
-  // Early V2 builds stored football clubs as `club:<slug>`. Club identities are
-  // now scoped by sport so organizations such as PSG football and PSG handball
-  // can coexist safely. Existing local favorites are normalized on read.
   if (/^club:[^:]+$/.test(entityId)) {
     return entityId.replace(/^club:/, "club:football:");
   }
-
   return entityId;
 }
 
@@ -92,19 +94,10 @@ function sanitizeEventContext(value: unknown): FavoriteEventContext | undefined 
   const sport = safeString(candidate.sport, 80);
   const competition = safeString(candidate.competition, 160);
   const participantNames = Array.isArray(candidate.participantNames)
-    ? candidate.participantNames
-        .map((name) => safeString(name, 160))
-        .filter(Boolean)
-        .slice(0, 8)
+    ? candidate.participantNames.map((name) => safeString(name, 160)).filter(Boolean).slice(0, 8)
     : [];
 
-  if (
-    !detailPath.startsWith("/") ||
-    detailPath.startsWith("//") ||
-    !eventDate ||
-    !sport ||
-    !competition
-  ) {
+  if (!detailPath.startsWith("/") || detailPath.startsWith("//") || !eventDate || !sport || !competition) {
     return undefined;
   }
 
@@ -120,34 +113,26 @@ function sanitizeFavoriteItem(value: unknown): FavoriteItem | null {
   const label = safeString(candidate.label, 200);
   const savedAt = safeString(candidate.savedAt, 40);
 
-  if (
-    !isFavoriteKind(kind) ||
-    !rawEntityId ||
-    !isTechnicalId(rawEntityId) ||
-    !label ||
-    !savedAt
-  ) {
-    return null;
-  }
+  if (!isFavoriteKind(kind) || !rawEntityId || !isTechnicalId(rawEntityId) || !label || !savedAt) return null;
 
   const entityId = migrateLegacyParticipantId(kind, rawEntityId);
   const parsedDate = new Date(savedAt);
   if (Number.isNaN(parsedDate.getTime())) return null;
 
   const event = kind === "event" ? sanitizeEventContext(candidate.event) : undefined;
+  const href = safeInternalHref(candidate.href);
 
   return {
     kind,
     entityId,
     label,
     savedAt: parsedDate.toISOString(),
+    ...(href ? { href } : {}),
     ...(event ? { event } : {}),
   };
 }
 
-export function favoriteKey(
-  favorite: Pick<FavoriteCandidate, "kind" | "entityId">
-): string {
+export function favoriteKey(favorite: Pick<FavoriteCandidate, "kind" | "entityId">): string {
   return `${favorite.kind}:${favorite.entityId}`;
 }
 
@@ -156,32 +141,20 @@ export function parseFavoritesSnapshot(raw: string | null): FavoriteCollection {
 
   try {
     const value = JSON.parse(raw) as unknown;
-    if (!value || typeof value !== "object" || Array.isArray(value)) {
-      return EMPTY_FAVORITES;
-    }
+    if (!value || typeof value !== "object" || Array.isArray(value)) return EMPTY_FAVORITES;
 
     const collection = value as Record<string, unknown>;
-    if (
-      collection.schemaVersion !== FAVORITES_SCHEMA_VERSION ||
-      !Array.isArray(collection.items)
-    ) {
-      return EMPTY_FAVORITES;
-    }
+    if (collection.schemaVersion !== FAVORITES_SCHEMA_VERSION || !Array.isArray(collection.items)) return EMPTY_FAVORITES;
 
     const uniqueItems = new Map<string, FavoriteItem>();
-
     for (const rawItem of collection.items.slice(0, MAX_FAVORITES)) {
       const item = sanitizeFavoriteItem(rawItem);
       if (!item) continue;
-
       const key = favoriteKey(item);
       if (!uniqueItems.has(key)) uniqueItems.set(key, item);
     }
 
-    return {
-      schemaVersion: FAVORITES_SCHEMA_VERSION,
-      items: Array.from(uniqueItems.values()),
-    };
+    return { schemaVersion: FAVORITES_SCHEMA_VERSION, items: Array.from(uniqueItems.values()) };
   } catch {
     return EMPTY_FAVORITES;
   }
@@ -192,6 +165,7 @@ export function toFavoriteCandidate(item: FavoriteItem): FavoriteCandidate {
     kind: item.kind,
     entityId: item.entityId,
     label: item.label,
+    ...(item.href ? { href: item.href } : {}),
     ...(item.event ? { event: item.event } : {}),
   };
 }
