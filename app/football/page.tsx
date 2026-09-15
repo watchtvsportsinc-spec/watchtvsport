@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import EntityVisual from "@/components/EntityVisual";
 import LocalTime from "@/components/LocalTime";
 import { clubSlug } from "@/lib/club-aliases";
 import { entitySlug, getFootballNations } from "@/lib/entity-pages";
@@ -29,7 +30,7 @@ export default function FootballPage() {
     new Map(
       events.map((event) => [
         event.competitionSlug,
-        { slug: event.competitionSlug, name: event.competition },
+        { slug: event.competitionSlug, name: event.competition, logoUrl: event.competitionLogoUrl },
       ])
     ).values()
   ).sort((a, b) => a.name.localeCompare(b.name));
@@ -69,7 +70,10 @@ export default function FootballPage() {
         <div className="v2-entity-grid">
           {competitions.map((competition) => (
             <Link key={competition.slug} href={`/football/competition/${competition.slug}`}>
-              <strong>{competition.name}</strong>
+              <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <EntityVisual entityId={`competition:football:${competition.slug}`} label={competition.name} size="sm" imageUrl={competition.logoUrl} imageAlt={`${competition.name} logo`} />
+                <strong>{competition.name}</strong>
+              </span>
               <span>Competition</span>
             </Link>
           ))}
@@ -88,7 +92,10 @@ export default function FootballPage() {
           <div className="v2-entity-grid">
             {clubs.map((club) => (
               <Link key={club.id} href={`/football/club/${clubSlug(club.name)}`}>
-                <strong>{club.name}</strong>
+                <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <EntityVisual entityId={club.id} label={club.name} size="sm" imageUrl={club.logoUrl} imageAlt={`${club.name} logo`} />
+                  <strong>{club.name}</strong>
+                </span>
                 <span>Club</span>
               </Link>
             ))}
@@ -108,7 +115,10 @@ export default function FootballPage() {
           <div className="v2-entity-grid">
             {nations.map((nation) => (
               <Link key={nation.id} href={`/football/nation/${entitySlug(nation.name)}`}>
-                <strong>{nation.name}</strong>
+                <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <EntityVisual entityId={nation.id} label={nation.name} size="sm" imageUrl={nation.logoUrl} imageAlt={`${nation.name} logo`} />
+                  <strong>{nation.name}</strong>
+                </span>
                 <span>Nation</span>
               </Link>
             ))}
@@ -126,6 +136,10 @@ export default function FootballPage() {
         <div className="v2-event-list">
           {upcoming.map((event) => (
             <article className="v2-event-card" key={event.id}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }} aria-hidden="true">
+                {event.participant1 ? <EntityVisual entityId={event.participant1.id} label={event.participant1.name} size="sm" imageUrl={event.participant1.logoUrl} imageAlt="" /> : null}
+                {event.participant2 ? <EntityVisual entityId={event.participant2.id} label={event.participant2.name} size="sm" imageUrl={event.participant2.logoUrl} imageAlt="" /> : null}
+              </div>
               <div className="v2-event-main">
                 <p className="v2-event-competition">{event.competition}</p>
                 <h3>{event.title}</h3>
