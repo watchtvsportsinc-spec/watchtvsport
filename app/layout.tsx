@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import "./globals.css";
 import "./v2-cinematic.css";
+import "./ux-friendly.css";
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
 import HeaderNav from "./HeaderNav";
