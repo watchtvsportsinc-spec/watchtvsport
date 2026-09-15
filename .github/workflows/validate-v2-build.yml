@@ -5,6 +5,7 @@ on:
     branches:
       - refonte/watchtvsport-v2
       - audit/universal-club-media
+      - ux/friendly-navigation-cards
     paths:
       - '.github/workflows/validate-v2-build.yml'
       - 'app/**'
