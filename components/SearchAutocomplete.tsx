@@ -13,6 +13,7 @@ type Props = {
 };
 
 const GROUP_ORDER: SearchSuggestion["kind"][] = [
+  "Sport",
   "Club",
   "Nation",
   "Grand Prix",
@@ -89,6 +90,7 @@ function scoreSuggestion(suggestion: SearchSuggestion, query: string): number {
   }
 
   if (best >= 0) {
+    if (suggestion.kind === "Sport") best += 14;
     if (suggestion.kind === "Club" || suggestion.kind === "Nation") best += 8;
     if (suggestion.kind === "UFC Event" || suggestion.kind === "Grand Prix") best += 6;
     if (suggestion.kind === "Competition") best += 4;
@@ -172,14 +174,14 @@ export default function SearchAutocomplete({
     >
       <div ref={rootRef}>
         <label className="sr-only" htmlFor="global-sports-search">
-          Search clubs, nations, competitions, Grand Prix or UFC events
+          Search sports, clubs, nations, competitions, Grand Prix or UFC events
         </label>
         <input
           id="global-sports-search"
           type="search"
           autoComplete="off"
           value={query}
-          placeholder="Search a club, nation, competition, Grand Prix or UFC event"
+          placeholder="Search a sport, club, nation, competition or event"
           style={INPUT_STYLE}
           aria-autocomplete="list"
           aria-expanded={open && matches.length > 0}
