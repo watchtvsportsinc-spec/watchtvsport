@@ -1,44 +1,62 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
-import type { CSSProperties, KeyboardEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { SearchSuggestion } from "@/lib/search-suggestions";
 
 type Props = {
-  defaultValue: string;
+  defaultValue?: string;
   sport?: string;
   competition?: string;
   timeZone?: string;
   suggestions: SearchSuggestion[];
 };
 
-const suggestionPanelStyle: CSSProperties = {
-  position: "absolute",
-  top: "calc(100% + 6px)",
-  left: 0,
-  right: 0,
-  zIndex: 40,
-  overflow: "hidden",
-  border: "1px solid rgba(147, 197, 253, 0.25)",
-  borderRadius: 12,
-  background: "#0b1220",
-  boxShadow: "0 18px 48px rgba(0, 0, 0, 0.35)",
+const GROUP_ORDER = ["Club", "Nation", "Grand Prix", "Competition"] as const;
+
+const FORM_STYLE = {
+  marginTop: "1.25rem",
+  position: "relative" as const,
+  maxWidth: "720px",
 };
 
-const suggestionButtonStyle: CSSProperties = {
-  display: "flex",
+const INPUT_STYLE = {
   width: "100%",
-  minHeight: 44,
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: 12,
+  minHeight: "50px",
+  borderRadius: "14px",
+  border: "1px solid rgba(255,255,255,0.18)",
+  background: "rgba(255,255,255,0.08)",
+  color: "inherit",
+  padding: "0 16px",
+  fontSize: "1rem",
+};
+
+const LIST_STYLE = {
+  position: "absolute" as const,
+  zIndex: 20,
+  top: "calc(100% + 8px)",
+  left: 0,
+  right: 0,
+  margin: 0,
+  padding: "8px",
+  listStyle: "none",
+  background: "#111827",
+  border: "1px solid rgba(255,255,255,0.14)",
+  borderRadius: "14px",
+  boxShadow: "0 18px 40px rgba(0,0,0,0.28)",
+  maxHeight: "420px",
+  overflowY: "auto" as const,
+};
+
+const BUTTON_STYLE = {
+  width: "100%",
   border: 0,
-  borderBottom: "1px solid rgba(255, 255, 255, 0.07)",
-  borderRadius: 0,
+  borderRadius: "10px",
   background: "transparent",
-  color: "#f8fafc",
+  color: "inherit",
+  cursor: "pointer",
   padding: "10px 12px",
-  textAlign: "left",
+  textAlign: "left" as const,
 };
 
 function normalize(value: string): string {
@@ -65,7 +83,7 @@ function scoreSuggestion(suggestion: SearchSuggestion, query: string): number {
   }
 
   if (best >= 0) {
-    if (suggestion.kind === "Team") best += 8;
+    if (suggestion.kind === "Club" || suggestion.kind === "Nation") best += 8;
     if (suggestion.kind === "Competition") best += 4;
   }
 
@@ -88,129 +106,140 @@ export default function SearchAutocomplete({
   timeZone,
   suggestions,
 }: Props) {
-  const [value, setValue] = useState(defaultValue);
+  const router = useRouter();
+  const [query, setQuery] = useState(defaultValue ?? "");
+  const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
-  const [isFocused, setIsFocused] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   const matches = useMemo(() => {
-    const query = value.trim();
-    if (!query) return [];
-
-    return suggestions
-      .map((suggestion) => ({ suggestion, score: scoreSuggestion(suggestion, query) }))
+    const scored = suggestions
+      .map((suggestion) => ({
+        suggestion,
+        score: scoreSuggestion(suggestion, query),
+      }))
       .filter((item) => item.score >= 0)
-      .sort((a, b) => b.score - a.score || a.suggestion.label.localeCompare(b.suggestion.label))
-      .slice(0, 8)
+      .sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        const kindDelta =
+          GROUP_ORDER.indexOf(a.suggestion.kind) - GROUP_ORDER.indexOf(b.suggestion.kind);
+        if (kindDelta !== 0) return kindDelta;
+        return a.suggestion.label.localeCompare(b.suggestion.label);
+      })
+      .slice(0, 12)
       .map((item) => item.suggestion);
-  }, [suggestions, value]);
 
-  const isOpen = isFocused && matches.length > 0;
+    return scored;
+  }, [query, suggestions]);
 
-  function chooseSuggestion(index: number) {
-    const suggestion = matches[index];
-    if (!suggestion) return;
+  useEffect(() => {
+    function handlePointerDown(event: MouseEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, []);
 
-    setValue(suggestion.value);
+  function selectSuggestion(suggestion: SearchSuggestion) {
+    setQuery(suggestion.value);
+    setOpen(false);
     setActiveIndex(-1);
-    window.location.assign(withTimeZone(suggestion.href, timeZone));
+    router.push(withTimeZone(suggestion.href, timeZone));
   }
 
-  function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (!isOpen && event.key !== "ArrowDown") return;
-
-    if (event.key === "ArrowDown") {
-      event.preventDefault();
-      setActiveIndex((current) => (current + 1) % matches.length);
-    } else if (event.key === "ArrowUp") {
-      event.preventDefault();
-      setActiveIndex((current) => (current <= 0 ? matches.length - 1 : current - 1));
-    } else if (event.key === "Enter" && activeIndex >= 0) {
-      event.preventDefault();
-      chooseSuggestion(activeIndex);
-    } else if (event.key === "Escape") {
-      event.preventDefault();
-      setActiveIndex(-1);
-      setIsFocused(false);
-      inputRef.current?.blur();
-    }
+  function submitSearch() {
+    const params = new URLSearchParams({ view: "all" });
+    const trimmed = query.trim();
+    if (trimmed) params.set("q", trimmed);
+    if (sport) params.set("sport", sport);
+    if (competition) params.set("competition", competition);
+    if (timeZone && timeZone !== "UTC") params.set("tz", timeZone);
+    router.push(`/?${params.toString()}`);
+    setOpen(false);
   }
 
   return (
-    <form className="v2-search" action="/" method="get" role="search">
-      <label htmlFor="event-search">Team, competition or event</label>
-      <div style={{ position: "relative" }}>
-        <div className="v2-search-row">
-          <input
-            ref={inputRef}
-            id="event-search"
-            name="q"
-            type="search"
-            value={value}
-            onChange={(event) => {
-              setValue(event.target.value);
+    <form
+      role="search"
+      style={FORM_STYLE}
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (activeIndex >= 0 && matches[activeIndex]) {
+          selectSuggestion(matches[activeIndex]);
+        } else {
+          submitSearch();
+        }
+      }}
+    >
+      <div ref={rootRef}>
+        <label className="sr-only" htmlFor="global-sports-search">
+          Search clubs, nations, competitions or Grand Prix
+        </label>
+        <input
+          id="global-sports-search"
+          type="search"
+          autoComplete="off"
+          value={query}
+          placeholder="Search a club, nation, competition or Grand Prix"
+          style={INPUT_STYLE}
+          aria-autocomplete="list"
+          aria-expanded={open && matches.length > 0}
+          aria-controls="global-sports-search-results"
+          aria-activedescendant={
+            activeIndex >= 0 && matches[activeIndex]
+              ? `search-result-${activeIndex}`
+              : undefined
+          }
+          onFocus={() => setOpen(true)}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setOpen(true);
+            setActiveIndex(-1);
+          }}
+          onKeyDown={(event) => {
+            if (!open || matches.length === 0) return;
+            if (event.key === "ArrowDown") {
+              event.preventDefault();
+              setActiveIndex((current) => Math.min(current + 1, matches.length - 1));
+            } else if (event.key === "ArrowUp") {
+              event.preventDefault();
+              setActiveIndex((current) => Math.max(current - 1, 0));
+            } else if (event.key === "Escape") {
+              setOpen(false);
               setActiveIndex(-1);
-            }}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => window.setTimeout(() => setIsFocused(false), 120)}
-            onKeyDown={onKeyDown}
-            maxLength={100}
-            placeholder="Search PSG, Barça, Champions League..."
-            autoComplete="off"
-            aria-autocomplete="list"
-            aria-expanded={isOpen}
-            aria-controls="search-suggestions"
-            aria-activedescendant={
-              activeIndex >= 0 ? `search-suggestion-${activeIndex}` : undefined
             }
-          />
-          <button type="submit">Search</button>
-        </div>
+          }}
+        />
 
-        {isOpen ? (
-          <div id="search-suggestions" role="listbox" style={suggestionPanelStyle}>
+        {open && matches.length > 0 ? (
+          <ul id="global-sports-search-results" role="listbox" style={LIST_STYLE}>
             {matches.map((suggestion, index) => (
-              <button
-                type="button"
-                id={`search-suggestion-${index}`}
+              <li
+                key={suggestion.id}
+                id={`search-result-${index}`}
                 role="option"
                 aria-selected={index === activeIndex}
-                key={suggestion.id}
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={() => chooseSuggestion(index)}
-                style={{
-                  ...suggestionButtonStyle,
-                  background: index === activeIndex ? "#1e3a8a" : "transparent",
-                }}
               >
-                <span style={{ fontWeight: 800 }}>{suggestion.label}</span>
-                <small style={{ color: "#93c5fd", fontWeight: 800 }}>
-                  {suggestion.kind}
-                </small>
-              </button>
+                <button
+                  type="button"
+                  style={{
+                    ...BUTTON_STYLE,
+                    background:
+                      index === activeIndex ? "rgba(255,255,255,0.1)" : "transparent",
+                  }}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => selectSuggestion(suggestion)}
+                >
+                  <strong>{suggestion.label}</strong>
+                  <span style={{ display: "block", opacity: 0.68, marginTop: 2 }}>
+                    {suggestion.kind}
+                  </span>
+                </button>
+              </li>
             ))}
-            <p
-              aria-hidden="true"
-              style={{
-                margin: 0,
-                padding: "8px 12px",
-                color: "#94a3b8",
-                fontSize: 12,
-                fontWeight: 700,
-              }}
-            >
-              ↑↓ navigate · Enter open · Esc close
-            </p>
-          </div>
+          </ul>
         ) : null}
       </div>
-
-      <input type="hidden" name="view" value="all" />
-      {sport ? <input type="hidden" name="sport" value={sport} /> : null}
-      {competition ? <input type="hidden" name="competition" value={competition} /> : null}
-      {timeZone && timeZone !== "UTC" ? (
-        <input type="hidden" name="tz" value={timeZone} />
-      ) : null}
     </form>
   );
 }
