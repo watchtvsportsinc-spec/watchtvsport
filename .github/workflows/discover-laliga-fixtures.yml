@@ -9,6 +9,8 @@ on:
       - scripts/discover-laliga-fixtures.test.mjs
       - .github/workflows/discover-laliga-fixtures.yml
   workflow_dispatch:
+  schedule:
+    - cron: "27 4 * * *"
 
 permissions:
   contents: read
@@ -21,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
       - name: Validate parser
         run: node --test scripts/discover-laliga-fixtures.test.mjs
       - name: Discover official LaLiga fixtures
