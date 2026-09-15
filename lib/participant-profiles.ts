@@ -25,6 +25,14 @@ export type ParticipantProfile = {
   lastVerifiedAt?: string;
 };
 
+export type ParticipantCompetition = {
+  id: string;
+  slug: string;
+  name: string;
+  logoUrl?: string;
+  officialWebsiteUrl?: string;
+};
+
 export type ParticipantProfileSource = {
   field: string;
   sourceName: string;
@@ -43,6 +51,7 @@ export type PublicParticipantProfile = {
   sport: string;
   sportName?: string;
   profile: ParticipantProfile | null;
+  competitions: ParticipantCompetition[];
   sources: ParticipantProfileSource[];
 };
 
@@ -86,6 +95,13 @@ function parseProfile(value: unknown): PublicParticipantProfile | null {
     };
   }
 
+  const competitions = Array.isArray(value.competitions) ? value.competitions.flatMap((item) => {
+    if (!isObject(item)) return [];
+    const id = optionalString(item.id); const competitionSlug = optionalString(item.slug); const competitionName = optionalString(item.name);
+    if (!id || !competitionSlug || !competitionName) return [];
+    return [{ id, slug: competitionSlug, name: competitionName, logoUrl: optionalString(item.logoUrl), officialWebsiteUrl: optionalString(item.officialWebsiteUrl) }];
+  }) : [];
+
   const sources = Array.isArray(value.sources) ? value.sources.flatMap((item) => {
     if (!isObject(item)) return [];
     const field = optionalString(item.field); const sourceName = optionalString(item.sourceName); const sourceUrl = optionalString(item.sourceUrl); const sourceType = optionalString(item.sourceType);
@@ -102,6 +118,7 @@ function parseProfile(value: unknown): PublicParticipantProfile | null {
     sport,
     sportName: optionalString(value.sportName),
     profile,
+    competitions,
     sources,
   };
 }
@@ -114,7 +131,7 @@ async function loadParticipantProfile(slug: string, sport: string): Promise<Publ
       const response = await fetch(`${url}/rest/v1/rpc/${rpcName}`, {
         method: "POST",
         headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-        body: JSON.stringify(rpcName.endsWith("v3") ? { p_slug: slug, p_sport_slug: sport } : { p_slug: slug, p_sport_slug: sport }),
+        body: JSON.stringify({ p_slug: slug, p_sport_slug: sport }),
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
         next: { revalidate: 86400, tags: [`participant-profile:${sport}:${slug}`] },
       });
