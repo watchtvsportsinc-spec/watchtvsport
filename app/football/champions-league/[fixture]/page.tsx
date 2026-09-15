@@ -3,13 +3,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import FavoriteButton from "@/components/FavoriteButton";
+import LocalTime from "@/components/LocalTime";
 import {
   clubSlug,
   getClubAliases,
   getFixtureSeoAliases,
 } from "@/lib/club-aliases";
-import { getAllEvents, getEventByDetailPath, type Participant } from "@/lib/events";
+import { getAllEvents, type Participant } from "@/lib/events";
 import type { FavoriteCandidate } from "@/lib/favorites";
+import { getFixtureSeries } from "@/lib/fixture-series";
 
 type PageProps = {
   params: Promise<{ fixture: string }>;
@@ -38,32 +40,25 @@ function participantFavorite(participant?: Participant): FavoriteCandidate | nul
   };
 }
 
-function formatDateTime(value: string): string {
-  return new Intl.DateTimeFormat("en", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "UTC",
-    timeZoneName: "short",
-  }).format(new Date(value));
-}
-
 function eventPath(fixture: string): string {
   return `/football/champions-league/${fixture}`;
 }
 
 export async function generateStaticParams() {
-  return getAllEvents()
-    .filter((event) => event.detailPath.startsWith("/football/champions-league/"))
-    .map((event) => ({ fixture: event.detailPath.split("/").at(-1) ?? "" }));
+  return Array.from(
+    new Set(
+      getAllEvents()
+        .filter((event) => event.detailPath.startsWith("/football/champions-league/"))
+        .map((event) => event.detailPath.split("/").at(-1) ?? "")
+        .filter(Boolean)
+    )
+  ).map((fixture) => ({ fixture }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { fixture } = await params;
-  const event = getEventByDetailPath(eventPath(fixture));
+  const series = getFixtureSeries(getAllEvents(), eventPath(fixture));
+  const event = series?.current;
   if (!event) {
     return {
       title: "Event not found | WatchTVSport",
@@ -88,8 +83,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function ChampionsLeagueEventPage({ params, searchParams }: PageProps) {
   const { fixture } = await params;
-  const event = getEventByDetailPath(eventPath(fixture));
-  if (!event) notFound();
+  const series = getFixtureSeries(getAllEvents(), eventPath(fixture));
+  if (!series) notFound();
+  const event = series.current;
 
   const resolvedSearch = (await searchParams) ?? {};
   const returnTo = safeReturnTo(resolvedSearch.returnTo);
@@ -158,9 +154,7 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
         <p className="v2-eyebrow"><Link href={competitionHref}>{event.competition}</Link></p>
         <h1 id="event-title">{event.title}</h1>
         <p className="v2-signature">{event.stage}</p>
-        <p className="v2-hero-copy">
-          {formatDateTime(event.eventDate)}. Times will be localized from the calendar view.
-        </p>
+        <p className="v2-hero-copy"><LocalTime date={event.eventDate} /></p>
 
         <div aria-label="Teams" style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "1rem" }}>
           {event.participant1 ? (
@@ -181,6 +175,39 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
           <FavoriteButton favorite={competitionFavorite} />
         </div>
       </section>
+
+      {series.editions.length > 1 || series.reverseMeetings.length > 0 ? (
+        <section className="v2-results" aria-labelledby="meetings-title">
+          <div className="v2-results-heading">
+            <div>
+              <p className="v2-eyebrow">Fixture history</p>
+              <h2 id="meetings-title">Other meetings</h2>
+            </div>
+          </div>
+          <div className="v2-event-list">
+            {series.editions
+              .filter((edition) => edition.id !== event.id)
+              .map((edition) => (
+                <article className="v2-event-card" key={edition.id}>
+                  <div className="v2-event-main">
+                    <p className="v2-event-competition">Same fixture</p>
+                    <h3>{edition.title}</h3>
+                    <p className="v2-event-stage"><LocalTime date={edition.eventDate} /></p>
+                  </div>
+                </article>
+              ))}
+            {series.reverseMeetings.map((meeting) => (
+              <article className="v2-event-card" key={meeting.id}>
+                <div className="v2-event-main">
+                  <p className="v2-event-competition">Reverse fixture</p>
+                  <h3><Link href={meeting.detailPath}>{meeting.title}</Link></h3>
+                  <p className="v2-event-stage"><LocalTime date={meeting.eventDate} /></p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="v2-results" aria-labelledby="broadcasts-title">
         <div className="v2-results-heading">
