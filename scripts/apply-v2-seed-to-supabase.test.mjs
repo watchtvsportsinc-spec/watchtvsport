@@ -7,7 +7,7 @@ test("Supabase apply plan resolves UCL, F1 and UFC dependencies in safe order", 
   const bundle = await buildV2MultisportSeed();
   const plan = buildSeedApplyPlan(bundle);
 
-  assert.equal(plan.operations.length, 525);
+  assert.equal(plan.operations.length, 526);
 
   const counts = plan.operations.reduce((acc, operation) => {
     acc[operation.table] = (acc[operation.table] ?? 0) + 1;
@@ -21,7 +21,7 @@ test("Supabase apply plan resolves UCL, F1 and UFC dependencies in safe order", 
     participants: 36,
     event_pages: 174,
     event_editions: 30,
-    events: 276,
+    events: 277,
   });
 
   const tableOrder = ["sports", "competitions", "seasons", "participants", "event_pages", "event_editions", "events"];
@@ -33,7 +33,7 @@ test("Supabase apply plan resolves UCL, F1 and UFC dependencies in safe order", 
   const sessionEvents = plan.operations.filter(
     (operation) => operation.table === "events" && operation.row.event_kind === "session"
   );
-  assert.equal(sessionEvents.length, 132);
+  assert.equal(sessionEvents.length, 133);
   assert.equal(sessionEvents.every((operation) => operation.row.session_order >= 1), true);
   assert.equal(sessionEvents.every((operation) => operation.row.sequence_number >= 1), true);
   assert.equal(sessionEvents.every((operation) => operation.row.is_published === false), true);
@@ -41,7 +41,7 @@ test("Supabase apply plan resolves UCL, F1 and UFC dependencies in safe order", 
   const f1Sessions = sessionEvents.filter((operation) => operation.refs.sport_id === "sport:formula-1");
   const ufcSessions = sessionEvents.filter((operation) => operation.refs.sport_id === "sport:ufc");
   assert.equal(f1Sessions.length, 115);
-  assert.equal(ufcSessions.length, 17);
+  assert.equal(ufcSessions.length, 18);
   assert.equal(f1Sessions.some((operation) => operation.row.event_date === null), true);
   assert.equal(ufcSessions.every((operation) => operation.row.event_date !== null), true);
   assert.equal(ufcSessions.every((operation) => operation.row.session_group === "card"), true);
