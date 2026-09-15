@@ -9,6 +9,10 @@ export const LEAGUES = {
   },
 };
 
+const REQUEST_TIMEOUT_MS = 8_000;
+const DISCOVERY_CONCURRENCY = 5;
+const USER_AGENT = "WatchTVSport/1.0 (+https://watchtvsport.com)";
+
 function decodeHtml(value = "") {
   return value
     .replaceAll("&amp;", "&")
@@ -116,21 +120,20 @@ export function extractBestLogo(html, club, config) {
   return best && best.score >= 6 ? best : null;
 }
 
-export async function discoverLeagueLogos(leagueKey, { fetchImpl = fetch } = {}) {
-  const config = LEAGUES[leagueKey];
-  if (!config) throw new Error(`Unknown league: ${leagueKey}`);
-  const listResponse = await fetchImpl(config.clubsUrl, { headers: { "user-agent": "WatchTVSport/1.0 (+https://watchtvsport.com)" } });
-  if (!listResponse.ok) throw new Error(`Unable to fetch ${config.clubsUrl}: ${listResponse.status}`);
-  const clubs = extractClubLinks(await listResponse.text(), config);
-  const results = [];
-  for (const club of clubs) {
-    const response = await fetchImpl(club.url, { headers: { "user-agent": "WatchTVSport/1.0 (+https://watchtvsport.com)" } });
-    if (!response.ok) {
-      results.push({ ...club, status: "fetch_failed", httpStatus: response.status });
-      continue;
-    }
+async function fetchPage(fetchImpl, url) {
+  const response = await fetchImpl(url, {
+    headers: { "user-agent": USER_AGENT, accept: "text/html,application/xhtml+xml" },
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  });
+  return response;
+}
+
+async function discoverClub(fetchImpl, club, config) {
+  try {
+    const response = await fetchPage(fetchImpl, club.url);
+    if (!response.ok) return { ...club, status: "fetch_failed", httpStatus: response.status };
     const logo = extractBestLogo(await response.text(), club, config);
-    results.push(logo ? {
+    return logo ? {
       entityType: "participant",
       entityKey: club.slug,
       assetKind: "team_logo",
@@ -140,9 +143,37 @@ export async function discoverLeagueLogos(leagueKey, { fetchImpl = fetch } = {})
       mediaUrl: logo.url,
       altText: logo.alt || `${club.label} official team logo`,
       confidenceScore: logo.score,
-    } : { ...club, status: "logo_not_found" });
+    } : { ...club, status: "logo_not_found" };
+  } catch (error) {
+    return {
+      ...club,
+      status: "fetch_failed",
+      error: error instanceof Error ? error.name : "FetchError",
+    };
   }
+}
+
+async function mapConcurrent(items, concurrency, worker) {
+  const results = new Array(items.length);
+  let cursor = 0;
+  async function run() {
+    while (true) {
+      const index = cursor++;
+      if (index >= items.length) return;
+      results[index] = await worker(items[index], index);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, run));
   return results;
+}
+
+export async function discoverLeagueLogos(leagueKey, { fetchImpl = fetch } = {}) {
+  const config = LEAGUES[leagueKey];
+  if (!config) throw new Error(`Unknown league: ${leagueKey}`);
+  const listResponse = await fetchPage(fetchImpl, config.clubsUrl);
+  if (!listResponse.ok) throw new Error(`Unable to fetch ${config.clubsUrl}: ${listResponse.status}`);
+  const clubs = extractClubLinks(await listResponse.text(), config);
+  return mapConcurrent(clubs, DISCOVERY_CONCURRENCY, (club) => discoverClub(fetchImpl, club, config));
 }
 
 async function main() {
