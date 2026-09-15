@@ -1,17 +1,23 @@
-import type { EventData } from "@/lib/events";
+import type { EventData, SessionType } from "@/lib/events";
 
-// 2026 Formula 1 season, using the current official Formula 1 calendar as of
-// 2026-09-14. The current calendar has 23 rounds after the mid-season changes,
-// including the Bahrain Grand Prix being hosted at Sepang, Malaysia.
+// 2026 Formula 1 season. Every Grand Prix uses a complete weekend template.
+// Standard weekend: FP1, FP2, FP3, Qualifying, Race.
+// Sprint weekend: FP1, Sprint Qualifying, Sprint, Qualifying, Race.
+// Exact timestamps are attached only when confirmed in the current source data;
+// missing timestamps remain structurally present and are displayed as TBC.
 //
-// Sources:
-// https://www.formula1.com/en/racing/2026
-// https://www.formula1.com/en/latest/article/official-grand-prix-start-times-for-2026-f1-season-confirmed.2UgPfArqH76tzlOYh21jSG.2UgPfArqH76tzlOYh21jSG
-// https://www.formula1.com/en/racing/2026/bahrain
-//
-// This file intentionally stores the core broadcast-relevant sessions for every
-// round (Qualifying, Sprint where applicable, Race). Detailed practice sessions
-// can be added from each official weekend timetable without changing the model.
+// Formula 1 weekend format reference:
+// https://www.formula1.com/en/latest/article/the-beginners-guide-to-the-formula-1-weekend.5RFZzGXNhEi9AEuMXwo987
+// 2026 Sprint venues:
+// https://www.formula1.com/en/latest/article/formula-1-and-fia-announce-2026-sprint-calendar.3PyLPAazrBNe8kQIS3wOfY.3PyLPAazrBNe8kQIS3wOfY
+
+export type Formula1SessionPlan = {
+  slug: string;
+  label: string;
+  sessionType: SessionType;
+  sequenceNumber: number;
+  eventDate?: string;
+};
 
 export type Formula1Weekend2026 = {
   round: number;
@@ -51,18 +57,40 @@ export const formula1Season2026Weekends: Formula1Weekend2026[] = [
   { round: 23, slug: "abu-dhabi", name: "Abu Dhabi Grand Prix", country: "United Arab Emirates", venue: "Yas Marina Circuit", qualifyingDate: "2026-12-05T14:00:00Z", raceDate: "2026-12-06T13:00:00Z", status: "scheduled" },
 ];
 
+export function getFormula1Weekend2026(slug: string): Formula1Weekend2026 | null {
+  return formula1Season2026Weekends.find((weekend) => weekend.slug === slug) ?? null;
+}
+
+export function getFormula1SessionPlan2026(weekend: Formula1Weekend2026): Formula1SessionPlan[] {
+  if (weekend.sprintDate) {
+    return [
+      { slug: "practice-1", label: "Practice 1", sessionType: "practice", sequenceNumber: 1 },
+      { slug: "sprint-qualifying", label: "Sprint Qualifying", sessionType: "sprint_qualifying", sequenceNumber: 2 },
+      { slug: "sprint", label: "Sprint", sessionType: "sprint", sequenceNumber: 3, eventDate: weekend.sprintDate },
+      { slug: "qualifying", label: "Qualifying", sessionType: "qualifying", sequenceNumber: 4, eventDate: weekend.qualifyingDate },
+      { slug: "race", label: "Race", sessionType: "race", sequenceNumber: 5, eventDate: weekend.raceDate },
+    ];
+  }
+
+  return [
+    { slug: "practice-1", label: "Practice 1", sessionType: "practice", sequenceNumber: 1 },
+    { slug: "practice-2", label: "Practice 2", sessionType: "practice", sequenceNumber: 2 },
+    { slug: "practice-3", label: "Practice 3", sessionType: "practice", sequenceNumber: 3 },
+    { slug: "qualifying", label: "Qualifying", sessionType: "qualifying", sequenceNumber: 4, eventDate: weekend.qualifyingDate },
+    { slug: "race", label: "Race", sessionType: "race", sequenceNumber: 5, eventDate: weekend.raceDate },
+  ];
+}
+
 function sessionEvent(
   weekend: Formula1Weekend2026,
-  sessionType: NonNullable<EventData["sessionType"]>,
-  title: string,
-  eventDate: string,
-  order: number
-): EventData {
-  const sessionSlug = sessionType.replaceAll("_", "-");
+  session: Formula1SessionPlan
+): EventData | null {
+  if (!session.eventDate) return null;
+
   return {
-    id: `f1-2026-${weekend.slug}-${sessionSlug}`,
-    slug: `${weekend.slug}-${sessionSlug}`,
-    detailPath: `/formula-1/grand-prix/${weekend.slug}#${sessionSlug}`,
+    id: `f1-2026-${weekend.slug}-${session.slug}`,
+    slug: `${weekend.slug}-${session.slug}`,
+    detailPath: `/formula-1/grand-prix/${weekend.slug}#${session.slug}`,
     sport: "formula-1",
     competition: "Formula 1",
     competitionSlug: "formula-1",
@@ -71,28 +99,21 @@ function sessionEvent(
     eventGroupSlug: weekend.slug,
     eventEditionKey: "2026",
     eventEditionLabel: "2026",
-    sessionType,
+    sessionType: session.sessionType,
     venue: weekend.venue,
     country: weekend.country,
-    stage: title,
+    stage: session.label,
     group: `Round ${weekend.round}`,
-    eventDate,
+    eventDate: session.eventDate,
     status: weekend.status,
-    title: `${weekend.name} 2026 — ${title}`,
+    title: `${weekend.name} 2026 — ${session.label}`,
     broadcasts: [],
-    sequenceNumber: order,
+    sequenceNumber: session.sequenceNumber,
   };
 }
 
-export const formula1Season2026Sessions: EventData[] = formula1Season2026Weekends.flatMap((weekend) => {
-  const sessions: EventData[] = [];
-  let order = 1;
-
-  if (weekend.sprintDate) {
-    sessions.push(sessionEvent(weekend, "sprint", "Sprint", weekend.sprintDate, order++));
-  }
-
-  sessions.push(sessionEvent(weekend, "qualifying", "Qualifying", weekend.qualifyingDate, order++));
-  sessions.push(sessionEvent(weekend, "race", "Race", weekend.raceDate, order));
-  return sessions;
-});
+export const formula1Season2026Sessions: EventData[] = formula1Season2026Weekends.flatMap((weekend) =>
+  getFormula1SessionPlan2026(weekend)
+    .map((session) => sessionEvent(weekend, session))
+    .filter((event): event is EventData => event !== null)
+);
