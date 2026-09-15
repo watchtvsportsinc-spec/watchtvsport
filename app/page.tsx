@@ -30,8 +30,8 @@ const VIEW_OPTIONS: Array<{ value: CalendarView; label: string }> = [
   { value: "today", label: "Today" }, { value: "tomorrow", label: "Tomorrow" }, { value: "archive", label: "Archives" },
 ];
 const SPORT_SHORTCUTS = [
-  ["", "All"], ["football", "Football"], ["formula-1", "Formula 1"], ["ufc", "UFC"],
-  ["basketball", "NBA"], ["tennis", "Tennis"], ["motogp", "MotoGP"], ["hockey", "NHL"],
+  ["/", "All", ""], ["/football", "Football", "football"], ["/formula-1", "Formula 1", "formula-1"], ["/ufc", "UFC", "ufc"],
+  ["/sports/basketball", "NBA", "basketball"], ["/sports/tennis", "Tennis", "tennis"], ["/sports/motogp", "MotoGP", "motogp"], ["/sports/hockey", "NHL", "hockey"],
 ] as const;
 const COUNTRIES = [
   ["🇨🇦", "Canada"], ["🇫🇷", "France"], ["🇺🇸", "United States"], ["🇬🇧", "United Kingdom"],
@@ -82,7 +82,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <p className="v2-hero-copy">Discover where to watch your sports legally in your country. Simple, independent and built for fans.</p>
         <SearchAutocomplete defaultValue={filters.query} sport={filters.sport} competition={filters.competition} timeZone={filters.timeZone} suggestions={searchSuggestions} />
         <nav className="v2-sport-pills" aria-label="Sports shortcuts">
-          {SPORT_SHORTCUTS.map(([value,label]) => <Link key={label} className={filters.sport === value ? "is-active" : undefined} href={buildCalendarHref(filters,{ sport:value, page:1 })}>{label}</Link>)}
+          {SPORT_SHORTCUTS.map(([href,label,value]) => <Link key={label} className={filters.sport === value ? "is-active" : undefined} href={href}>{label}</Link>)}
         </nav>
       </div>
       <div className="v2-hero-collage" aria-hidden="true">
@@ -117,13 +117,13 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     <section id="sports" className="v2-visual-section" aria-labelledby="sports-title">
       <div className="v2-section-heading"><div><p className="v2-eyebrow">Explore</p><h2 id="sports-title">Choose your sport</h2></div><Link href="/?view=all">View all sports →</Link></div>
       <div className="v2-sport-gallery">
-        <Link className="football" href="/?view=all&sport=football"><span>⚽</span><strong>Football</strong></Link>
+        <Link className="football" href="/football"><span>⚽</span><strong>Football</strong></Link>
         <Link className="f1" href="/formula-1"><span>F1</span><strong>Formula 1</strong></Link>
         <Link className="ufc" href="/ufc"><span>UFC</span><strong>UFC</strong></Link>
-        <Link className="nba" href="/?view=all&sport=basketball"><span>●</span><strong>NBA</strong></Link>
-        <Link className="tennis" href="/?view=all&sport=tennis"><span>●</span><strong>Tennis</strong></Link>
-        <Link className="motogp" href="/?view=all&sport=motogp"><span>GP</span><strong>MotoGP</strong></Link>
-        <Link className="nhl" href="/?view=all&sport=hockey"><span>◆</span><strong>NHL</strong></Link>
+        <Link className="nba" href="/sports/basketball"><span>●</span><strong>NBA</strong></Link>
+        <Link className="tennis" href="/sports/tennis"><span>●</span><strong>Tennis</strong></Link>
+        <Link className="motogp" href="/sports/motogp"><span>GP</span><strong>MotoGP</strong></Link>
+        <Link className="nhl" href="/sports/hockey"><span>◆</span><strong>NHL</strong></Link>
       </div>
     </section>
 
@@ -133,7 +133,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     </section>
 
     <section className="v2-promo-grid" aria-label="Featured sports">
-      <Link className="v2-promo-card champions" href="/?view=all&sport=football&competition=champions-league"><span>Football</span><h2>Champions League</h2><p>The biggest clubs. Every official screen.</p><strong>View calendar →</strong></Link>
+      <Link className="v2-promo-card champions" href="/football"><span>Football</span><h2>Champions League</h2><p>The biggest clubs. Every official screen.</p><strong>View football →</strong></Link>
       <Link className="v2-promo-card formula" href="/formula-1"><span>Formula 1</span><h2>Every Grand Prix</h2><p>Practice, qualifying, sprints and races.</p><strong>View Grand Prix →</strong></Link>
       <Link className="v2-promo-card fight" href="/ufc"><span>UFC</span><h2>Every fight night</h2><p>Prelims, main cards and official broadcasters.</p><strong>View UFC →</strong></Link>
     </section>
