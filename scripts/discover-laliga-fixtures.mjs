@@ -2,7 +2,8 @@ import { pathToFileURL } from "node:url";
 
 export const EXPECTED_FIXTURES = 380;
 export const GAMEWEEKS = 38;
-export const SOURCE_BASE = "https://www.laliga.com/en-GB/laliga-easports/results/2026-27/gameweek-";
+export const CALENDAR_URL = "https://www.laliga.com/calendar-2026-2027/laliga-easports";
+export const RESULTS_BASE = "https://www.laliga.com/en-GB/laliga-easports/results/2026-27/gameweek-";
 
 const TEAM_ALIASES = new Map([
   ["Athletic Club", "Athletic Club"],
@@ -38,7 +39,8 @@ export const TEAMS = [...new Set(TEAM_ALIASES.values())];
 const sourceNames = [...TEAM_ALIASES.keys()].sort((a, b) => b.length - a.length);
 const esc = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const TEAM_RE = sourceNames.map(esc).join("|");
-const FIXTURE_RE = new RegExp(`(?:MON|TUE|WED|THU|FRI|SAT|SUN)\\s+(\\d{2}\\.\\d{2}\\.\\d{4})\\s+(\\d{2}:\\d{2})[\\s\\S]{0,220}?(${TEAM_RE})\\s*(?:\\d+)?\\s*-\\s*(?:\\d+)?\\s*(${TEAM_RE})`, "g");
+const RESULT_FIXTURE_RE = new RegExp(`(?:MON|TUE|WED|THU|FRI|SAT|SUN)\\s+(\\d{2}\\.\\d{2}\\.\\d{4})\\s+(\\d{2}:\\d{2})[\\s\\S]{0,220}?(${TEAM_RE})\\s*(?:\\d+)?\\s*-\\s*(?:\\d+)?\\s*(${TEAM_RE})`, "g");
+const MATCHDAY_RE = /^Matchday\s+(\d+)\s*\|\s*(\d{2})\.(\d{2})\.(\d{4})$/i;
 
 function decodeHtml(value) {
   return value
@@ -49,12 +51,26 @@ function decodeHtml(value) {
     .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)));
 }
 
+export function htmlToLines(html) {
+  return decodeHtml(
+    html
+      .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style\b[\s\S]*?<\/style>/gi, " ")
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/(?:p|div|li|h[1-6]|section|article|span)>/gi, "\n")
+      .replace(/<[^>]+>/g, " ")
+  )
+    .split(/\r?\n/)
+    .map((line) => line.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+}
+
 export function htmlToSearchText(html) {
-  return decodeHtml(html
-    .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style\b[\s\S]*?<\/style>/gi, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " "));
+  return htmlToLines(html).join(" ");
+}
+
+function canonicalTeam(value) {
+  return TEAM_ALIASES.get(value) ?? null;
 }
 
 function isoDate(value) {
@@ -62,13 +78,55 @@ function isoDate(value) {
   return `${year}-${month}-${day}`;
 }
 
-export function extractGameweekFixtures(html, gameweek) {
+export function extractCalendarFixtures(html) {
+  const lines = htmlToLines(html);
+  const fixtures = [];
+  let gameweek = null;
+  let nominalDate = null;
+  let pendingTeams = [];
+
+  for (const line of lines) {
+    const heading = line.match(MATCHDAY_RE);
+    if (heading) {
+      if (pendingTeams.length !== 0) pendingTeams = [];
+      gameweek = Number(heading[1]);
+      nominalDate = `${heading[4]}-${heading[3]}-${heading[2]}`;
+      continue;
+    }
+    if (!gameweek) continue;
+    const team = canonicalTeam(line);
+    if (!team) continue;
+    pendingTeams.push(team);
+    if (pendingTeams.length === 2) {
+      const [home, away] = pendingTeams;
+      if (home !== away) {
+        fixtures.push({
+          competition: "laliga",
+          season: "2026-27",
+          gameweek,
+          localDate: nominalDate,
+          localTime: null,
+          timezone: "Europe/Madrid",
+          home,
+          away,
+          sourceUrl: CALENDAR_URL,
+          verificationStatus: "confirmed",
+          datePrecision: "matchday_nominal",
+        });
+      }
+      pendingTeams = [];
+    }
+  }
+  return fixtures;
+}
+
+export function extractGameweekResults(html, gameweek) {
   const text = htmlToSearchText(html);
   const fixtures = [];
-  for (const match of text.matchAll(FIXTURE_RE)) {
+  for (const match of text.matchAll(RESULT_FIXTURE_RE)) {
     const [, sourceDate, localTime, sourceHome, sourceAway] = match;
-    const home = TEAM_ALIASES.get(sourceHome);
-    const away = TEAM_ALIASES.get(sourceAway);
+    const home = canonicalTeam(sourceHome);
+    const away = canonicalTeam(sourceAway);
     if (!home || !away || home === away) continue;
     fixtures.push({
       competition: "laliga",
@@ -79,11 +137,20 @@ export function extractGameweekFixtures(html, gameweek) {
       timezone: "Europe/Madrid",
       home,
       away,
-      sourceUrl: `${SOURCE_BASE}${gameweek}`,
+      sourceUrl: `${RESULTS_BASE}${gameweek}`,
       verificationStatus: "confirmed",
+      datePrecision: "confirmed_kickoff",
     });
   }
   return fixtures;
+}
+
+export function mergeConfirmedKickoffs(calendarFixtures, confirmedFixtures) {
+  const confirmed = new Map(confirmedFixtures.map((fixture) => [`${fixture.home}|${fixture.away}`, fixture]));
+  return calendarFixtures.map((fixture) => {
+    const update = confirmed.get(`${fixture.home}|${fixture.away}`);
+    return update ? { ...fixture, ...update } : fixture;
+  });
 }
 
 export function validateFixtures(fixtures) {
@@ -100,30 +167,56 @@ export function validateFixtures(fixtures) {
   return { ok: issues.length === 0, issues };
 }
 
-async function fetchGameweek(fetchImpl, gameweek) {
-  const url = `${SOURCE_BASE}${gameweek}`;
+async function fetchText(fetchImpl, url) {
   const response = await fetchImpl(url, {
     headers: { "user-agent": "WatchTVSport/1.0 (+https://watchtvsport.com)", accept: "text/html,application/xhtml+xml" },
     signal: AbortSignal.timeout(10000),
   });
-  if (!response.ok) throw new Error(`Unable to fetch LaLiga gameweek ${gameweek}: ${response.status}`);
-  return extractGameweekFixtures(await response.text(), gameweek);
+  if (!response.ok) throw new Error(`Unable to fetch ${url}: ${response.status}`);
+  return response.text();
+}
+
+async function fetchConfirmedGameweeks(fetchImpl) {
+  const gameweeks = Array.from({ length: GAMEWEEKS }, (_, index) => index + 1);
+  const fixtures = [];
+  for (let index = 0; index < gameweeks.length; index += 5) {
+    const group = gameweeks.slice(index, index + 5);
+    const results = await Promise.all(group.map(async (gameweek) => {
+      try {
+        return extractGameweekResults(await fetchText(fetchImpl, `${RESULTS_BASE}${gameweek}`), gameweek);
+      } catch {
+        return [];
+      }
+    }));
+    fixtures.push(...results.flat());
+  }
+  return fixtures;
 }
 
 export async function discoverLaLigaFixtures({ fetchImpl = fetch } = {}) {
-  const gameweeks = Array.from({ length: GAMEWEEKS }, (_, index) => index + 1);
-  const chunks = [];
-  for (let index = 0; index < gameweeks.length; index += 5) {
-    const group = gameweeks.slice(index, index + 5);
-    chunks.push(...(await Promise.all(group.map((gameweek) => fetchGameweek(fetchImpl, gameweek)))).flat());
+  const calendarFixtures = extractCalendarFixtures(await fetchText(fetchImpl, CALENDAR_URL));
+  const baselineValidation = validateFixtures(calendarFixtures);
+  if (!baselineValidation.ok) {
+    return {
+      source: "LALIGA official website",
+      sourceUrl: CALENDAR_URL,
+      ...baselineValidation,
+      count: calendarFixtures.length,
+      confirmedKickoffs: 0,
+      fixtures: calendarFixtures,
+    };
   }
-  const validation = validateFixtures(chunks);
+
+  const confirmedFixtures = await fetchConfirmedGameweeks(fetchImpl);
+  const fixtures = mergeConfirmedKickoffs(calendarFixtures, confirmedFixtures);
+  const validation = validateFixtures(fixtures);
   return {
     source: "LALIGA official website",
-    sourceUrl: "https://www.laliga.com/en-GB/laliga-easports/results",
+    sourceUrl: CALENDAR_URL,
     ...validation,
-    count: chunks.length,
-    fixtures: chunks,
+    count: fixtures.length,
+    confirmedKickoffs: fixtures.filter((fixture) => fixture.localTime).length,
+    fixtures,
   };
 }
 
