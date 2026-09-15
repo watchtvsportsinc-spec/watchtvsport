@@ -1,0 +1,32 @@
+name: Discover official club-site logos
+
+on:
+  push:
+    branches:
+      - work/v2-expansion-assets-leagues
+    paths:
+      - data/verified-club-logo-sources.json
+      - scripts/discover-club-site-logos.mjs
+      - .github/workflows/discover-club-site-logos.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Discover official club-site logos
+        run: node scripts/discover-club-site-logos.mjs > club-site-logos.json
+      - name: Upload discovery audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: club-site-logos
+          path: club-site-logos.json
+          if-no-files-found: error
