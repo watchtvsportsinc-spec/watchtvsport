@@ -3,50 +3,26 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+const LINKS = [
+  { href: "/", label: "Home", match: (path: string) => path === "/" },
+  { href: "/?view=all&sport=football", label: "Football", match: (path: string) => path.startsWith("/football") },
+  { href: "/formula-1", label: "F1", match: (path: string) => path.startsWith("/formula-1") },
+  { href: "/ufc", label: "UFC", match: (path: string) => path.startsWith("/ufc") },
+  { href: "/favorites", label: "Favorites", match: (path: string) => path === "/favorites" },
+];
+
 export default function HeaderNav() {
   const pathname = usePathname();
-  const homeIsActive = pathname === "/" || /^\/(en|fr|es)\/?$/.test(pathname);
-
-  const linkStyle = (active: boolean): React.CSSProperties => ({
-    textDecoration: "none",
-    color: active ? "#FFFFFF" : "#CBD5E1",
-    fontWeight: 700,
-    minHeight: "44px",
-    display: "inline-flex",
-    alignItems: "center",
-    padding: "8px 10px",
-    borderRadius: "999px",
-    background: active ? "#2563EB" : "transparent",
-    whiteSpace: "nowrap",
-  });
-
   return (
-    <nav
-      className="wts-primary-nav"
-      aria-label="Primary navigation"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "0.35rem",
-        flexWrap: "nowrap",
-        fontSize: "14px",
-      }}
-    >
-      <Link
-        href="/"
-        style={linkStyle(homeIsActive)}
-        aria-current={homeIsActive ? "page" : undefined}
-      >
-        Home
-      </Link>
-
-      <Link
-        href="/favorites"
-        style={linkStyle(pathname === "/favorites")}
-        aria-current={pathname === "/favorites" ? "page" : undefined}
-      >
-        Favorites
-      </Link>
+    <nav className="wts-primary-nav" aria-label="Primary navigation">
+      {LINKS.map((link) => {
+        const active = link.match(pathname);
+        return (
+          <Link key={link.label} href={link.href} className={active ? "is-active" : undefined} aria-current={active ? "page" : undefined}>
+            {link.label}
+          </Link>
+        );
+      })}
     </nav>
   );
 }
