@@ -191,9 +191,25 @@ export async function getPreviewClubFixtures(clubSlug: string): Promise<PreviewF
   );
   const club = participants[0];
   if (!club) return [];
-  const rows = await rest<EventRow[]>(
-    `events?select=id,slug,phase,event_date,status,is_published,competition_id,home_participant_id,away_participant_id&or=${encodeURIComponent(`(home_participant_id.eq.${club.id},away_participant_id.eq.${club.id})`)}&verification_status=eq.confirmed&order=event_date.asc.nullslast,slug.asc&limit=250`
-  );
+
+  const select = "id,slug,phase,event_date,status,is_published,competition_id,home_participant_id,away_participant_id";
+  const [homeRows, awayRows] = await Promise.all([
+    rest<EventRow[]>(
+      `events?select=${select}&home_participant_id=eq.${club.id}&verification_status=eq.confirmed&order=event_date.asc.nullslast,slug.asc&limit=250`
+    ),
+    rest<EventRow[]>(
+      `events?select=${select}&away_participant_id=eq.${club.id}&verification_status=eq.confirmed&order=event_date.asc.nullslast,slug.asc&limit=250`
+    ),
+  ]);
+
+  const rows = Array.from(new Map([...homeRows, ...awayRows].map((row) => [row.id, row])).values())
+    .sort((a, b) => {
+      if (a.event_date && b.event_date) return Date.parse(a.event_date) - Date.parse(b.event_date) || a.slug.localeCompare(b.slug);
+      if (a.event_date) return -1;
+      if (b.event_date) return 1;
+      return a.slug.localeCompare(b.slug);
+    });
+
   const competitionIds = Array.from(new Set(rows.map((row) => row.competition_id)));
   if (!competitionIds.length) return [];
   const competitions = await rest<CompetitionRow[]>(
