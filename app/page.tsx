@@ -12,19 +12,27 @@ import {
   type CalendarFilters, type CalendarView,
 } from "@/lib/calendar";
 
-export const metadata: Metadata = {
-  title: "Where to watch sports – official TV & streaming guide",
-  description: "Find official TV channels and streaming platforms for football, Formula 1, UFC and more, by event and country.",
-  alternates: { canonical: "/" },
-};
-
 type HomePageProps = { searchParams?: Promise<Record<string, string | string[] | undefined>> };
+
+export async function generateMetadata({ searchParams }: HomePageProps): Promise<Metadata> {
+  const params = (await searchParams) ?? {};
+  const hasUtilityParams = Object.values(params).some((value) =>
+    Array.isArray(value) ? value.some(Boolean) : Boolean(value)
+  );
+  return {
+    title: "Where to watch sports – official TV & streaming guide",
+    description: "Find official TV channels and streaming platforms for football, Formula 1, UFC and more, by event and country.",
+    alternates: { canonical: "/" },
+    robots: hasUtilityParams ? { index: false, follow: true } : { index: true, follow: true },
+  };
+}
+
 const VIEW_OPTIONS: Array<{ value: CalendarView; label: string }> = [
   { value: "today", label: "Today" }, { value: "tomorrow", label: "Tomorrow" }, { value: "archive", label: "Archives" },
 ];
 const SPORT_SHORTCUTS = [
   ["", "All"], ["football", "Football"], ["formula-1", "Formula 1"], ["ufc", "UFC"],
-  ["basketball", "NBA"], ["tennis", "Tennis"], ["motogp", "MotoGP"], ["ice-hockey", "NHL"],
+  ["basketball", "NBA"], ["tennis", "Tennis"], ["motogp", "MotoGP"], ["hockey", "NHL"],
 ] as const;
 
 function pageTitle(filters: CalendarFilters): string {
