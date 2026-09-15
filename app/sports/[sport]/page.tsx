@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 import { getPublicParticipantsForSport } from "@/lib/public-participants";
+import styles from "./sport-page.module.css";
 
 type PageProps = { params: Promise<{ sport: string }> };
 
@@ -46,11 +47,11 @@ export default async function SportLandingPage({params}:PageProps){
 
     {teams.length?<section className="v2-results" aria-labelledby="teams-title">
       <div className="v2-results-heading"><div><p className="v2-eyebrow">Teams</p><h2 id="teams-title">{cfg.teamLabel??"Teams"}</h2></div><p>{teams.length} teams</p></div>
-      <div className="v2-team-directory">
-        {teams.map(team=><Link key={team.id} href={`/sports/${sport}/team/${team.slug}`} className="v2-team-directory-card">
-          <span className="v2-team-directory-mark" aria-hidden="true">{team.name.split(/\s+/).slice(0,2).map(part=>part[0]).join("").toUpperCase()}</span>
-          <span><strong>{team.name}</strong><small>{team.countryCode??cfg.league??cfg.name}</small></span>
-          <b aria-hidden="true">→</b>
+      <div className={styles.teamDirectory}>
+        {teams.map(team=><Link key={team.id} href={`/sports/${sport}/team/${team.slug}`} className={styles.teamCard}>
+          <span className={styles.teamMark} aria-hidden="true">{team.name.split(/\s+/).slice(0,2).map(part=>part[0]).join("").toUpperCase()}</span>
+          <span className={styles.teamText}><strong>{team.name}</strong><small>{team.countryCode??cfg.league??cfg.name}</small></span>
+          <b className={styles.arrow} aria-hidden="true">→</b>
         </Link>)}
       </div>
     </section>:null}
