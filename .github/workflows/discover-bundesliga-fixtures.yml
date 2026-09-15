@@ -1,0 +1,41 @@
+name: Discover Bundesliga fixtures
+
+on:
+  push:
+    branches:
+      - work/v2-expansion-assets-leagues
+    paths:
+      - scripts/discover-bundesliga-fixtures.mjs
+      - scripts/discover-bundesliga-fixtures.test.mjs
+      - .github/workflows/discover-bundesliga-fixtures.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate parser
+        run: node --test scripts/discover-bundesliga-fixtures.test.mjs
+      - name: Discover official Bundesliga fixtures
+        shell: bash
+        run: |
+          set +e
+          node scripts/discover-bundesliga-fixtures.mjs > bundesliga-2026-27-fixtures.json
+          code=$?
+          test -s bundesliga-2026-27-fixtures.json
+          exit $code
+      - name: Upload fixture audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundesliga-2026-27-fixtures
+          path: bundesliga-2026-27-fixtures.json
+          if-no-files-found: warn
