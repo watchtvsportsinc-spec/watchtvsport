@@ -7,6 +7,8 @@ import {
 import { clubSlug } from "./club-aliases";
 import { championsLeague202627LeaguePhase } from "../source/champions-league-2026-27-league-phase";
 import { formula1Season2026Sessions } from "../source/formula-1-2026-season";
+import { ufc2026UpcomingSessions } from "../source/ufc-2026-upcoming";
+import { withPriorityBroadcasts } from "./priority-broadcasts";
 
 export type EntityType = "national_team" | "club" | "player" | "event";
 export type VisualType = "flag" | "crest" | "player" | "generic";
@@ -15,7 +17,10 @@ export type SessionType =
   | "sprint_qualifying"
   | "sprint"
   | "qualifying"
-  | "race";
+  | "race"
+  | "early_prelims"
+  | "prelims"
+  | "main_card";
 
 export type Participant = {
   id: string;
@@ -108,20 +113,25 @@ export function mapMatchToEvent(match: MatchData): EventData {
   };
 }
 
+function prepareEvent(event: EventData): EventData {
+  return withPriorityBroadcasts(normalizeEventParticipants(event));
+}
+
 export function getAllEvents(): EventData[] {
   return [
-    ...championsLeague202627LeaguePhase.map(normalizeEventParticipants),
-    ...formula1Season2026Sessions,
-    ...getAllMatches().map(mapMatchToEvent),
+    ...championsLeague202627LeaguePhase.map(prepareEvent),
+    ...formula1Season2026Sessions.map(prepareEvent),
+    ...ufc2026UpcomingSessions.map(prepareEvent),
+    ...getAllMatches().map(mapMatchToEvent).map(prepareEvent),
   ];
 }
 
 export function getEventBySlug(slug: string): EventData | null {
   const genericEvent = getAllEvents().find((event) => event.slug === slug);
-  if (genericEvent) return normalizeEventParticipants(genericEvent);
+  if (genericEvent) return genericEvent;
 
   const match = getMatchBySlug(slug);
-  return match ? mapMatchToEvent(match) : null;
+  return match ? prepareEvent(mapMatchToEvent(match)) : null;
 }
 
 export function getEventByDetailPath(detailPath: string): EventData | null {
