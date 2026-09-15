@@ -25,8 +25,8 @@ const DEFAULT_LABELS: Record<SocialKind, string> = {
 
 export default function SocialIconLinks({ links, className }: Props) {
   if (!links.length) return null;
-  return <div className={className} aria-label="Official links">
-    {links.map((link) => <a key={`${link.kind}:${link.href}`} href={link.href} target="_blank" rel="noopener noreferrer" aria-label={link.label ?? DEFAULT_LABELS[link.kind]} title={link.label ?? DEFAULT_LABELS[link.kind]}>
+  return <div className={className} aria-label="Official links" style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,.07)" }}>
+    {links.map((link) => <a key={`${link.kind}:${link.href}`} href={link.href} target="_blank" rel="noopener noreferrer" aria-label={link.label ?? DEFAULT_LABELS[link.kind]} title={link.label ?? DEFAULT_LABELS[link.kind]} style={{ width: 40, height: 40, display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: 10, border: "1px solid rgba(111,185,255,.18)", background: "#081624", color: "#67baff", textDecoration: "none" }}>
       <Icon kind={link.kind} />
       <span className="sr-only">{link.label ?? DEFAULT_LABELS[link.kind]}</span>
     </a>)}
