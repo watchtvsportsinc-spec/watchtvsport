@@ -7,7 +7,7 @@ export type SearchSuggestion = {
   id: string;
   label: string;
   value: string;
-  kind: "Club" | "Nation" | "Competition";
+  kind: "Club" | "Nation" | "Competition" | "Grand Prix";
   href: string;
   searchTerms: string[];
 };
@@ -33,6 +33,7 @@ function participantHref(participant: Participant, sport: string): string {
 export function buildSearchSuggestions(events: EventData[]): SearchSuggestion[] {
   const participants = new Map<string, SearchSuggestion>();
   const competitions = new Map<string, SearchSuggestion>();
+  const raceWeekends = new Map<string, SearchSuggestion>();
 
   for (const event of events) {
     const sport = getSportBySlug(event.sport);
@@ -60,11 +61,40 @@ export function buildSearchSuggestions(events: EventData[]): SearchSuggestion[] 
       }
     }
 
+    if (
+      sport?.eventModel === "race_session" &&
+      event.eventGroupId &&
+      event.eventGroupName &&
+      event.eventGroupSlug
+    ) {
+      const raceKey = `${event.sport}:${event.eventGroupId}`;
+      if (!raceWeekends.has(raceKey)) {
+        raceWeekends.set(raceKey, {
+          id: `race:${raceKey}`,
+          label: `${event.eventGroupName} (${sportLabel})`,
+          value: event.eventGroupName,
+          kind: "Grand Prix",
+          href: `/${event.sport}/grand-prix/${event.eventGroupSlug}`,
+          searchTerms: unique([
+            event.eventGroupName,
+            event.eventGroupSlug.replaceAll("-", " "),
+            event.country ?? "",
+            event.venue ?? "",
+            event.sport,
+            sportLabel,
+            ...(sport.aliases ?? []),
+          ]),
+        });
+      }
+    }
+
     const competitionKey = `${event.sport}:${event.competitionSlug}`;
     if (!competitions.has(competitionKey)) {
       const href = event.sport === "football"
         ? `/football/competition/${event.competitionSlug}`
-        : `/?${new URLSearchParams({ view: "all", sport: event.sport, competition: event.competitionSlug }).toString()}`;
+        : event.sport === "formula-1"
+          ? "/formula-1"
+          : `/?${new URLSearchParams({ view: "all", sport: event.sport, competition: event.competitionSlug }).toString()}`;
       competitions.set(competitionKey, {
         id: `competition:${competitionKey}`,
         label: `${event.competition} (${sportLabel})`,
@@ -84,6 +114,7 @@ export function buildSearchSuggestions(events: EventData[]): SearchSuggestion[] 
 
   return [
     ...Array.from(participants.values()).sort((a, b) => a.label.localeCompare(b.label)),
+    ...Array.from(raceWeekends.values()).sort((a, b) => a.label.localeCompare(b.label)),
     ...Array.from(competitions.values()).sort((a, b) => a.label.localeCompare(b.label)),
   ];
 }
