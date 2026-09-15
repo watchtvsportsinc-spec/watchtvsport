@@ -5,7 +5,7 @@ import type { EventData } from "@/lib/events";
 // https://www.formula1.com/en/racing/2026/canada
 // Times below are stored in UTC and rendered in the viewer's local timezone.
 
-const GP_PATH = "/formula-1/grand-prix/canada-2026";
+const GP_PATH = "/formula-1/grand-prix/canada";
 
 function session(
   id: string,
@@ -19,11 +19,13 @@ function session(
     slug,
     detailPath: `${GP_PATH}#${slug}`,
     sport: "formula-1",
-    competition: "Formula 1 2026",
-    competitionSlug: "formula-1-2026",
-    eventGroupId: "f1-2026-canada",
-    eventGroupName: "Canadian Grand Prix 2026",
-    eventGroupSlug: "canada-2026",
+    competition: "Formula 1",
+    competitionSlug: "formula-1",
+    eventGroupId: "f1-canadian-grand-prix",
+    eventGroupName: "Canadian Grand Prix",
+    eventGroupSlug: "canada",
+    eventEditionKey: "2026",
+    eventEditionLabel: "2026",
     sessionType,
     venue: "Circuit Gilles-Villeneuve",
     country: "Canada",
@@ -36,39 +38,9 @@ function session(
 }
 
 export const formula1Canada2026Sessions: EventData[] = [
-  session(
-    "f1-2026-canada-practice-1",
-    "practice-1",
-    "Practice 1",
-    "practice",
-    "2026-05-22T16:30:00Z"
-  ),
-  session(
-    "f1-2026-canada-sprint-qualifying",
-    "sprint-qualifying",
-    "Sprint Qualifying",
-    "sprint_qualifying",
-    "2026-05-22T20:30:00Z"
-  ),
-  session(
-    "f1-2026-canada-sprint",
-    "sprint",
-    "Sprint",
-    "sprint",
-    "2026-05-23T16:00:00Z"
-  ),
-  session(
-    "f1-2026-canada-qualifying",
-    "qualifying",
-    "Qualifying",
-    "qualifying",
-    "2026-05-23T20:00:00Z"
-  ),
-  session(
-    "f1-2026-canada-race",
-    "race",
-    "Race",
-    "race",
-    "2026-05-24T20:00:00Z"
-  ),
+  session("f1-2026-canada-practice-1", "practice-1", "Practice 1", "practice", "2026-05-22T16:30:00Z"),
+  session("f1-2026-canada-sprint-qualifying", "sprint-qualifying", "Sprint Qualifying", "sprint_qualifying", "2026-05-22T20:30:00Z"),
+  session("f1-2026-canada-sprint", "sprint", "Sprint", "sprint", "2026-05-23T16:00:00Z"),
+  session("f1-2026-canada-qualifying", "qualifying", "Qualifying", "qualifying", "2026-05-23T20:00:00Z"),
+  session("f1-2026-canada-race", "race", "Race", "race", "2026-05-24T20:00:00Z"),
 ];
