@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import EntityVisual from "@/components/EntityVisual";
 import FavoriteButton from "@/components/FavoriteButton";
 import LocalTime from "@/components/LocalTime";
 import { clubSlug } from "@/lib/club-aliases";
@@ -79,10 +80,11 @@ export default async function CompetitionPage({ params }: PageProps) {
   const eventClubs = Array.from(new Map(events.flatMap((event) => [event.participant1, event.participant2]
     .filter((participant) => participant?.type === "club")
     .map((participant) => [clubSlug(participant!.name), participant!] as const))).values());
+  const eventClubBySlug = new Map(eventClubs.map((club) => [clubSlug(club.name), club]));
 
   const clubs = directory?.members.length
-    ? directory.members.map((member) => ({ name: member.name, slug: member.slug }))
-    : eventClubs.map((club) => ({ name: club.name, slug: clubSlug(club.name) }));
+    ? directory.members.map((member) => ({ name: member.name, slug: member.slug, participant: eventClubBySlug.get(member.slug) }))
+    : eventClubs.map((club) => ({ name: club.name, slug: clubSlug(club.name), participant: club }));
 
   const favorite = competitionFavorite(competition, name);
   const calendarHref = `/?view=all&sport=football&competition=${encodeURIComponent(competition)}`;
@@ -119,7 +121,13 @@ export default async function CompetitionPage({ params }: PageProps) {
     {clubs.length > 0 ? <section className="v2-results" aria-labelledby="participants-title">
       <div className="v2-results-heading"><div><p className="v2-eyebrow">Participants</p><h2 id="participants-title">Teams</h2></div><p>{clubs.length} clubs</p></div>
       <div className="v2-entity-grid">
-        {clubs.map((club) => <Link key={club.slug} href={`/football/club/${club.slug}`}><strong>{club.name}</strong><span>Club</span></Link>)}
+        {clubs.map((club) => <Link key={club.slug} href={`/football/club/${club.slug}`}>
+          <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <EntityVisual entityId={club.participant?.id ?? `club:football:${club.slug}`} label={club.name} size="sm" imageUrl={club.participant?.logoUrl} imageAlt={`${club.name} logo`} />
+            <strong>{club.name}</strong>
+          </span>
+          <span>Club</span>
+        </Link>)}
       </div>
     </section> : null}
 
@@ -128,10 +136,20 @@ export default async function CompetitionPage({ params }: PageProps) {
       {upcoming.length === 0 ? <div className="v2-empty-state" role="status"><h3>Fixture ingestion is not complete yet</h3><p>The {name} membership directory is verified. Match pages will appear only after authoritative fixture data has passed validation.</p></div> :
       <div className="v2-event-list">{upcoming.map((event) => {
         const homeHref = participantLink(event.participant1?.name); const awayHref = participantLink(event.participant2?.name);
-        return <article className="v2-event-card" key={event.id}><div className="v2-event-main"><p className="v2-event-competition">{event.stage ?? name}</p><h3>{homeHref && event.participant1 ? <Link href={homeHref}>{event.participant1.name}</Link> : event.participant1?.name ?? event.title}{event.participant2 ? <><span aria-hidden="true"> vs </span>{awayHref ? <Link href={awayHref}>{event.participant2.name}</Link> : event.participant2.name}</> : null}</h3><p className="v2-event-stage"><LocalTime date={event.eventDate} /></p></div><Link className="v2-broadcast-link" href={event.detailPath}><span>Event details</span><strong>View broadcasters →</strong></Link></article>;
+        return <article className="v2-event-card" key={event.id}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }} aria-hidden="true">
+            {event.participant1 ? <EntityVisual entityId={event.participant1.id} label={event.participant1.name} size="sm" imageUrl={event.participant1.logoUrl} imageAlt="" /> : null}
+            {event.participant2 ? <EntityVisual entityId={event.participant2.id} label={event.participant2.name} size="sm" imageUrl={event.participant2.logoUrl} imageAlt="" /> : null}
+          </div>
+          <div className="v2-event-main"><p className="v2-event-competition">{event.stage ?? name}</p><h3>{homeHref && event.participant1 ? <Link href={homeHref}>{event.participant1.name}</Link> : event.participant1?.name ?? event.title}{event.participant2 ? <><span aria-hidden="true"> vs </span>{awayHref ? <Link href={awayHref}>{event.participant2.name}</Link> : event.participant2.name}</> : null}</h3><p className="v2-event-stage"><LocalTime date={event.eventDate} /></p></div><Link className="v2-broadcast-link" href={event.detailPath}><span>Event details</span><strong>View broadcasters →</strong></Link></article>;
       })}</div>}
     </section>
 
-    {recent.length > 0 ? <section className="v2-results" aria-labelledby="recent-title"><div className="v2-results-heading"><div><p className="v2-eyebrow">Archive</p><h2 id="recent-title">Recent events</h2></div></div><div className="v2-event-list">{recent.map((event) => <article className="v2-event-card" key={event.id}><div className="v2-event-main"><p className="v2-event-competition">{event.stage ?? name}</p><h3>{event.title}</h3><p className="v2-event-stage"><LocalTime date={event.eventDate} /></p></div><Link className="v2-broadcast-link" href={event.detailPath}><span>Event archive</span><strong>Open event →</strong></Link></article>)}</div></section> : null}
+    {recent.length > 0 ? <section className="v2-results" aria-labelledby="recent-title"><div className="v2-results-heading"><div><p className="v2-eyebrow">Archive</p><h2 id="recent-title">Recent events</h2></div></div><div className="v2-event-list">{recent.map((event) => <article className="v2-event-card" key={event.id}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }} aria-hidden="true">
+        {event.participant1 ? <EntityVisual entityId={event.participant1.id} label={event.participant1.name} size="sm" imageUrl={event.participant1.logoUrl} imageAlt="" /> : null}
+        {event.participant2 ? <EntityVisual entityId={event.participant2.id} label={event.participant2.name} size="sm" imageUrl={event.participant2.logoUrl} imageAlt="" /> : null}
+      </div>
+      <div className="v2-event-main"><p className="v2-event-competition">{event.stage ?? name}</p><h3>{event.title}</h3><p className="v2-event-stage"><LocalTime date={event.eventDate} /></p></div><Link className="v2-broadcast-link" href={event.detailPath}><span>Event archive</span><strong>Open event →</strong></Link></article>)}</div></section> : null}
   </main>;
 }
