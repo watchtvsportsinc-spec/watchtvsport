@@ -1,5 +1,6 @@
 import type { EventData } from "./events";
 import { getClubSearchNames } from "./club-aliases";
+import { getSportLabel, sportsRegistry } from "./sports-registry";
 import type {
   FavoriteEventFeed,
   FavoriteEventSummary,
@@ -41,29 +42,18 @@ export type CalendarPage = {
 type CalendarSearchParams = Record<string, string | string[] | undefined>;
 
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-const ALLOWED_VIEWS = new Set<CalendarView>([
-  "today",
-  "tomorrow",
-  "date",
-  "archive",
-  "all",
-]);
+const ALLOWED_VIEWS = new Set<CalendarView>(["today", "tomorrow", "date", "archive", "all"]);
 
 function firstValue(value: string | string[] | undefined): string {
   return Array.isArray(value) ? value[0] ?? "" : value ?? "";
 }
 
 function normalizeSearchValue(value: string): string {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 }
 
 function isValidTimeZone(value: string): boolean {
   if (!value || value.length > 80) return false;
-
   try {
     new Intl.DateTimeFormat("en", { timeZone: value }).format(new Date());
     return true;
@@ -74,7 +64,6 @@ function isValidTimeZone(value: string): boolean {
 
 function isValidIsoDate(value: string): boolean {
   if (!ISO_DATE_PATTERN.test(value)) return false;
-
   const parsed = new Date(`${value}T00:00:00Z`);
   return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
 }
@@ -84,9 +73,7 @@ function positiveInteger(value: string): number {
   return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : 1;
 }
 
-function isConfirmedBroadcast(
-  broadcast: EventData["broadcasts"][number]
-): boolean {
+function isConfirmedBroadcast(broadcast: EventData["broadcasts"][number]): boolean {
   return Boolean(
     broadcast.coverageStatus === "confirmed" &&
       broadcast.countryCode.trim() &&
@@ -97,46 +84,25 @@ function isConfirmedBroadcast(
   );
 }
 
-function sportLabel(value: string): string {
-  if (value === "football") return "Football";
-
-  return value
-    .split("-")
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
-
-function getStatusLabel(
-  event: EventData,
-  now: Date
-): CalendarEvent["statusLabel"] {
+function getStatusLabel(event: EventData, now: Date): CalendarEvent["statusLabel"] {
   if (event.status === "live") return "Live";
   if (event.status === "finished") return "Finished";
-
   const startTime = new Date(event.eventDate).getTime();
-  if (Number.isFinite(startTime) && startTime < now.getTime()) {
-    return "Past event";
-  }
-
+  if (Number.isFinite(startTime) && startTime < now.getTime()) return "Past event";
   return "Scheduled";
 }
 
 function toCalendarEvent(event: EventData, now: Date): CalendarEvent {
   return {
     ...event,
-    sportLabel: sportLabel(event.sport),
+    sportLabel: getSportLabel(event.sport),
     statusLabel: getStatusLabel(event, now),
     confirmedBroadcastCount: event.broadcasts.filter(isConfirmedBroadcast).length,
   };
 }
 
-function toFavoriteEventSummary(
-  event: EventData,
-  now: Date
-): FavoriteEventSummary {
+function toFavoriteEventSummary(event: EventData, now: Date): FavoriteEventSummary {
   const calendarEvent = toCalendarEvent(event, now);
-
   return {
     id: event.id,
     detailPath: event.detailPath,
@@ -146,19 +112,14 @@ function toFavoriteEventSummary(
     competition: event.competition,
     eventDate: event.eventDate,
     statusLabel: calendarEvent.statusLabel,
-    participantNames: [
-      event.participant1?.name,
-      event.participant2?.name,
-    ].filter((name): name is string => Boolean(name)),
+    participantNames: [event.participant1?.name, event.participant2?.name].filter((name): name is string => Boolean(name)),
     confirmedBroadcastCount: calendarEvent.confirmedBroadcastCount,
   };
 }
 
 function addDays(dateKey: string, days: number): string {
   const [year, month, day] = dateKey.split("-").map(Number);
-  return new Date(Date.UTC(year, month - 1, day + days))
-    .toISOString()
-    .slice(0, 10);
+  return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
 }
 
 export function getDateKey(date: Date, timeZone: string): string {
@@ -168,19 +129,15 @@ export function getDateKey(date: Date, timeZone: string): string {
     month: "2-digit",
     day: "2-digit",
   }).formatToParts(date);
-
   const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
   return `${values.year}-${values.month}-${values.day}`;
 }
 
-export function parseCalendarFilters(
-  searchParams: CalendarSearchParams
-): CalendarFilters {
+export function parseCalendarFilters(searchParams: CalendarSearchParams): CalendarFilters {
   const requestedView = firstValue(searchParams.view) as CalendarView;
   const requestedDate = firstValue(searchParams.date);
   const requestedTimeZone = firstValue(searchParams.tz);
   const view = ALLOWED_VIEWS.has(requestedView) ? requestedView : "today";
-
   return {
     view: view === "date" && !isValidIsoDate(requestedDate) ? "today" : view,
     date: isValidIsoDate(requestedDate) ? requestedDate : undefined,
@@ -196,51 +153,34 @@ export function getCalendarFilterOptions(events: EventData[]): {
   sports: CalendarFilterOption[];
   competitions: CalendarFilterOption[];
 } {
-  const sports = new Map<string, string>();
   const competitions = new Map<string, string>();
 
   for (const event of events) {
-    sports.set(event.sport, sportLabel(event.sport));
     competitions.set(event.competitionSlug, event.competition);
   }
 
   return {
-    sports: Array.from(sports, ([value, label]) => ({ value, label })).sort(
+    sports: sportsRegistry
+      .filter((sport) => sport.enabled)
+      .map((sport) => ({ value: sport.slug, label: sport.defaultLabel }))
+      .sort((a, b) => a.label.localeCompare(b.label)),
+    competitions: Array.from(competitions, ([value, label]) => ({ value, label })).sort(
       (a, b) => a.label.localeCompare(b.label)
     ),
-    competitions: Array.from(
-      competitions,
-      ([value, label]) => ({ value, label })
-    ).sort((a, b) => a.label.localeCompare(b.label)),
   };
 }
 
-export function getCalendarPage(
-  events: EventData[],
-  filters: CalendarFilters,
-  now = new Date()
-): CalendarPage {
+export function getCalendarPage(events: EventData[], filters: CalendarFilters, now = new Date()): CalendarPage {
   const today = getDateKey(now, filters.timeZone);
-  const selectedDate =
-    filters.view === "tomorrow"
-      ? addDays(today, 1)
-      : filters.view === "date"
-        ? filters.date ?? today
-        : today;
+  const selectedDate = filters.view === "tomorrow" ? addDays(today, 1) : filters.view === "date" ? filters.date ?? today : today;
   const query = normalizeSearchValue(filters.query);
 
   const filteredEvents = events
     .filter((event) => {
       const eventDate = getDateKey(new Date(event.eventDate), filters.timeZone);
-      const matchesDate =
-        filters.view === "all"
-          ? true
-          : filters.view === "archive"
-            ? eventDate < today
-            : eventDate === selectedDate;
+      const matchesDate = filters.view === "all" ? true : filters.view === "archive" ? eventDate < today : eventDate === selectedDate;
       const matchesSport = !filters.sport || event.sport === filters.sport;
-      const matchesCompetition =
-        !filters.competition || event.competitionSlug === filters.competition;
+      const matchesCompetition = !filters.competition || event.competitionSlug === filters.competition;
       const searchableText = normalizeSearchValue(
         [
           event.title,
@@ -249,30 +189,21 @@ export function getCalendarPage(
           event.group,
           event.participant1?.name,
           event.participant1?.shortName,
-          ...(event.participant1?.type === "club"
-            ? getClubSearchNames(event.participant1.name)
-            : []),
+          ...(event.participant1?.type === "club" ? getClubSearchNames(event.participant1.name) : []),
           event.participant2?.name,
           event.participant2?.shortName,
-          ...(event.participant2?.type === "club"
-            ? getClubSearchNames(event.participant2.name)
-            : []),
-        ]
-          .filter(Boolean)
-          .join(" ")
+          ...(event.participant2?.type === "club" ? getClubSearchNames(event.participant2.name) : []),
+        ].filter(Boolean).join(" ")
       );
       const matchesQuery = !query || searchableText.includes(query);
-
       return matchesDate && matchesSport && matchesCompetition && matchesQuery;
     })
     .sort((a, b) => {
       const aTime = new Date(a.eventDate).getTime();
       const bTime = new Date(b.eventDate).getTime();
       const difference = aTime - bTime;
-
       if (filters.view === "archive") return -difference;
       if (filters.view !== "all") return difference;
-
       const aIsPast = aTime < now.getTime();
       const bIsPast = bTime < now.getTime();
       if (aIsPast !== bIsPast) return aIsPast ? 1 : -1;
@@ -285,70 +216,42 @@ export function getCalendarPage(
   const offset = (page - 1) * CALENDAR_PAGE_SIZE;
 
   return {
-    events: filteredEvents
-      .slice(offset, offset + CALENDAR_PAGE_SIZE)
-      .map((event) => toCalendarEvent(event, now)),
+    events: filteredEvents.slice(offset, offset + CALENDAR_PAGE_SIZE).map((event) => toCalendarEvent(event, now)),
     total,
     page,
     pageCount,
   };
 }
 
-export function getFavoriteEventFeed(
-  events: EventData[],
-  lookup: FavoriteLookup,
-  now = new Date()
-): FavoriteEventFeed {
+export function getFavoriteEventFeed(events: EventData[], lookup: FavoriteLookup, now = new Date()): FavoriteEventFeed {
   const eventIds = new Set(lookup.eventIds);
   const participantIds = new Set(lookup.participantIds);
   const competitionIds = new Set(lookup.competitionIds);
 
   const exactEvents = events
     .filter((event) => eventIds.has(event.id))
-    .sort(
-      (a, b) =>
-        new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
-    )
+    .sort((a, b) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime())
     .map((event) => toFavoriteEventSummary(event, now));
 
   const upcomingEvents = events
     .filter((event) => {
       if (eventIds.has(event.id)) return false;
-
-      const followsCompetition =
-        competitionIds.has(event.competitionSlug) ||
-        competitionIds.has(`${event.sport}:${event.competitionSlug}`);
-      const followsParticipant = [event.participant1, event.participant2].some(
-        (participant) => participant && participantIds.has(participant.id)
-      );
+      const followsCompetition = competitionIds.has(event.competitionSlug) || competitionIds.has(`${event.sport}:${event.competitionSlug}`);
+      const followsParticipant = [event.participant1, event.participant2].some((participant) => participant && participantIds.has(participant.id));
       if (!followsCompetition && !followsParticipant) return false;
-
       const startTime = new Date(event.eventDate).getTime();
-      return (
-        event.status === "live" ||
-        (event.status !== "finished" &&
-          Number.isFinite(startTime) &&
-          startTime >= now.getTime())
-      );
+      return event.status === "live" || (event.status !== "finished" && Number.isFinite(startTime) && startTime >= now.getTime());
     })
-    .sort(
-      (a, b) =>
-        new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
-    )
+    .sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime())
     .slice(0, 24)
     .map((event) => toFavoriteEventSummary(event, now));
 
   return { exactEvents, upcomingEvents };
 }
 
-export function buildCalendarHref(
-  filters: CalendarFilters,
-  changes: Partial<CalendarFilters> = {},
-  hash?: string
-): string {
+export function buildCalendarHref(filters: CalendarFilters, changes: Partial<CalendarFilters> = {}, hash?: string): string {
   const next = { ...filters, ...changes };
   const params = new URLSearchParams();
-
   if (next.view !== "today") params.set("view", next.view);
   if (next.view === "date" && next.date) params.set("date", next.date);
   if (next.query) params.set("q", next.query);
@@ -356,7 +259,6 @@ export function buildCalendarHref(
   if (next.competition) params.set("competition", next.competition);
   if (next.timeZone !== "UTC") params.set("tz", next.timeZone);
   if (next.page > 1) params.set("page", String(next.page));
-
   const query = params.toString();
   const fragment = hash ? `#${encodeURIComponent(hash)}` : "";
   return `${query ? `/?${query}` : "/"}${fragment}`;
