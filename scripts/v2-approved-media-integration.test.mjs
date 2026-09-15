@@ -4,15 +4,21 @@ import test from "node:test";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("club pages use approved media assets for logos and hero imagery", () => {
+test("club pages use approved media assets for identity and preview fixtures", () => {
   const page = read("app/football/club/[club]/page.tsx");
+  const preview = read("lib/dev-preview-fixtures.ts");
   assert.match(page, /getPrimaryMediaAsset\("participant",\s*club,\s*"team_logo"\)/);
   assert.match(page, /getPrimaryMediaAsset\("participant",\s*club,\s*"team_hero"\)/);
   assert.match(page, /images:\s*hero\?\.url\s*\?\s*\[hero\.url\]/);
   assert.match(page, /backgroundImage:.*hero\.url/s);
   assert.match(page, /logo\?\.url\s*\?\s*<img src=\{logo\.url\}/);
-  assert.match(page, /imageUrl=\{nextMatch\.participant1\.logoUrl\}/);
-  assert.match(page, /imageUrl=\{nextMatch\.participant2\.logoUrl\}/);
+  assert.match(page, /getPreviewClubFixtures\(club\)/);
+  assert.match(page, /imageUrl=\{logo\?\.url\}/);
+  assert.match(preview, /asset_kind=eq\.team_logo/);
+  assert.match(preview, /verification_status=eq\.approved/);
+  assert.match(preview, /is_current=eq\.true/);
+  assert.match(preview, /logoUrl: logoBySlug\.get\(home\.slug\)/);
+  assert.match(preview, /logoUrl: logoBySlug\.get\(away\.slug\)/);
   assert.doesNotMatch(page, /profile\?\.logoUrl/);
   assert.doesNotMatch(page, /profile\?\.heroImageUrl/);
 });
@@ -62,6 +68,8 @@ test("competition participant and match cards reuse validated participant logos"
   assert.match(page, /imageUrl=\{club\.participant\?\.logoUrl\}/);
   assert.match(page, /imageUrl=\{event\.participant1\.logoUrl\}/);
   assert.match(page, /imageUrl=\{event\.participant2\.logoUrl\}/);
+  assert.match(page, /imageUrl=\{fixture\.home\.logoUrl\}/);
+  assert.match(page, /imageUrl=\{fixture\.away\.logoUrl\}/);
 });
 
 test("homepage featured and calendar cards reuse the validated public event visual contract", () => {
