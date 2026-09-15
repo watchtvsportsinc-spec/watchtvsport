@@ -1,10 +1,13 @@
+import {shouldAudit,TRUST_LEVELS} from './provider-trust-learning.mjs';
+
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ENUMS={access_type:new Set(['Free','Paid','Unknown']),broadcast_type:new Set(['live','delayed','replay','highlights']),evidence_scope:new Set(['event','competition','unknown'])};
-export const REVIEW_POLICY_VERSION=1;
+export const REVIEW_POLICY_VERSION=2;
 export const REVIEW_THRESHOLDS={nearEventHours:168,maxEvidenceAgeNearHours:72,maxEvidenceAgeFarHours:336};
 function https(v){try{const u=new URL(v);return u.protocol==='https:'&&!u.username&&!u.password&&!!u.hostname;}catch{return false;}}
 function ts(v){const n=Date.parse(v);return Number.isFinite(n)?n:null;}
 function diff(a,b){return a!==undefined&&b!==undefined&&JSON.stringify(a)!==JSON.stringify(b);}
+function providerAuditKey(input,c){return [input?.provider||input?.sourceName||'provider',input?.competitionKey||input?.competition||'competition',input?.territoryCode||c?.territory_id||'territory',input?.eventId||input?.externalKey||'event'].join('::');}
 export function assessBroadcastCandidate(input,{now=new Date()}={}){
  const reasons=[];const hard=[];const c=input?.candidate||{};const e=input?.evidence||{};const source=input?.sourcePolicy||{};const existing=input?.existing||null;
  const nowMs=now instanceof Date?now.getTime():Date.parse(now);
@@ -29,9 +32,22 @@ export function assessBroadcastCandidate(input,{now=new Date()}={}){
  if(existing){for(const k of ['broadcaster_id','territory_id','access_type','broadcast_type','official_url']) if(diff(existing[k],c[k])) reasons.push('conflicts_with_published');}
  if(input?.crossSourceConflict===true) reasons.push('cross_source_conflict');
  if(input?.manualLock===true) hard.push('manual_lock');
+
+ const trust=input?.providerTrust||null;
+ if(trust){
+   const level=String(trust.level||TRUST_LEVELS.PROBATION).toLowerCase();
+   if(level===TRUST_LEVELS.SUSPENDED) hard.push('provider_suspended');
+   else if(level===TRUST_LEVELS.WATCH) reasons.push('provider_watch');
+   else if(level===TRUST_LEVELS.PROBATION) reasons.push('provider_probation');
+   else if(level===TRUST_LEVELS.TRUSTED||level===TRUST_LEVELS.ELITE){
+     const auditRate=Number.isFinite(Number(trust.auditRate))?Number(trust.auditRate):level===TRUST_LEVELS.ELITE?.02:.10;
+     if(shouldAudit({level,auditRate},providerAuditKey(input,c))) reasons.push('provider_sample_audit');
+   } else reasons.push('provider_trust_unknown');
+ }
+
  const unique=[...new Set([...hard,...reasons])];
  const route=hard.length?'blocked':unique.length?'review':'automatic';
- return {policyVersion:REVIEW_POLICY_VERSION,route,reasons:unique,requiresExplanation:unique.includes('conflicts_with_published')||unique.includes('cross_source_conflict')||unique.includes('manual_lock')};
+ return {policyVersion:REVIEW_POLICY_VERSION,route,reasons:unique,requiresExplanation:unique.includes('conflicts_with_published')||unique.includes('cross_source_conflict')||unique.includes('manual_lock'),providerTrustLevel:trust?.level||null};
 }
 export function buildReviewException(input,assessment=assessBroadcastCandidate(input)){
  if(assessment.route!=='review') return null;
