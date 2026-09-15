@@ -6,7 +6,7 @@ import FavoriteButton from "@/components/FavoriteButton";
 import LocalTime from "@/components/LocalTime";
 import type { EventData, Participant } from "@/lib/events";
 import type { FavoriteCandidate } from "@/lib/favorites";
-import { getPublicEventsSnapshot } from "@/lib/public-events";
+import { getPublicParticipantEvents } from "@/lib/public-participant-events";
 import { getPublicParticipantProfile } from "@/lib/participant-profiles";
 import { getSportBySlug, getSportLabel, sportAllowsParticipantPages } from "@/lib/sports-registry";
 import styles from "@/app/football/club/[club]/club-page.module.css";
@@ -23,11 +23,6 @@ function initials(name: string): string {
 
 function participantMatches(participant: Participant | undefined, slug: string): boolean {
   return Boolean(participant && normalizedSlug(participant.name) === slug);
-}
-
-function participantEvents(events: EventData[], sport: string, slug: string): EventData[] {
-  return events.filter((event) => event.sport === sport && [event.participant1, event.participant2].some((participant) => participantMatches(participant, slug)))
-    .sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
 }
 
 function opponent(event: EventData, slug: string): Participant | undefined {
@@ -81,21 +76,20 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
   const sportEntry = getSportBySlug(sport);
   if (!sportEntry || !sportEntry.enabled || !sportAllowsParticipantPages(sport)) notFound();
 
-  const [verified, snapshot] = await Promise.all([
-    getPublicParticipantProfile(club, sport),
-    getPublicEventsSnapshot(),
-  ]);
+  const verified = await getPublicParticipantProfile(club, sport);
   if (!verified) notFound();
 
+  const events = await getPublicParticipantEvents(verified.participantId);
   const profile = verified.profile;
   const clubName = verified.name;
   const sportLabel = verified.sportName || getSportLabel(sport);
-  const events = participantEvents(snapshot.events, sport, club);
   const now = Date.now();
   const upcoming = events.filter((event) => event.status === "live" || (event.status !== "finished" && new Date(event.eventDate).getTime() >= now));
   const recent = events.filter((event) => event.status === "finished" || new Date(event.eventDate).getTime() < now).reverse().slice(0, 6);
   const nextMatch = upcoming[0];
-  const competitions = Array.from(new Map(events.map((event) => [event.competitionSlug, event])).values());
+  const competitions = verified.competitions.length > 0
+    ? verified.competitions
+    : Array.from(new Map(events.map((event) => [event.competitionSlug, { id: event.competitionSlug, slug: event.competitionSlug, name: event.competition }])).values());
   const confirmedListings = upcoming.reduce((sum, event) => sum + event.broadcasts.filter((broadcast) => broadcast.coverageStatus === "confirmed").length, 0);
   const favorite = favoriteForParticipant(sport, verified.participantId, clubName);
   const links = socialLinks(profile);
@@ -163,7 +157,7 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
         <aside className={styles.sidebar}>
           <section className={styles.sideCard} id="where-to-watch"><div className={styles.sideTitle}><h2>Where to watch</h2><span>Official only</span></div><p>WatchTVSport lists confirmed legal broadcasters for each game and territory. Missing coverage is never guessed.</p>{nextMatch ? <Link href={nextMatch.detailPath}>See next game broadcasters →</Link> : <p>Broadcast links will appear when a game is confirmed.</p>}</section>
           <section className={styles.sideCard} id="club-info"><div className={styles.sideTitle}><h2>Team info</h2><span>{profile?.profileStatus === "verified" ? "Verified" : "Sourced"}</span></div><dl className={styles.factList}>{profile?.city ? <div><dt>City</dt><dd>{profile.city}</dd></div> : null}{profile?.countryCode ? <div><dt>Country</dt><dd>{flagSrc ? <img src={flagSrc} alt="" width="20" height="13" loading="lazy" /> : null}{profile.countryCode}</dd></div> : null}{profile?.foundedYear ? <div><dt>Founded</dt><dd>{profile.foundedYear}</dd></div> : null}{profile?.venueName ? <div><dt>Venue</dt><dd>{profile.venueName}</dd></div> : null}{profile?.venueCapacity ? <div><dt>Capacity</dt><dd>{profile.venueCapacity.toLocaleString("en")}</dd></div> : null}</dl>{links.length > 0 ? <div className={styles.linkList}>{links.map(([label, url]) => <a key={label} href={url} target="_blank" rel="noopener noreferrer">{label} →</a>)}</div> : null}</section>
-          <section className={styles.sideCard} id="competitions"><div className={styles.sideTitle}><h2>Competitions</h2><span>{competitions.length}</span></div>{competitions.length > 0 ? <div className={styles.competitionList}>{competitions.map((event) => <span key={event.competitionSlug}><span className={styles.flagMark}>🏆</span><strong>{event.competition}</strong></span>)}</div> : <p>No current competition schedule has been imported yet.</p>}</section>
+          <section className={styles.sideCard} id="competitions"><div className={styles.sideTitle}><h2>Competitions</h2><span>{competitions.length}</span></div>{competitions.length > 0 ? <div className={styles.competitionList}>{competitions.map((competition) => <span key={competition.slug}><span className={styles.flagMark}>🏆</span><strong>{competition.name}</strong></span>)}</div> : <p>No current competition schedule has been imported yet.</p>}</section>
         </aside>
       </div>
     </main>
