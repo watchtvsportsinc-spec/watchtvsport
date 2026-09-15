@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import EntityVisual from "@/components/EntityVisual";
 import FavoriteButton from "@/components/FavoriteButton";
 import LocalTime from "@/components/LocalTime";
 import SocialIconLinks, { type SocialLink } from "@/components/SocialIconLinks";
@@ -198,9 +199,9 @@ export default async function ClubPage({ params }: PageProps) {
                 <div className={styles.nextMatchInner}>
                   <p>{nextMatch.competition}{nextMatch.stage ? ` · ${nextMatch.stage}` : ""}</p>
                   <div className={styles.versusRow}>
-                    <div><span className={styles.teamBadge}>{initials(nextMatch.participant1?.name ?? "TBC")}</span><strong>{nextMatch.participant1?.name ?? "TBC"}</strong></div>
+                    <div>{nextMatch.participant1 ? <EntityVisual entityId={nextMatch.participant1.id} label={nextMatch.participant1.name} size="md" imageUrl={nextMatch.participant1.logoUrl} imageAlt={`${nextMatch.participant1.name} logo`} /> : <span className={styles.teamBadge}>TBC</span>}<strong>{nextMatch.participant1?.name ?? "TBC"}</strong></div>
                     <span className={styles.vs}>VS</span>
-                    <div><span className={styles.teamBadge}>{initials(nextMatch.participant2?.name ?? "TBC")}</span><strong>{nextMatch.participant2?.name ?? "TBC"}</strong></div>
+                    <div>{nextMatch.participant2 ? <EntityVisual entityId={nextMatch.participant2.id} label={nextMatch.participant2.name} size="md" imageUrl={nextMatch.participant2.logoUrl} imageAlt={`${nextMatch.participant2.name} logo`} /> : <span className={styles.teamBadge}>TBC</span>}<strong>{nextMatch.participant2?.name ?? "TBC"}</strong></div>
                   </div>
                   <div className={styles.matchMeta}><LocalTime date={nextMatch.eventDate} /><span>•</span><span>{nextMatch.broadcasts.filter((b) => b.coverageStatus === "confirmed").length} confirmed listings</span></div>
                   <div className={styles.matchActions}><Link className={styles.primaryButton} href={nextMatch.detailPath}>Where to watch →</Link><Link className={styles.secondaryButton} href={competitionHref(nextMatch)}>Competition</Link></div>
