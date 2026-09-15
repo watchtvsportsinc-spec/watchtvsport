@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import LocalTime from "@/components/LocalTime";
 import { clubSlug } from "@/lib/club-aliases";
 import { entitySlug, getFootballNations } from "@/lib/entity-pages";
 import { getAllEvents } from "@/lib/events";
@@ -11,18 +12,6 @@ export const metadata: Metadata = {
     "Browse football competitions, clubs, national teams and upcoming matches with verified official broadcasters.",
   alternates: { canonical: "/football" },
 };
-
-function formatEventDate(value: string): string {
-  return new Intl.DateTimeFormat("en", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "UTC",
-    timeZoneName: "short",
-  }).format(new Date(value));
-}
 
 export default function FootballPage() {
   const events = getAllEvents().filter((event) => event.sport === "football");
@@ -140,7 +129,7 @@ export default function FootballPage() {
               <div className="v2-event-main">
                 <p className="v2-event-competition">{event.competition}</p>
                 <h3>{event.title}</h3>
-                <p className="v2-event-stage">{formatEventDate(event.eventDate)}</p>
+                <p className="v2-event-stage"><LocalTime date={event.eventDate} /></p>
               </div>
               <Link className="v2-broadcast-link" href={event.detailPath}>
                 <span>Event details</span>
