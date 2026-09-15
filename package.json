@@ -7,12 +7,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "npm run test:imports && npm run test:data && npm run test:seed",
+    "test": "npm run test:imports && npm run test:data && npm run test:seed && npm run test:supabase-apply",
     "test:imports": "node --test scripts/import-validation.test.mjs",
     "test:data": "node --test scripts/world-cup-archive-import.test.mjs scripts/public-events-schema.test.mjs",
     "test:seed": "node --test scripts/export-v2-multisport-seed.test.mjs",
+    "test:supabase-apply": "node --test scripts/apply-v2-seed-to-supabase.test.mjs",
     "export:world-cup": "node scripts/export-world-cup-archive.mjs",
     "export:v2-seed": "node scripts/export-v2-multisport-seed.mjs",
+    "plan:v2-seed": "node scripts/apply-v2-seed-to-supabase.mjs",
+    "apply:v2-seed": "node scripts/apply-v2-seed-to-supabase.mjs --apply",
     "validate:import": "node scripts/validate-import.mjs"
   },
   "dependencies": {
