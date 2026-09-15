@@ -163,7 +163,7 @@ export default async function ClubPage({ params }: PageProps) {
             const other = previewOpponent(fixture, club);
             return <article className={styles.matchRow} key={fixture.id}>
               <div className={styles.dateCell}>{fixture.eventDate ? <LocalTime date={fixture.eventDate} /> : <span>Kickoff TBC</span>}</div>
-              <div className={styles.fixtureIdentity}>
+              <div style={{ display: "grid", gridTemplateColumns: "auto minmax(0,1fr)", alignItems: "center", gap: 10, minWidth: 0 }}>
                 <EntityVisual entityId={other.id} label={other.name} size="sm" imageUrl={other.logoUrl} imageAlt={`${other.name} logo`} />
                 <div className={styles.fixtureCell}><small>{home ? "Home" : "Away"}</small><strong>{home ? `${clubName} vs ${other.name}` : `${other.name} vs ${clubName}`}</strong><span>{fixture.competitionName}{fixture.phase ? ` · ${fixture.phase}` : ""}</span></div>
               </div>
@@ -178,7 +178,7 @@ export default async function ClubPage({ params }: PageProps) {
             const home = event.participant1 && clubSlug(event.participant1.name) === club;
             const other = home ? event.participant2 : event.participant1;
             const confirmed = event.broadcasts.filter((broadcast) => broadcast.coverageStatus === "confirmed").length;
-            return <article className={styles.matchRow} key={event.id}><div className={styles.dateCell}><LocalTime date={event.eventDate} /></div><div className={styles.fixtureIdentity}>{other ? <EntityVisual entityId={other.id} label={other.name} size="sm" imageUrl={other.logoUrl} imageAlt={`${other.name} logo`} /> : null}<div className={styles.fixtureCell}><small>{home ? "Home" : "Away"}</small><strong>{home ? `${clubName} vs ${other?.name ?? "TBC"}` : `${other?.name ?? "TBC"} vs ${clubName}`}</strong><span>{event.competition}{event.stage ? ` · ${event.stage}` : ""}</span></div></div><div className={styles.broadcastCell}><span>{confirmed} confirmed</span><Link href={event.detailPath}>Where to watch →</Link></div></article>;
+            return <article className={styles.matchRow} key={event.id}><div className={styles.dateCell}><LocalTime date={event.eventDate} /></div><div style={{ display: "grid", gridTemplateColumns: "auto minmax(0,1fr)", alignItems: "center", gap: 10, minWidth: 0 }}>{other ? <EntityVisual entityId={other.id} label={other.name} size="sm" imageUrl={other.logoUrl} imageAlt={`${other.name} logo`} /> : null}<div className={styles.fixtureCell}><small>{home ? "Home" : "Away"}</small><strong>{home ? `${clubName} vs ${other?.name ?? "TBC"}` : `${other?.name ?? "TBC"} vs ${clubName}`}</strong><span>{event.competition}{event.stage ? ` · ${event.stage}` : ""}</span></div></div><div className={styles.broadcastCell}><span>{confirmed} confirmed</span><Link href={event.detailPath}>Where to watch →</Link></div></article>;
           })}</div>}
         </section>
 
