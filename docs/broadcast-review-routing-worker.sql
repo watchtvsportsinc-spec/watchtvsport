@@ -1,0 +1,21 @@
+-- Applied to the V2 Supabase project on 2026-09-15.
+-- This file documents the private service-role-only ingestion/research contract.
+-- It does not publish or modify public.event_broadcasts.
+
+-- Functions installed in schema watchtvsport_review:
+--   enqueue_case(jsonb)
+--     Idempotently inserts/refreshes one unresolved exception. It accepts only
+--     existing events and collection-enabled data sources. Existing manual
+--     corrections are not overwritten.
+--   claim_research_job(integer)
+--     Leases one queued/expired research job with SKIP LOCKED, max two attempts,
+--     and rejects stale case versions.
+--   complete_research_job(uuid, integer, jsonb)
+--     Applies a bounded research result only when the case version still matches.
+--     Confidence >= 0.75 with status=resolved can refresh the candidate and sends
+--     it back to the human pending queue. Inconclusive/exhausted work also returns
+--     to pending with an explicit reason. Nothing is published automatically.
+
+-- Permissions: EXECUTE is revoked from PUBLIC, anon and authenticated; only
+-- service_role may call these worker functions. Reviewer/browser mutations still
+-- go through the existing authenticated wts_review_decide() contract.
