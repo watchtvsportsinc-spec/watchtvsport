@@ -3,6 +3,10 @@ import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import LocalTime from "@/components/LocalTime";
 import { getAllEvents, type EventData } from "@/lib/events";
+import {
+  getFormula1SessionPlan2026,
+  getFormula1Weekend2026,
+} from "@/source/formula-1-2026-season";
 
 type PageProps = {
   params: Promise<{ grandPrix: string }>;
@@ -80,13 +84,15 @@ export default async function Formula1GrandPrixPage({ params }: PageProps) {
   const allEvents = grandPrixEvents(grandPrix);
   const events = selectEdition(allEvents);
   const first = events[0];
-  if (!first) notFound();
+  const weekend = getFormula1Weekend2026(grandPrix);
+  if (!first || !weekend) notFound();
 
   const race = events.find((event) => event.sessionType === "race");
   const editionLabel = first.eventEditionLabel;
   const availableEditions = Array.from(
     new Set(allEvents.map((event) => event.eventEditionLabel).filter(Boolean))
   );
+  const sessionPlan = getFormula1SessionPlan2026(weekend);
 
   return (
     <main id="main-content" className="v2-calendar">
@@ -103,7 +109,7 @@ export default async function Formula1GrandPrixPage({ params }: PageProps) {
         <h1 id="gp-title">{first.eventGroupName}</h1>
         {editionLabel ? <p className="v2-signature">Edition {editionLabel}</p> : null}
         <p className="v2-hero-copy">
-          {[first.country, first.venue].filter(Boolean).join(" · ")}. Sessions are listed separately because broadcasters can cover practice, sprint, qualifying and the race differently.
+          {[first.country, first.venue].filter(Boolean).join(" · ")}. Every official Formula 1 session is represented, even when broadcast information or an exact session time is still pending.
         </p>
         {race ? (
           <p className="v2-signature">
@@ -121,24 +127,32 @@ export default async function Formula1GrandPrixPage({ params }: PageProps) {
             <p className="v2-eyebrow">Weekend schedule</p>
             <h2 id="sessions-title">Sessions</h2>
           </div>
-          <p>{events.length}</p>
+          <p>{sessionPlan.length}</p>
         </div>
 
         <div className="v2-event-list">
-          {events.map((event) => {
-            const confirmedBroadcasts = event.broadcasts.filter(
+          {sessionPlan.map((session) => {
+            const event = events.find((candidate) => candidate.sequenceNumber === session.sequenceNumber);
+            const confirmedBroadcasts = event?.broadcasts.filter(
               (broadcast) => broadcast.coverageStatus === "confirmed"
-            );
+            ) ?? [];
+
             return (
-              <article className="v2-event-card" id={event.slug} key={event.id}>
+              <article className="v2-event-card" id={session.slug} key={session.slug}>
                 <div className="v2-event-main">
-                  <p className="v2-event-competition">{event.stage ?? event.title}</p>
-                  <h3>{event.stage ?? event.title}</h3>
-                  <p className="v2-event-stage"><LocalTime date={event.eventDate} /></p>
+                  <p className="v2-event-competition">{session.label}</p>
+                  <h3>{session.label}</h3>
+                  <p className="v2-event-stage">
+                    {event ? <LocalTime date={event.eventDate} /> : "Exact time TBC"}
+                  </p>
                 </div>
                 <div className="v2-broadcast-link">
                   <span>{confirmedBroadcasts.length} confirmed official listings</span>
-                  <strong>{confirmedBroadcasts.length > 0 ? "Broadcast options available" : "Broadcast data pending"}</strong>
+                  <strong>
+                    {confirmedBroadcasts.length > 0
+                      ? "Broadcast options available"
+                      : "Broadcast data pending"}
+                  </strong>
                 </div>
               </article>
             );
