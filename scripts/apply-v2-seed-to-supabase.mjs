@@ -28,6 +28,12 @@ function verificationDate(record, bundle) {
   return record.payload.verificationStatus === "confirmed" ? bundle.observedAt : null;
 }
 
+function entityKind(payload) {
+  if (payload.eventGroupType === "race_weekend") return "race_weekend";
+  if (payload.eventGroupType === "fight_card") return "fight_card";
+  return "fixture";
+}
+
 export function buildSeedApplyPlan(bundle, { allowPublication = false } = {}) {
   const validation = validateImportBundle(bundle);
   if (!validation.ok) {
@@ -49,11 +55,7 @@ export function buildSeedApplyPlan(bundle, { allowPublication = false } = {}) {
   for (const entityType of APPLY_ORDER) {
     for (const record of bundle.records.filter((item) => item.entityType === entityType)) {
       const p = record.payload;
-      const base = {
-        entityType,
-        externalKey: record.externalKey,
-        evidenceUrl: record.evidenceUrl,
-      };
+      const base = { entityType, externalKey: record.externalKey, evidenceUrl: record.evidenceUrl };
 
       if (entityType === "sport") {
         operations.push({
@@ -65,8 +67,7 @@ export function buildSeedApplyPlan(bundle, { allowPublication = false } = {}) {
             name: required(p.name, `${record.externalKey}.name`),
             public_slug: p.slug,
             event_model: p.eventModel ?? "team_match",
-            participant_page_policy:
-              p.participantPages === "none" ? "none" : "teams_and_nations",
+            participant_page_policy: p.participantPages === "none" ? "none" : "teams_and_nations",
             is_enabled: true,
           },
         });
@@ -78,14 +79,8 @@ export function buildSeedApplyPlan(bundle, { allowPublication = false } = {}) {
           ...base,
           table: "competitions",
           conflict: ["sport_id", "slug"],
-          refs: {
-            sport_id: needRef(p.sportExternalKey, "sport", record.externalKey, "sportExternalKey"),
-          },
-          row: {
-            slug: required(p.slug, `${record.externalKey}.slug`),
-            name: required(p.name, `${record.externalKey}.name`),
-            is_active: true,
-          },
+          refs: { sport_id: needRef(p.sportExternalKey, "sport", record.externalKey, "sportExternalKey") },
+          row: { slug: required(p.slug, `${record.externalKey}.slug`), name: required(p.name, `${record.externalKey}.name`), is_active: true },
         });
         continue;
       }
@@ -95,19 +90,8 @@ export function buildSeedApplyPlan(bundle, { allowPublication = false } = {}) {
           ...base,
           table: "seasons",
           conflict: ["competition_id", "slug"],
-          refs: {
-            competition_id: needRef(
-              p.competitionExternalKey,
-              "competition",
-              record.externalKey,
-              "competitionExternalKey"
-            ),
-          },
-          row: {
-            slug: required(p.slug, `${record.externalKey}.slug`),
-            label: required(p.label, `${record.externalKey}.label`),
-            is_current: p.isCurrent === true,
-          },
+          refs: { competition_id: needRef(p.competitionExternalKey, "competition", record.externalKey, "competitionExternalKey") },
+          row: { slug: required(p.slug, `${record.externalKey}.slug`), label: required(p.label, `${record.externalKey}.label`), is_current: p.isCurrent === true },
         });
         continue;
       }
@@ -117,9 +101,7 @@ export function buildSeedApplyPlan(bundle, { allowPublication = false } = {}) {
           ...base,
           table: "participants",
           conflict: ["sport_id", "slug"],
-          refs: {
-            sport_id: needRef(p.sportExternalKey, "sport", record.externalKey, "sportExternalKey"),
-          },
+          refs: { sport_id: needRef(p.sportExternalKey, "sport", record.externalKey, "sportExternalKey") },
           row: {
             participant_type: p.participantType === "club" ? "club" : p.participantType,
             slug: required(p.slug, `${record.externalKey}.slug`),
@@ -134,29 +116,10 @@ export function buildSeedApplyPlan(bundle, { allowPublication = false } = {}) {
       if (entityType === "event_page") {
         const refs = {
           sport_id: needRef(p.sportExternalKey, "sport", record.externalKey, "sportExternalKey"),
-          competition_id: needRef(
-            p.competitionExternalKey,
-            "competition",
-            record.externalKey,
-            "competitionExternalKey"
-          ),
+          competition_id: needRef(p.competitionExternalKey, "competition", record.externalKey, "competitionExternalKey"),
         };
-        if (p.homeParticipantExternalKey) {
-          refs.home_participant_id = needRef(
-            p.homeParticipantExternalKey,
-            "participant",
-            record.externalKey,
-            "homeParticipantExternalKey"
-          );
-        }
-        if (p.awayParticipantExternalKey) {
-          refs.away_participant_id = needRef(
-            p.awayParticipantExternalKey,
-            "participant",
-            record.externalKey,
-            "awayParticipantExternalKey"
-          );
-        }
+        if (p.homeParticipantExternalKey) refs.home_participant_id = needRef(p.homeParticipantExternalKey, "participant", record.externalKey, "homeParticipantExternalKey");
+        if (p.awayParticipantExternalKey) refs.away_participant_id = needRef(p.awayParticipantExternalKey, "participant", record.externalKey, "awayParticipantExternalKey");
         operations.push({
           ...base,
           table: "event_pages",
@@ -164,7 +127,7 @@ export function buildSeedApplyPlan(bundle, { allowPublication = false } = {}) {
           refs,
           row: {
             page_type: required(p.pageType, `${record.externalKey}.pageType`),
-            entity_kind: p.eventGroupType === "race_weekend" ? "race_weekend" : "fixture",
+            entity_kind: entityKind(p),
             slug: required(p.slug, `${record.externalKey}.slug`),
             title: required(p.title, `${record.externalKey}.title`),
             is_published: boolForPublication(p, allowPublication),
@@ -185,18 +148,8 @@ export function buildSeedApplyPlan(bundle, { allowPublication = false } = {}) {
           table: "event_editions",
           conflict: ["event_page_id", "edition_key"],
           refs: {
-            event_page_id: needRef(
-              p.eventPageExternalKey,
-              "event_page",
-              record.externalKey,
-              "eventPageExternalKey"
-            ),
-            season_id: needRef(
-              p.seasonExternalKey,
-              "season",
-              record.externalKey,
-              "seasonExternalKey"
-            ),
+            event_page_id: needRef(p.eventPageExternalKey, "event_page", record.externalKey, "eventPageExternalKey"),
+            season_id: needRef(p.seasonExternalKey, "season", record.externalKey, "seasonExternalKey"),
           },
           row: {
             edition_key: required(p.editionKey, `${record.externalKey}.editionKey`),
@@ -218,44 +171,13 @@ export function buildSeedApplyPlan(bundle, { allowPublication = false } = {}) {
       if (entityType === "event") {
         const refs = {
           sport_id: needRef(p.sportExternalKey, "sport", record.externalKey, "sportExternalKey"),
-          competition_id: needRef(
-            p.competitionExternalKey,
-            "competition",
-            record.externalKey,
-            "competitionExternalKey"
-          ),
+          competition_id: needRef(p.competitionExternalKey, "competition", record.externalKey, "competitionExternalKey"),
           season_id: needRef(p.seasonExternalKey, "season", record.externalKey, "seasonExternalKey"),
-          event_page_id: needRef(
-            p.eventPageExternalKey,
-            "event_page",
-            record.externalKey,
-            "eventPageExternalKey"
-          ),
+          event_page_id: needRef(p.eventPageExternalKey, "event_page", record.externalKey, "eventPageExternalKey"),
         };
-        if (p.eventEditionExternalKey) {
-          refs.event_edition_id = needRef(
-            p.eventEditionExternalKey,
-            "event_edition",
-            record.externalKey,
-            "eventEditionExternalKey"
-          );
-        }
-        if (p.homeParticipantExternalKey) {
-          refs.home_participant_id = needRef(
-            p.homeParticipantExternalKey,
-            "participant",
-            record.externalKey,
-            "homeParticipantExternalKey"
-          );
-        }
-        if (p.awayParticipantExternalKey) {
-          refs.away_participant_id = needRef(
-            p.awayParticipantExternalKey,
-            "participant",
-            record.externalKey,
-            "awayParticipantExternalKey"
-          );
-        }
+        if (p.eventEditionExternalKey) refs.event_edition_id = needRef(p.eventEditionExternalKey, "event_edition", record.externalKey, "eventEditionExternalKey");
+        if (p.homeParticipantExternalKey) refs.home_participant_id = needRef(p.homeParticipantExternalKey, "participant", record.externalKey, "homeParticipantExternalKey");
+        if (p.awayParticipantExternalKey) refs.away_participant_id = needRef(p.awayParticipantExternalKey, "participant", record.externalKey, "awayParticipantExternalKey");
         operations.push({
           ...base,
           table: "events",
@@ -264,7 +186,7 @@ export function buildSeedApplyPlan(bundle, { allowPublication = false } = {}) {
           row: {
             status: p.status ?? "scheduled",
             slug: required(p.slug, `${record.externalKey}.slug`),
-            phase: p.phase ?? null,
+            phase: p.phase ?? p.sessionLabel ?? null,
             event_date: p.eventDate ?? null,
             scheduled_date: p.eventDate ?? null,
             venue_name: p.venueName ?? null,
@@ -272,6 +194,8 @@ export function buildSeedApplyPlan(bundle, { allowPublication = false } = {}) {
             session_type: p.sessionType ?? null,
             session_label: p.sessionLabel ?? null,
             session_order: p.sequenceNumber ?? null,
+            sequence_number: p.sequenceNumber ?? null,
+            session_group: p.eventKind === "session" ? (p.sportExternalKey === "sport:ufc" ? "card" : "weekend") : null,
             is_published: false,
             source_name: bundle.source,
             source_url: record.evidenceUrl,
@@ -290,29 +214,18 @@ export function buildSeedApplyPlan(bundle, { allowPublication = false } = {}) {
 function supabaseConfig() {
   const url = process.env.SUPABASE_URL?.replace(/\/$/, "");
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceRoleKey) {
-    throw new Error(
-      "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required for --apply. Never commit these values."
-    );
-  }
+  if (!url || !serviceRoleKey) throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required for --apply. Never commit these values.");
   return { url, serviceRoleKey };
 }
 
 async function request(config, table, { method = "GET", query = "", body } = {}) {
   const response = await fetch(`${config.url}/rest/v1/${table}${query}`, {
     method,
-    headers: {
-      apikey: config.serviceRoleKey,
-      Authorization: `Bearer ${config.serviceRoleKey}`,
-      "Content-Type": "application/json",
-      Prefer: "resolution=merge-duplicates,return=representation",
-    },
+    headers: { apikey: config.serviceRoleKey, Authorization: `Bearer ${config.serviceRoleKey}`, "Content-Type": "application/json", Prefer: "resolution=merge-duplicates,return=representation" },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   const text = await response.text();
-  if (!response.ok) {
-    throw new Error(`${method} ${table} failed (${response.status}): ${text.slice(0, 1000)}`);
-  }
+  if (!response.ok) throw new Error(`${method} ${table} failed (${response.status}): ${text.slice(0, 1000)}`);
   return text ? JSON.parse(text) : null;
 }
 
@@ -323,7 +236,6 @@ async function upsertReturning(config, operation, resolvedIds) {
     if (!id) throw new Error(`Unresolved dependency ${externalKey} for ${operation.externalKey}`);
     row[column] = id;
   }
-
   const query = `?on_conflict=${encodeURIComponent(operation.conflict.join(","))}`;
   const result = await request(config, operation.table, { method: "POST", query, body: row });
   const saved = Array.isArray(result) ? result[0] : result;
@@ -333,18 +245,8 @@ async function upsertReturning(config, operation, resolvedIds) {
   if (operation.canonicalPath) {
     const urlTable = operation.table === "event_pages" ? "event_page_urls" : "event_urls";
     const ownerColumn = operation.table === "event_pages" ? "event_page_id" : "event_id";
-    await request(config, urlTable, {
-      method: "POST",
-      query: "?on_conflict=url_path",
-      body: {
-        [ownerColumn]: saved.id,
-        url_path: operation.canonicalPath.split("#")[0],
-        kind: "canonical",
-        is_active: true,
-      },
-    });
+    await request(config, urlTable, { method: "POST", query: "?on_conflict=url_path", body: { [ownerColumn]: saved.id, url_path: operation.canonicalPath.split("#")[0], kind: "canonical", is_active: true } });
   }
-
   return saved.id;
 }
 
@@ -352,9 +254,7 @@ export async function applySeedPlan(plan, { allowPublication = false } = {}) {
   const config = supabaseConfig();
   const resolvedIds = new Map();
   for (const operation of plan.operations) {
-    if (!allowPublication && operation.row.is_published === true) {
-      throw new Error("Plan contains published rows without --publish approval");
-    }
+    if (!allowPublication && operation.row.is_published === true) throw new Error("Plan contains published rows without --publish approval");
     await upsertReturning(config, operation, resolvedIds);
   }
   return resolvedIds;
@@ -363,43 +263,20 @@ export async function applySeedPlan(plan, { allowPublication = false } = {}) {
 function parseArgs(argv) {
   const flags = new Set(argv.filter((value) => value.startsWith("--")));
   const file = argv.find((value) => !value.startsWith("--"));
-  return {
-    file: resolve(process.cwd(), file ?? "data/imports/seed-2026-ucl-f1.json"),
-    apply: flags.has("--apply"),
-    publish: flags.has("--publish"),
-  };
+  return { file: resolve(process.cwd(), file ?? "data/imports/seed-2026-ucl-f1-ufc.json"), apply: flags.has("--apply"), publish: flags.has("--publish") };
 }
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const bundle = JSON.parse(await readFile(args.file, "utf8"));
   const plan = buildSeedApplyPlan(bundle, { allowPublication: args.publish });
-  const counts = plan.operations.reduce((acc, operation) => {
-    acc[operation.table] = (acc[operation.table] ?? 0) + 1;
-    return acc;
-  }, {});
-
-  console.log(JSON.stringify({
-    mode: args.apply ? "apply" : "dry-run",
-    publish: args.publish,
-    source: bundle.source,
-    idempotencyKey: bundle.idempotencyKey,
-    operationCount: plan.operations.length,
-    counts,
-  }, null, 2));
-
-  if (!args.apply) {
-    console.log("Dry run only. Add --apply to write to Supabase.");
-    return;
-  }
-
+  const counts = plan.operations.reduce((acc, operation) => { acc[operation.table] = (acc[operation.table] ?? 0) + 1; return acc; }, {});
+  console.log(JSON.stringify({ mode: args.apply ? "apply" : "dry-run", publish: args.publish, source: bundle.source, idempotencyKey: bundle.idempotencyKey, operationCount: plan.operations.length, counts }, null, 2));
+  if (!args.apply) { console.log("Dry run only. Add --apply to write to Supabase."); return; }
   await applySeedPlan(plan, { allowPublication: args.publish });
   console.log(`Applied ${plan.operations.length} canonical records to Supabase.`);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  main().catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-  });
+  main().catch((error) => { console.error(error); process.exitCode = 1; });
 }
