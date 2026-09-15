@@ -5,7 +5,7 @@ import EntityVisual from "@/components/EntityVisual";
 import LocalTime from "@/components/LocalTime";
 import { clubSlug } from "@/lib/club-aliases";
 import { getPublicCompetitionDirectories } from "@/lib/competition-directory";
-import { getPreviewFootballFixtures, isPreviewFixtureMode } from "@/lib/dev-preview-fixtures";
+import { getPreviewFootballOverview, isPreviewFixtureMode } from "@/lib/dev-preview-fixtures";
 import { entitySlug, getFootballNations } from "@/lib/entity-pages";
 import { getPrimaryMediaAsset } from "@/lib/public-media";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
@@ -18,10 +18,10 @@ export const metadata: Metadata = {
 
 export default async function FootballPage() {
   const previewMode = isPreviewFixtureMode();
-  const [snapshot, directories, previewFixtures] = await Promise.all([
+  const [snapshot, directories, preview] = await Promise.all([
     getPublicEventsSnapshot(),
     getPublicCompetitionDirectories(),
-    previewMode ? getPreviewFootballFixtures() : Promise.resolve([]),
+    previewMode ? getPreviewFootballOverview() : Promise.resolve({ totalCount: 0, upcomingDatedCount: 0, tbcCount: 0, nextFixtures: [] }),
   ]);
   const events = snapshot.events.filter((event) => event.sport === "football");
   const footballDirectories = directories.filter((competition) => competition.sport === "football");
@@ -30,12 +30,6 @@ export default async function FootballPage() {
     .filter((event) => event.status === "live" || (event.status !== "finished" && Date.parse(event.eventDate) >= now))
     .sort((a, b) => Date.parse(a.eventDate) - Date.parse(b.eventDate))
     .slice(0, 18);
-
-  const previewDated = previewFixtures
-    .filter((fixture) => fixture.eventDate && Date.parse(fixture.eventDate) >= now)
-    .sort((a, b) => Date.parse(a.eventDate!) - Date.parse(b.eventDate!));
-  const previewTbcCount = previewFixtures.filter((fixture) => !fixture.eventDate).length;
-  const previewNext = previewDated.slice(0, 24);
 
   const eventCompetitionBySlug = new Map(events.map((event) => [event.competitionSlug, { slug: event.competitionSlug, name: event.competition, logoUrl: event.competitionLogoUrl }]));
   const competitionRows = await Promise.all(
@@ -65,7 +59,7 @@ export default async function FootballPage() {
       <p className="v2-eyebrow">Sport</p>
       <h1 id="football-title">Football</h1>
       <p className="v2-hero-copy">Explore football competitions, clubs, national teams and upcoming events with official broadcast information.</p>
-      {previewMode && previewFixtures.length ? <p style={{ marginTop: "1rem", fontWeight: 700 }}>Local V2 preview · {previewFixtures.length} verified unpublished fixtures · {previewDated.length} dated · {previewTbcCount} kickoff TBC</p> : null}
+      {previewMode && preview.totalCount ? <p style={{ marginTop: "1rem", fontWeight: 700 }}>Local V2 preview · {preview.totalCount} verified unpublished fixtures · {preview.upcomingDatedCount} upcoming dated · {preview.tbcCount} kickoff TBC</p> : null}
     </section>
 
     <section className="v2-results" aria-labelledby="competitions-title">
@@ -75,14 +69,14 @@ export default async function FootballPage() {
       </Link>)}</div>
     </section>
 
-    {previewMode && previewFixtures.length ? <section className="v2-results" aria-labelledby="preview-title">
-      <div className="v2-results-heading"><div><p className="v2-eyebrow">Local development preview</p><h2 id="preview-title">Next verified league fixtures</h2></div><p>{previewFixtures.length} stored</p></div>
-      {previewNext.length ? <div className="v2-event-list">{previewNext.map((fixture) => <article className="v2-event-card" key={fixture.id}>
+    {previewMode && preview.totalCount ? <section className="v2-results" aria-labelledby="preview-title">
+      <div className="v2-results-heading"><div><p className="v2-eyebrow">Local development preview</p><h2 id="preview-title">Next verified league fixtures</h2></div><p>{preview.totalCount} stored</p></div>
+      {preview.nextFixtures.length ? <div className="v2-event-list">{preview.nextFixtures.map((fixture) => <article className="v2-event-card" key={fixture.id}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }} aria-hidden="true"><EntityVisual entityId={fixture.home.id} label={fixture.home.name} size="sm" imageUrl={fixture.home.logoUrl} imageAlt="" /><EntityVisual entityId={fixture.away.id} label={fixture.away.name} size="sm" imageUrl={fixture.away.logoUrl} imageAlt="" /></div>
         <div className="v2-event-main"><p className="v2-event-competition">{fixture.competitionName}</p><h3><Link href={`/football/club/${fixture.home.slug}`}>{fixture.home.name}</Link><span aria-hidden="true"> vs </span><Link href={`/football/club/${fixture.away.slug}`}>{fixture.away.name}</Link></h3><p className="v2-event-stage"><LocalTime date={fixture.eventDate!} /></p></div>
         <Link className="v2-broadcast-link" href={`/football/competition/${fixture.competitionSlug}`}><span>Unpublished preview</span><strong>Competition →</strong></Link>
       </article>)}</div> : <div className="v2-empty-state"><h3>Fixtures loaded, kickoff times still TBC</h3><p>Open a competition or club page to browse the full verified season fixture list.</p></div>}
-      {previewTbcCount ? <p style={{ marginTop: "1rem", opacity: .72 }}>{previewTbcCount} additional verified fixtures are stored with kickoff/date still TBC and are available on their competition and club pages.</p> : null}
+      {preview.tbcCount ? <p style={{ marginTop: "1rem", opacity: .72 }}>{preview.tbcCount} additional verified fixtures are stored with kickoff/date still TBC and are available on their competition and club pages.</p> : null}
     </section> : null}
 
     {clubs.length > 0 ? <section className="v2-results" aria-labelledby="clubs-title">
