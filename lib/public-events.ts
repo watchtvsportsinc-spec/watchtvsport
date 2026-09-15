@@ -2,13 +2,17 @@ import "server-only";
 
 import { cache } from "react";
 import { getAllEvents, type EventData } from "./events";
-import {
-  parsePublicEventsPayload,
-  type PublicEventsPayload,
-} from "./public-events-schema";
+import { parseMultisportPublicEventsPayload } from "./public-events-multisport";
+import type { PublicEventsPayload } from "./public-events-schema";
 
 const MAX_RESPONSE_BYTES = 8 * 1024 * 1024;
 const REQUEST_TIMEOUT_MS = 4_000;
+
+// Supabase project URL and publishable key are public identifiers, not secrets.
+// Environment variables still take precedence so rotation/migration remains easy.
+const DEFAULT_SUPABASE_URL = "https://jywqhiiwsmudthaujhmi.supabase.co";
+const DEFAULT_SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_30SkJ3gyUbPvH5sGFXpyHg_a4Qlzdi-";
 
 export type PublicEventsSnapshot = {
   events: EventData[];
@@ -55,11 +59,15 @@ function isAllowedSupabaseUrl(value: string): boolean {
 }
 
 function readSupabaseConfig(): { url: string; key: string } {
-  const url = process.env.SUPABASE_URL?.trim() ?? "";
+  const url =
+    process.env.SUPABASE_URL?.trim() ||
+    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ||
+    DEFAULT_SUPABASE_URL;
   const key =
-    process.env.SUPABASE_PUBLISHABLE_KEY?.trim() ??
-    process.env.SUPABASE_ANON_KEY?.trim() ??
-    "";
+    process.env.SUPABASE_PUBLISHABLE_KEY?.trim() ||
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() ||
+    process.env.SUPABASE_ANON_KEY?.trim() ||
+    DEFAULT_SUPABASE_PUBLISHABLE_KEY;
 
   if (!url || !isAllowedSupabaseUrl(url)) {
     throw new Error("SUPABASE_URL is missing or invalid");
@@ -106,11 +114,11 @@ async function fetchSupabaseEvents(): Promise<PublicEventsPayload> {
     throw new Error("Supabase public event response is not valid JSON");
   }
 
-  return parsePublicEventsPayload(value);
+  return parseMultisportPublicEventsPayload(value);
 }
 
 async function loadPublicEventsSnapshot(): Promise<PublicEventsSnapshot> {
-  const mode = process.env.WATCHTVSPORT_DATA_SOURCE?.trim() || "local";
+  const mode = process.env.WATCHTVSPORT_DATA_SOURCE?.trim() || "supabase";
 
   if (mode === "local") return localSnapshot();
   if (mode !== "supabase") {
@@ -121,6 +129,16 @@ async function loadPublicEventsSnapshot(): Promise<PublicEventsSnapshot> {
 
   try {
     const payload = await fetchSupabaseEvents();
+
+    // During the V2 migration the database can be structurally ready while all
+    // imported records are deliberately unpublished. Never replace a useful
+    // bundled calendar with an empty public response.
+    if (payload.events.length === 0 && getAllEvents().length > 0) {
+      return localSnapshot(
+        "The live database is connected but has no published events yet. Showing the bundled data during migration."
+      );
+    }
+
     return {
       events: payload.events,
       source: "supabase",
