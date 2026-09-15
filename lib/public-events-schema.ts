@@ -61,6 +61,11 @@ function httpsUrl(value: unknown, field: string): string {
   return input;
 }
 
+function optionalHttpsUrl(value: unknown, field: string): string | undefined {
+  if (value === null || value === undefined || value === "") return undefined;
+  return httpsUrl(value, field);
+}
+
 function localPath(value: unknown, field: string): string {
   const input = requiredString(value, field, 500);
   if (!input.startsWith("/") || input.startsWith("//") || input.includes("\\")) {
@@ -87,7 +92,7 @@ function parseParticipant(value: unknown, field: string): Participant | undefine
   if (!isRecord(value)) throw new PublicEventsPayloadError(`${field} must be an object`);
   const type = requiredString(value.type, `${field}.type`, 40);
   const visualType = requiredString(value.visualType, `${field}.visualType`, 40);
-  if (!["national_team", "club", "player", "event"].includes(type) || !["flag", "crest", "player", "generic"].includes(visualType)) {
+  if (!["national_team", "club", "team", "player", "event"].includes(type) || !["flag", "crest", "player", "generic"].includes(visualType)) {
     throw new PublicEventsPayloadError(`${field} has an unsupported participant type`);
   }
   return {
@@ -97,6 +102,7 @@ function parseParticipant(value: unknown, field: string): Participant | undefine
     type: type as Participant["type"],
     visualType: visualType as Participant["visualType"],
     visual: optionalString(value.visual, `${field}.visual`, 120) ?? "",
+    logoUrl: optionalHttpsUrl(value.logoUrl, `${field}.logoUrl`),
   };
 }
 
@@ -159,6 +165,7 @@ function parseEvent(value: unknown, index: number): EventData {
     sport: slug(value.sport, `${field}.sport`),
     competition: requiredString(value.competition, `${field}.competition`, 200),
     competitionSlug: slug(value.competitionSlug, `${field}.competitionSlug`),
+    competitionLogoUrl: optionalHttpsUrl(value.competitionLogoUrl, `${field}.competitionLogoUrl`),
     stage: optionalString(value.stage, `${field}.stage`, 120),
     group: optionalString(value.group, `${field}.group`, 80),
     eventDate: isoTimestamp(value.eventDate, `${field}.eventDate`),
@@ -174,7 +181,9 @@ function parseEvent(value: unknown, index: number): EventData {
     eventEditionLabel: optionalString(value.eventEditionLabel, `${field}.eventEditionLabel`, 120),
     sessionType: parseSessionType(value.sessionType, `${field}.sessionType`),
     sequenceNumber: optionalInteger(value.sequenceNumber, `${field}.sequenceNumber`, 1, 100),
+    venueId: optionalString(value.venueId, `${field}.venueId`, 180),
     venue: optionalString(value.venue, `${field}.venue`, 240),
+    venueImageUrl: optionalHttpsUrl(value.venueImageUrl, `${field}.venueImageUrl`),
     country: optionalString(value.country, `${field}.country`, 120),
   };
 }
