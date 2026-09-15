@@ -4,6 +4,8 @@ type EntityVisualProps = {
   entityId: string;
   label: string;
   size?: "sm" | "md" | "lg";
+  imageUrl?: string;
+  imageAlt?: string;
 };
 
 const sizes = {
@@ -12,9 +14,33 @@ const sizes = {
   lg: 58,
 } as const;
 
-export default function EntityVisual({ entityId, label, size = "md" }: EntityVisualProps) {
+export default function EntityVisual({ entityId, label, size = "md", imageUrl, imageAlt }: EntityVisualProps) {
   const visual = getEntityVisual(entityId, label);
   const px = sizes[size];
+
+  if (imageUrl) {
+    return (
+      <span
+        style={{
+          width: px,
+          height: px,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flex: "0 0 auto",
+        }}
+      >
+        <img
+          src={imageUrl}
+          alt={imageAlt ?? `${label} logo`}
+          width={px}
+          height={px}
+          loading="lazy"
+          style={{ display: "block", width: px, height: px, objectFit: "contain" }}
+        />
+      </span>
+    );
+  }
 
   if (visual.kind === "flag") {
     return (
@@ -37,7 +63,7 @@ export default function EntityVisual({ entityId, label, size = "md" }: EntityVis
   }
 
   // Trademarked/pending-review logos are intentionally rendered as a neutral
-  // fallback until their usage has been cleared for WatchTVSport.
+  // fallback until an approved asset has entered the public event/media contract.
   return (
     <span
       aria-hidden="true"
