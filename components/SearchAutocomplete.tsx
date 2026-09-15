@@ -15,6 +15,7 @@ type Props = {
 const GROUP_ORDER: SearchSuggestion["kind"][] = [
   "Sport",
   "Club",
+  "Team",
   "Nation",
   "Grand Prix",
   "UFC Event",
@@ -91,7 +92,7 @@ function scoreSuggestion(suggestion: SearchSuggestion, query: string): number {
 
   if (best >= 0) {
     if (suggestion.kind === "Sport") best += 14;
-    if (suggestion.kind === "Club" || suggestion.kind === "Nation") best += 8;
+    if (suggestion.kind === "Club" || suggestion.kind === "Team" || suggestion.kind === "Nation") best += 8;
     if (suggestion.kind === "UFC Event" || suggestion.kind === "Grand Prix") best += 6;
     if (suggestion.kind === "Competition") best += 4;
   }
@@ -119,10 +120,18 @@ export default function SearchAutocomplete({
   const [query, setQuery] = useState(defaultValue ?? "");
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [directorySuggestions, setDirectorySuggestions] = useState<SearchSuggestion[]>([]);
+  const [directoryLoaded, setDirectoryLoaded] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
+  const allSuggestions = useMemo(() => {
+    const byId = new Map<string, SearchSuggestion>();
+    for (const suggestion of [...suggestions, ...directorySuggestions]) byId.set(suggestion.id, suggestion);
+    return [...byId.values()];
+  }, [suggestions, directorySuggestions]);
+
   const matches = useMemo(() => {
-    return suggestions
+    return allSuggestions
       .map((suggestion) => ({ suggestion, score: scoreSuggestion(suggestion, query) }))
       .filter((item) => item.score >= 0)
       .sort((a, b) => {
@@ -134,7 +143,7 @@ export default function SearchAutocomplete({
       })
       .slice(0, 12)
       .map((item) => item.suggestion);
-  }, [query, suggestions]);
+  }, [query, allSuggestions]);
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
@@ -143,6 +152,19 @@ export default function SearchAutocomplete({
     document.addEventListener("mousedown", handlePointerDown);
     return () => document.removeEventListener("mousedown", handlePointerDown);
   }, []);
+
+  async function ensureDirectoryLoaded() {
+    if (directoryLoaded) return;
+    setDirectoryLoaded(true);
+    try {
+      const response = await fetch("/api/search-directory", { headers: { Accept: "application/json" } });
+      if (!response.ok) return;
+      const payload = await response.json() as { suggestions?: SearchSuggestion[] };
+      if (Array.isArray(payload.suggestions)) setDirectorySuggestions(payload.suggestions);
+    } catch {
+      // Event-backed search remains fully functional if the optional directory request fails.
+    }
+  }
 
   function selectSuggestion(suggestion: SearchSuggestion) {
     setQuery(suggestion.value);
@@ -174,24 +196,28 @@ export default function SearchAutocomplete({
     >
       <div ref={rootRef}>
         <label className="sr-only" htmlFor="global-sports-search">
-          Search sports, clubs, nations, competitions, Grand Prix or UFC events
+          Search sports, clubs, teams, nations, competitions, Grand Prix or UFC events
         </label>
         <input
           id="global-sports-search"
           type="search"
           autoComplete="off"
           value={query}
-          placeholder="Search a sport, club, nation, competition or event"
+          placeholder="Search a sport, team, club, competition or event"
           style={INPUT_STYLE}
           aria-autocomplete="list"
           aria-expanded={open && matches.length > 0}
           aria-controls="global-sports-search-results"
           aria-activedescendant={activeIndex >= 0 && matches[activeIndex] ? `search-result-${activeIndex}` : undefined}
-          onFocus={() => setOpen(true)}
+          onFocus={() => {
+            setOpen(true);
+            void ensureDirectoryLoaded();
+          }}
           onChange={(event) => {
             setQuery(event.target.value);
             setOpen(true);
             setActiveIndex(-1);
+            void ensureDirectoryLoaded();
           }}
           onKeyDown={(event) => {
             if (!open || matches.length === 0) return;
