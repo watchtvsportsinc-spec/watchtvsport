@@ -11,21 +11,15 @@ test("combined V2 seed contains UCL, complete F1 weekends and UFC fight cards", 
 
   assert.equal(bundle.schemaVersion, 1);
   assert.equal(bundle.source, "watchtvsport-curated-2026");
-  assert.equal(bundle.records.length, 525);
+  assert.equal(bundle.records.length, 526);
   assert.equal(count(bundle, "sport"), 3);
   assert.equal(count(bundle, "competition"), 3);
   assert.equal(count(bundle, "season"), 3);
   assert.equal(count(bundle, "participant"), 36);
 
-  const f1Pages = bundle.records.filter(
-    (record) => record.entityType === "event_page" && record.externalKey.startsWith("page:formula-1:grand-prix:")
-  );
-  const f1Editions = bundle.records.filter(
-    (record) => record.entityType === "event_edition" && record.externalKey.startsWith("edition:formula-1:")
-  );
-  const f1Sessions = bundle.records.filter(
-    (record) => record.entityType === "event" && record.externalKey.startsWith("event:f1:2026:")
-  );
+  const f1Pages = bundle.records.filter((record) => record.entityType === "event_page" && record.externalKey.startsWith("page:formula-1:grand-prix:"));
+  const f1Editions = bundle.records.filter((record) => record.entityType === "event_edition" && record.externalKey.startsWith("edition:formula-1:"));
+  const f1Sessions = bundle.records.filter((record) => record.entityType === "event" && record.externalKey.startsWith("event:f1:2026:"));
 
   assert.equal(f1Pages.length, 23);
   assert.equal(f1Editions.length, 23);
@@ -47,29 +41,24 @@ test("combined V2 seed contains UCL, complete F1 weekends and UFC fight cards", 
     assert.ok(sessions.some((session) => session.sessionType === "practice"));
   }
 
-  const uclEvents = bundle.records.filter(
-    (record) => record.entityType === "event" && record.externalKey.startsWith("event:ucl-2026-27:")
-  );
+  const uclEvents = bundle.records.filter((record) => record.entityType === "event" && record.externalKey.startsWith("event:ucl-2026-27:"));
   assert.equal(uclEvents.length, 144);
   assert.ok(uclEvents.every((event) => event.payload.eventKind === "match"));
 
-  const ufcPages = bundle.records.filter(
-    (record) => record.entityType === "event_page" && record.externalKey.startsWith("page:ufc:event:")
-  );
-  const ufcEditions = bundle.records.filter(
-    (record) => record.entityType === "event_edition" && record.externalKey.startsWith("edition:ufc:")
-  );
-  const ufcSessions = bundle.records.filter(
-    (record) => record.entityType === "event" && record.externalKey.startsWith("event:ufc:2026:")
-  );
+  const ufcPages = bundle.records.filter((record) => record.entityType === "event_page" && record.externalKey.startsWith("page:ufc:event:"));
+  const ufcEditions = bundle.records.filter((record) => record.entityType === "event_edition" && record.externalKey.startsWith("edition:ufc:"));
+  const ufcSessions = bundle.records.filter((record) => record.entityType === "event" && record.externalKey.startsWith("event:ufc:2026:"));
   assert.equal(ufcPages.length, 7);
   assert.equal(ufcEditions.length, 7);
-  assert.equal(ufcSessions.length, 17);
+  assert.equal(ufcSessions.length, 18);
   assert.ok(ufcPages.every((record) => record.payload.eventGroupType === "fight_card"));
   assert.ok(ufcSessions.every((record) => record.payload.eventKind === "session"));
   assert.ok(ufcSessions.some((record) => record.payload.sessionType === "early_prelims"));
   assert.ok(ufcSessions.some((record) => record.payload.sessionType === "prelims"));
   assert.ok(ufcSessions.some((record) => record.payload.sessionType === "main_card"));
+
+  const rosasSessions = ufcSessions.filter((record) => record.payload.eventPageExternalKey === "page:ufc:event:ufc-fight-night-rosas-jr-vs-barcelos");
+  assert.deepEqual(rosasSessions.map((record) => record.payload.sessionType), ["early_prelims", "prelims", "main_card"]);
 
   const tbcSessions = f1Sessions.filter((event) => event.payload.timingStatus === "tbc");
   assert.ok(tbcSessions.length > 0);
