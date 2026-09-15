@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import BroadcastOffers from "@/components/BroadcastOffers";
 import LocalTime from "@/components/LocalTime";
 import { getAllEvents, type EventData } from "@/lib/events";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
@@ -11,6 +12,7 @@ import {
 
 type PageProps = {
   params: Promise<{ grandPrix: string }>;
+  searchParams?: Promise<{ country?: string }>;
 };
 
 function grandPrixEvents(events: EventData[], slug: string): EventData[] {
@@ -88,8 +90,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function Formula1GrandPrixPage({ params }: PageProps) {
+export default async function Formula1GrandPrixPage({ params, searchParams }: PageProps) {
   const { grandPrix } = await params;
+  const resolvedSearch = (await searchParams) ?? {};
   const snapshot = await getPublicEventsSnapshot();
   const allEvents = grandPrixEvents(snapshot.events, grandPrix);
   const events = selectEdition(allEvents);
@@ -177,6 +180,12 @@ export default async function Formula1GrandPrixPage({ params }: PageProps) {
           })}
         </div>
       </section>
+
+      <BroadcastOffers
+        events={events}
+        selectedCountry={resolvedSearch.country}
+        title="Where to watch this Grand Prix"
+      />
     </main>
   );
 }
