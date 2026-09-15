@@ -1,0 +1,32 @@
+name: Validate V2 build
+
+on:
+  push:
+    branches:
+      - refonte/watchtvsport-v2
+    paths:
+      - '.github/workflows/validate-v2-build.yml'
+      - 'app/**'
+      - 'lib/**'
+      - 'components/**'
+      - 'source/**'
+      - 'package.json'
+      - 'package-lock.json'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refonte/watchtvsport-v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
