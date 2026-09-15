@@ -6,7 +6,7 @@ import {
 } from "./matches";
 import { clubSlug } from "./club-aliases";
 import { championsLeague202627LeaguePhase } from "../source/champions-league-2026-27-league-phase";
-import { formula1Canada2026Sessions } from "../source/formula-1-canada-2026";
+import { formula1Season2026Sessions } from "../source/formula-1-2026-season";
 
 export type EntityType = "national_team" | "club" | "player" | "event";
 export type VisualType = "flag" | "crest" | "player" | "generic";
@@ -47,6 +47,7 @@ export type EventData = {
   eventEditionKey?: string;
   eventEditionLabel?: string;
   sessionType?: SessionType;
+  sequenceNumber?: number;
   venue?: string;
   country?: string;
 };
@@ -110,7 +111,7 @@ export function mapMatchToEvent(match: MatchData): EventData {
 export function getAllEvents(): EventData[] {
   return [
     ...championsLeague202627LeaguePhase.map(normalizeEventParticipants),
-    ...formula1Canada2026Sessions,
+    ...formula1Season2026Sessions,
     ...getAllMatches().map(mapMatchToEvent),
   ];
 }
