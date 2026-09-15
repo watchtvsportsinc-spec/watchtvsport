@@ -9,6 +9,8 @@ on:
       - scripts/discover-premier-league-fixtures.test.mjs
       - .github/workflows/discover-premier-league-fixtures.yml
   workflow_dispatch:
+  schedule:
+    - cron: "17 4 * * *"
 
 permissions:
   contents: read
@@ -21,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
       - name: Validate parser
         run: node --test scripts/discover-premier-league-fixtures.test.mjs
       - name: Discover official Premier League fixtures
@@ -32,9 +34,11 @@ jobs:
           code=$?
           echo "Discovery exit code: $code"
           test -s premier-league-2026-27-fixtures.json
+          exit $code
       - name: Upload fixture audit
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: premier-league-2026-27-fixtures
           path: premier-league-2026-27-fixtures.json
-          if-no-files-found: error
+          if-no-files-found: warn
