@@ -25,6 +25,18 @@ test("competition pages use approved competition logos", () => {
   assert.match(page, /<img src=\{logo\.url\}/);
 });
 
+test("public participant directory enriches clubs with approved current logos in one batched request", () => {
+  const source = read("lib/public-participants.ts");
+  assert.match(source, /logoUrl\?: string/);
+  assert.match(source, /media_assets\?select=entity_key,storage_url,verified_at/);
+  assert.match(source, /entity_type=eq\.participant/);
+  assert.match(source, /asset_kind=eq\.team_logo/);
+  assert.match(source, /verification_status=eq\.approved/);
+  assert.match(source, /is_current=eq\.true/);
+  assert.match(source, /logoUrl:\s*logoBySlug\.get\(slug\)/);
+  assert.doesNotMatch(source, /getPrimaryMediaAsset/);
+});
+
 test("reusable entity visuals render only an explicitly supplied public image before fallback", () => {
   const component = read("components/EntityVisual.tsx");
   assert.match(component, /imageUrl\?: string/);
@@ -33,9 +45,10 @@ test("reusable entity visuals render only an explicitly supplied public image be
   assert.match(component, /getEntityVisual\(entityId, label\)/);
 });
 
-test("football browse and schedule cards consume logo URLs from the validated public event contract", () => {
+test("football browse and schedule cards consume logo URLs from the validated public contracts", () => {
   const page = read("app/football/page.tsx");
   assert.match(page, /logoUrl: event\.competitionLogoUrl/);
+  assert.match(page, /directoryClubs/);
   assert.match(page, /imageUrl=\{competition\.logoUrl\}/);
   assert.match(page, /imageUrl=\{club\.logoUrl\}/);
   assert.match(page, /imageUrl=\{event\.participant1\.logoUrl\}/);
