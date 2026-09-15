@@ -4,8 +4,10 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import EntityVisual from "@/components/EntityVisual";
 import LocalTime from "@/components/LocalTime";
 import { clubSlug } from "@/lib/club-aliases";
+import { getPublicCompetitionDirectories } from "@/lib/competition-directory";
 import { entitySlug, getFootballNations } from "@/lib/entity-pages";
-import { getAllEvents } from "@/lib/events";
+import { getPrimaryMediaAsset } from "@/lib/public-media";
+import { getPublicEventsSnapshot } from "@/lib/public-events";
 
 export const metadata: Metadata = {
   title: "Football TV schedule & official broadcasters | WatchTVSport",
@@ -14,8 +16,13 @@ export const metadata: Metadata = {
   alternates: { canonical: "/football" },
 };
 
-export default function FootballPage() {
-  const events = getAllEvents().filter((event) => event.sport === "football");
+export default async function FootballPage() {
+  const [snapshot, directories] = await Promise.all([
+    getPublicEventsSnapshot(),
+    getPublicCompetitionDirectories(),
+  ]);
+  const events = snapshot.events.filter((event) => event.sport === "football");
+  const footballDirectories = directories.filter((competition) => competition.sport === "football");
   const now = Date.now();
   const upcoming = events
     .filter(
@@ -26,22 +33,39 @@ export default function FootballPage() {
     .sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime())
     .slice(0, 18);
 
-  const competitions = Array.from(
-    new Map(
-      events.map((event) => [
-        event.competitionSlug,
-        { slug: event.competitionSlug, name: event.competition, logoUrl: event.competitionLogoUrl },
-      ])
-    ).values()
-  ).sort((a, b) => a.name.localeCompare(b.name));
+  const eventCompetitionBySlug = new Map(
+    events.map((event) => [
+      event.competitionSlug,
+      { slug: event.competitionSlug, name: event.competition, logoUrl: event.competitionLogoUrl },
+    ])
+  );
 
+  const competitionRows = await Promise.all(
+    Array.from(
+      new Map([
+        ...footballDirectories.map((competition) => [
+          competition.slug,
+          { slug: competition.slug, name: competition.name, logoUrl: eventCompetitionBySlug.get(competition.slug)?.logoUrl },
+        ] as const),
+        ...Array.from(eventCompetitionBySlug.entries()).map(([slug, competition]) => [slug, competition] as const),
+      ]).values()
+    ).map(async (competition) => {
+      if (competition.logoUrl) return competition;
+      const logo = await getPrimaryMediaAsset("competition", competition.slug, "competition_logo");
+      return { ...competition, logoUrl: logo?.url };
+    })
+  );
+  const competitions = competitionRows.sort((a, b) => a.name.localeCompare(b.name));
+
+  const directoryClubs = footballDirectories.flatMap((competition) => competition.members);
+  const eventClubs = events.flatMap((event) =>
+    [event.participant1, event.participant2].filter((participant) => participant?.type === "club")
+  );
   const clubs = Array.from(
     new Map(
-      events.flatMap((event) =>
-        [event.participant1, event.participant2]
-          .filter((participant) => participant?.type === "club")
-          .map((participant) => [participant!.name, participant!] as const)
-      )
+      [...directoryClubs, ...eventClubs]
+        .filter((participant): participant is NonNullable<typeof participant> => Boolean(participant))
+        .map((participant) => [clubSlug(participant.name), participant] as const)
     ).values()
   ).sort((a, b) => a.name.localeCompare(b.name));
 
