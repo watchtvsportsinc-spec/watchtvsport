@@ -43,6 +43,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages: MetadataRoute.Sitemap = [
     sitemapEntry("/", 1, "daily"),
     sitemapEntry("/football", 0.95, "daily"),
+    sitemapEntry("/formula-1", 0.95, "daily"),
   ];
 
   const competitionPages = Array.from(
@@ -77,6 +78,26 @@ export default function sitemap(): MetadataRoute.Sitemap {
     sitemapEntry(event.detailPath, 0.9, "daily", new Date(event.eventDate))
   );
 
+  const formula1GrandPrixPages = Array.from(
+    new Map(
+      events
+        .filter(
+          (event) =>
+            event.sport === "formula-1" &&
+            event.eventGroupId &&
+            event.eventGroupSlug
+        )
+        .map((event) => [event.eventGroupId!, event] as const)
+    ).values()
+  ).map((event) =>
+    sitemapEntry(
+      `/formula-1/grand-prix/${event.eventGroupSlug}`,
+      0.9,
+      "daily",
+      new Date(event.eventDate)
+    )
+  );
+
   // Preserve the already indexed World Cup archive URLs.
   const archiveMatchPages = worldCupMatches.map((match) =>
     sitemapEntry(`/match/${match.slug}`, 0.85, "monthly", new Date(match.matchDate))
@@ -103,6 +124,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...clubPages,
     ...nationPages,
     ...permanentEventPages,
+    ...formula1GrandPrixPages,
     ...archiveMatchPages,
     ...watchPages,
     ...countryPages,
