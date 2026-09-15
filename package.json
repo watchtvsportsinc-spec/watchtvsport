@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "npm run test:imports && npm run test:data && npm run test:seed && npm run test:supabase-apply && npm run test:quality",
+    "test": "npm run test:imports && npm run test:data && npm run test:seed && npm run test:supabase-apply && npm run test:quality && npm run test:media",
     "test:imports": "node --test scripts/import-validation.test.mjs",
     "test:data": "node --test scripts/world-cup-archive-import.test.mjs scripts/public-events-schema.test.mjs",
     "test:seed": "node --test scripts/export-v2-multisport-seed.test.mjs",
@@ -17,7 +17,8 @@
     "export:v2-seed": "node scripts/export-v2-multisport-seed.mjs",
     "plan:v2-seed": "node scripts/apply-v2-seed-to-supabase.mjs",
     "apply:v2-seed": "node scripts/apply-v2-seed-to-supabase.mjs --apply",
-    "validate:import": "node scripts/validate-import.mjs"
+    "validate:import": "node scripts/validate-import.mjs",
+    "test:media": "node --test scripts/public-media-schema.test.mjs scripts/v2-security-guardrails.test.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",

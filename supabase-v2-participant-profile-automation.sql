@@ -18,6 +18,9 @@ create trigger trg_ensure_participant_profile_row
 after insert or update of participant_type,country_code on public.participants
 for each row execute function public.ensure_participant_profile_row();
 
+-- Trigger-only helper, not a client-callable administrative RPC.
+revoke execute on function public.ensure_participant_profile_row() from PUBLIC, anon, authenticated;
+
 create or replace function public.apply_confirmed_participant_profile_claim()
 returns trigger language plpgsql security definer set search_path=public as $$
 declare confirmed_count int;
@@ -61,3 +64,6 @@ drop trigger if exists trg_apply_confirmed_participant_profile_claim on public.p
 create trigger trg_apply_confirmed_participant_profile_claim
 after insert or update of verification_status,is_current,value_text,value_number,value_json on public.participant_profile_claims
 for each row execute function public.apply_confirmed_participant_profile_claim();
+
+-- Trigger-only helper, not a client-callable administrative RPC.
+revoke execute on function public.apply_confirmed_participant_profile_claim() from PUBLIC, anon, authenticated;

@@ -24,7 +24,9 @@ alter table public.enrichment_tasks enable row level security;
 drop policy if exists public_select_enrichment_tasks on public.enrichment_tasks;
 create policy public_select_enrichment_tasks on public.enrichment_tasks for select using (false);
 
-create or replace view public.participant_profile_audit as
+-- Internal operational view: obey caller RLS and never expose it to public clients.
+create or replace view public.participant_profile_audit
+with (security_invoker = true) as
 select
   p.id as participant_id,
   s.slug as sport,
@@ -50,6 +52,9 @@ from public.participants p
 join public.sports s on s.id=p.sport_id
 join public.participant_profiles pp on pp.participant_id=p.id
 where p.is_active=true;
+
+revoke all on table public.participant_profile_audit from PUBLIC, anon, authenticated;
+grant select on table public.participant_profile_audit to service_role;
 
 insert into public.enrichment_tasks(entity_type,entity_key,task_kind,priority,source_hint)
 select 'participant', p.slug, 'profile_identity', 80,
