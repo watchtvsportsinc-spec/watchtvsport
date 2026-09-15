@@ -29,8 +29,8 @@ test("rolls undated January headings into the next calendar year", () => {
   assert.equal(fixtures[1].localDate, "2027-01-02");
 });
 
-test("validation refuses incomplete fixture collections", () => {
+test("validation refuses incomplete unique fixture collections", () => {
   const result = validateFixtures([{ localDate: "2026-08-21", home: "Arsenal", away: "Coventry City" }]);
   assert.equal(result.ok, false);
-  assert.match(result.issues[0], /expected 380 fixtures/);
+  assert.match(result.issues[0], /expected 380 unique fixtures/);
 });
