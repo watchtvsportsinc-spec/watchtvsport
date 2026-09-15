@@ -8,6 +8,7 @@ import { clubSlug } from "@/lib/club-aliases";
 import { getPublicCompetitionDirectories, getPublicCompetitionDirectory } from "@/lib/competition-directory";
 import { getAllEvents, type EventData } from "@/lib/events";
 import type { FavoriteCandidate } from "@/lib/favorites";
+import { getPrimaryMediaAsset } from "@/lib/public-media";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 
 type PageProps = { params: Promise<{ competition: string }> };
@@ -36,7 +37,11 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { competition } = await params;
-  const [snapshot, directory] = await Promise.all([getPublicEventsSnapshot(), getPublicCompetitionDirectory("football", competition)]);
+  const [snapshot, directory, logo] = await Promise.all([
+    getPublicEventsSnapshot(),
+    getPublicCompetitionDirectory("football", competition),
+    getPrimaryMediaAsset("competition", competition, "competition_logo"),
+  ]);
   const events = footballCompetitionEvents(snapshot.events, competition);
   const name = events[0]?.competition ?? directory?.name;
   if (!name) return { title: "Competition not found | WatchTVSport", robots: { index: false, follow: false } };
@@ -51,13 +56,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: `${name} teams, fixtures and official broadcast information.`,
       url: `/football/competition/${competition}`,
       type: "website",
+      images: logo?.url ? [logo.url] : undefined,
     },
   };
 }
 
 export default async function CompetitionPage({ params }: PageProps) {
   const { competition } = await params;
-  const [snapshot, directory] = await Promise.all([getPublicEventsSnapshot(), getPublicCompetitionDirectory("football", competition)]);
+  const [snapshot, directory, logo] = await Promise.all([
+    getPublicEventsSnapshot(),
+    getPublicCompetitionDirectory("football", competition),
+    getPrimaryMediaAsset("competition", competition, "competition_logo"),
+  ]);
   const events = footballCompetitionEvents(snapshot.events, competition);
   const name = events[0]?.competition ?? directory?.name;
   if (!name) notFound();
@@ -83,6 +93,7 @@ export default async function CompetitionPage({ params }: PageProps) {
     name,
     sport: "Football",
     url: `https://watchtvsport.com/football/competition/${competition}`,
+    logo: logo?.url,
     member: clubs.map((club) => ({ "@type": "SportsTeam", name: club.name, url: `https://watchtvsport.com/football/club/${club.slug}` })),
   };
 
@@ -91,8 +102,13 @@ export default async function CompetitionPage({ params }: PageProps) {
     <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Football", href: "/football" }, { label: name }]} />
 
     <section className="v2-calendar-hero" aria-labelledby="competition-title">
-      <p className="v2-eyebrow">Football competition{directory?.seasonLabel ? ` · ${directory.seasonLabel}` : ""}</p>
-      <h1 id="competition-title">{name}</h1>
+      <div style={{ display: "flex", gap: "1rem", alignItems: "center", flexWrap: "wrap" }}>
+        {logo?.url ? <img src={logo.url} alt={logo.alt ?? `${name} logo`} width={logo.width ?? 96} height={logo.height ?? 96} loading="eager" style={{ width: 80, height: 80, objectFit: "contain" }} /> : null}
+        <div>
+          <p className="v2-eyebrow">Football competition{directory?.seasonLabel ? ` · ${directory.seasonLabel}` : ""}</p>
+          <h1 id="competition-title">{name}</h1>
+        </div>
+      </div>
       <p className="v2-hero-copy">Verified teams, upcoming fixtures and official broadcasters for {name}. Missing fixture or broadcaster data remains unpublished rather than guessed.</p>
       <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "1rem" }}>
         <FavoriteButton favorite={favorite} />
