@@ -1,0 +1,11 @@
+{
+  "season": "2026/27",
+  "competitions": {
+    "premier-league": { "clubs": 20, "fixtures": 380 },
+    "laliga": { "clubs": 20, "fixtures": 380 },
+    "bundesliga": { "clubs": 18, "fixtures": 306 },
+    "ligue-1": { "clubs": 18, "fixtures": 306 }
+  },
+  "totals": { "clubs": 76, "fixtures": 1372 },
+  "publicationPolicy": "preview fixtures remain unpublished until explicit approval"
+}
