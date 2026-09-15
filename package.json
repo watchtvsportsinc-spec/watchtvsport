@@ -18,7 +18,8 @@
     "plan:v2-seed": "node scripts/apply-v2-seed-to-supabase.mjs",
     "apply:v2-seed": "node scripts/apply-v2-seed-to-supabase.mjs --apply",
     "validate:import": "node scripts/validate-import.mjs",
-    "test:media": "node --test scripts/public-media-schema.test.mjs scripts/v2-security-guardrails.test.mjs scripts/v2-approved-media-integration.test.mjs"
+    "discover:team-logos": "node scripts/discover-official-team-logos.mjs --league laliga",
+    "test:media": "node --test scripts/public-media-schema.test.mjs scripts/v2-security-guardrails.test.mjs scripts/v2-approved-media-integration.test.mjs scripts/discover-official-team-logos.test.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
