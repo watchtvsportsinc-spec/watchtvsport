@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import FavoriteButton from "@/components/FavoriteButton";
 import LocalTime from "@/components/LocalTime";
+import SocialIconLinks, { type SocialLink } from "@/components/SocialIconLinks";
 import {
   clubSlug,
   getAllClubNames,
@@ -58,16 +59,16 @@ function isHome(event: EventData, clubName: string): boolean {
   return Boolean(event.participant1 && clubSlug(event.participant1.name) === clubSlug(clubName));
 }
 
-function socialLinks(profile: Awaited<ReturnType<typeof getPublicParticipantProfile>> extends infer R ? R extends { profile: infer P } ? P : never : never) {
+function socialLinks(profile: Awaited<ReturnType<typeof getPublicParticipantProfile>> extends infer R ? R extends { profile: infer P } ? P : never : never): SocialLink[] {
   if (!profile) return [];
   return [
-    ["Official website", profile.officialWebsiteUrl],
-    ["Instagram", profile.instagramUrl],
-    ["X", profile.xUrl],
-    ["Facebook", profile.facebookUrl],
-    ["YouTube", profile.youtubeUrl],
-    ["TikTok", profile.tiktokUrl],
-  ].filter((entry): entry is [string, string] => Boolean(entry[1]));
+    { kind: "website", href: profile.officialWebsiteUrl },
+    { kind: "instagram", href: profile.instagramUrl },
+    { kind: "x", href: profile.xUrl },
+    { kind: "facebook", href: profile.facebookUrl },
+    { kind: "youtube", href: profile.youtubeUrl },
+    { kind: "tiktok", href: profile.tiktokUrl },
+  ].filter((entry): entry is SocialLink => Boolean(entry.href));
 }
 
 export async function generateStaticParams() {
@@ -127,7 +128,7 @@ export default async function ClubPage({ params }: PageProps) {
     url: `https://watchtvsport.com/football/club/${club}`,
     foundingDate: profile?.foundedYear ? String(profile.foundedYear) : undefined,
     location: profile?.city ? { "@type": "Place", name: profile.city } : undefined,
-    sameAs: links.map(([, url]) => url),
+    sameAs: links.map((link) => link.href),
   };
 
   return (
@@ -245,7 +246,7 @@ export default async function ClubPage({ params }: PageProps) {
               {profile?.venueName ? <div><dt>Stadium</dt><dd>{profile.venueName}</dd></div> : null}
               {profile?.venueCapacity ? <div><dt>Capacity</dt><dd>{profile.venueCapacity.toLocaleString("en")}</dd></div> : null}
             </dl>
-            {links.length > 0 ? <div className={styles.linkList}>{links.map(([label, url]) => <a key={label} href={url} target="_blank" rel="noopener noreferrer">{label} →</a>)}</div> : null}
+            <SocialIconLinks links={links} className={styles.socialIcons} />
           </section>
 
           <section className={styles.sideCard} id="competitions">
