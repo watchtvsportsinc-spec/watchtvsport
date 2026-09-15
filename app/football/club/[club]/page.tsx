@@ -13,6 +13,7 @@ import {
 } from "@/lib/club-aliases";
 import type { EventData, Participant } from "@/lib/events";
 import type { FavoriteCandidate } from "@/lib/favorites";
+import { getPrimaryMediaAsset } from "@/lib/public-media";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 import { getPublicParticipantProfile } from "@/lib/participant-profiles";
 import styles from "./club-page.module.css";
@@ -82,7 +83,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!clubName) return { title: "Club not found | WatchTVSport", robots: { index: false, follow: false } };
   const aliases = getClubAliases(clubName);
   const aliasText = aliases.slice(0, 5).join(", ");
-  const verified = await getPublicParticipantProfile(club, "football");
+  const [verified, hero] = await Promise.all([
+    getPublicParticipantProfile(club, "football"),
+    getPrimaryMediaAsset("participant", club, "team_hero"),
+  ]);
   const place = verified?.profile?.city ? ` in ${verified.profile.city}` : "";
   return {
     title: `${clubName} TV schedule & official broadcasters | WatchTVSport`,
@@ -94,7 +98,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: `Upcoming ${clubName} matches and verified official broadcasters by country.`,
       url: `/football/club/${club}`,
       type: "website",
-      images: verified?.profile?.heroImageUrl ? [verified.profile.heroImageUrl] : undefined,
+      images: hero?.url ? [hero.url] : undefined,
     },
   };
 }
@@ -105,7 +109,11 @@ export default async function ClubPage({ params }: PageProps) {
   const clubName = resolveClubName(snapshot.events, club);
   if (!clubName) notFound();
 
-  const [verifiedProfile] = await Promise.all([getPublicParticipantProfile(club, "football")]);
+  const [verifiedProfile, logo, hero] = await Promise.all([
+    getPublicParticipantProfile(club, "football"),
+    getPrimaryMediaAsset("participant", club, "team_logo"),
+    getPrimaryMediaAsset("participant", club, "team_hero"),
+  ]);
   const profile = verifiedProfile?.profile ?? null;
   const aliases = getClubAliases(clubName);
   const events = clubEvents(snapshot.events, clubName);
@@ -128,6 +136,8 @@ export default async function ClubPage({ params }: PageProps) {
     url: `https://watchtvsport.com/football/club/${club}`,
     foundingDate: profile?.foundedYear ? String(profile.foundedYear) : undefined,
     location: profile?.city ? { "@type": "Place", name: profile.city } : undefined,
+    logo: logo?.url,
+    image: hero?.url,
     sameAs: links.map((link) => link.href),
   };
 
@@ -136,11 +146,11 @@ export default async function ClubPage({ params }: PageProps) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(teamJsonLd) }} />
       <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Football", href: "/football" }, { label: clubName }]} />
 
-      <section className={styles.hero} aria-labelledby="club-title" style={profile?.heroImageUrl ? { backgroundImage: `linear-gradient(180deg,rgba(5,15,26,.12),rgba(4,13,23,.82)),url('${profile.heroImageUrl}')` } : undefined}>
+      <section className={styles.hero} aria-labelledby="club-title" style={hero?.url ? { backgroundImage: `linear-gradient(180deg,rgba(5,15,26,.12),rgba(4,13,23,.82)),url('${hero.url}')` } : undefined}>
         <div className={styles.heroShade} />
         <div className={styles.heroContent}>
           <div className={styles.crest} aria-label={`${clubName} club mark`}>
-            {profile?.logoUrl ? <img src={profile.logoUrl} alt={`${clubName} logo`} loading="eager" /> : <><span>{initials(clubName)}</span><small>Football</small></>}
+            {logo?.url ? <img src={logo.url} alt={logo.alt ?? `${clubName} logo`} loading="eager" /> : <><span>{initials(clubName)}</span><small>Football</small></>}
           </div>
           <div className={styles.identity}>
             <p className="v2-eyebrow">Football club</p>
