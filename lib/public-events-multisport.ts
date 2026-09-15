@@ -38,11 +38,28 @@ function optionalSessionType(value: unknown): SessionType | undefined {
   return session && SESSION_TYPES.has(session) ? session : undefined;
 }
 
+function deriveGroupSlug(event: EventData, raw: Record<string, unknown>): string | undefined {
+  const explicit = optionalString(raw.eventGroupSlug, 180);
+  if (explicit) return explicit;
+
+  if (event.sport === "ufc") {
+    const match = event.detailPath.match(/^\/ufc\/event\/([^#?]+)/);
+    if (match?.[1]) return match[1];
+  }
+
+  return undefined;
+}
+
+function deriveGroupName(event: EventData, raw: Record<string, unknown>): string | undefined {
+  return optionalString(raw.eventGroupName, 240) ?? (event.sport === "ufc" ? event.title : undefined);
+}
+
 /**
  * Keep the strict public payload validation already used by WatchTVSport, then
  * preserve optional multi-sport fields added by the V2 Supabase read contract.
- * Unknown or malformed optional fields are ignored rather than weakening the
- * base payload validation.
+ * UFC group metadata can be reconstructed from its permanent detailPath because
+ * the current RPC intentionally returns the permanent URL even when separate
+ * event-group columns are omitted.
  */
 export function parseMultisportPublicEventsPayload(
   value: unknown
@@ -56,11 +73,14 @@ export function parseMultisportPublicEventsPayload(
     const raw = rawEvents[index];
     if (!isRecord(raw)) return event;
 
+    const groupSlug = deriveGroupSlug(event, raw);
+    const groupName = deriveGroupName(event, raw);
+
     return {
       ...event,
-      eventGroupId: optionalString(raw.eventGroupId, 180),
-      eventGroupName: optionalString(raw.eventGroupName, 240),
-      eventGroupSlug: optionalString(raw.eventGroupSlug, 180),
+      eventGroupId: optionalString(raw.eventGroupId, 180) ?? groupSlug,
+      eventGroupName: groupName,
+      eventGroupSlug: groupSlug,
       eventEditionKey: optionalString(raw.eventEditionKey, 80),
       eventEditionLabel: optionalString(raw.eventEditionLabel, 120),
       sessionType: optionalSessionType(raw.sessionType),
