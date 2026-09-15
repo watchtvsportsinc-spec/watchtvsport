@@ -36,6 +36,16 @@ test("the server loader validates requested identity and preserves timeout/fallb
   assert.doesNotMatch(loader, /service_role|SUPABASE_SECRET_KEY/);
 });
 
+test("unpublished fixture preview is localhost/development only and keeps secrets external", () => {
+  const loader = read("lib/dev-preview-fixtures.ts");
+  assert.match(loader, /process\.env\.NODE_ENV !== "production"/);
+  assert.match(loader, /WATCHTVSPORT_PREVIEW_UNPUBLISHED === "1"/);
+  assert.match(loader, /process\.env\.SUPABASE_SECRET_KEY \|\| process\.env\.SUPABASE_SERVICE_ROLE_KEY/);
+  assert.doesNotMatch(loader, /sb_secret_[A-Za-z0-9_-]+/);
+  assert.doesNotMatch(loader, /eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}/);
+  assert.match(loader, /cache: "no-store"/);
+});
+
 test("only this work branch has automatic Vercel deployments disabled", () => {
   const config = JSON.parse(read("vercel.json"));
   assert.deepEqual(config.git.deploymentEnabled, { "work/v2-expansion-assets-leagues": false });
