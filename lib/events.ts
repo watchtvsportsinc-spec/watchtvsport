@@ -10,7 +10,7 @@ import { formula1Season2026Sessions } from "../source/formula-1-2026-season";
 import { ufc2026UpcomingSessions } from "../source/ufc-2026-upcoming";
 import { withPriorityBroadcasts } from "./priority-broadcasts";
 
-export type EntityType = "national_team" | "club" | "player" | "event";
+export type EntityType = "national_team" | "club" | "team" | "player" | "event";
 export type VisualType = "flag" | "crest" | "player" | "generic";
 export type SessionType =
   | "practice"
@@ -29,6 +29,7 @@ export type Participant = {
   type: EntityType;
   visualType: VisualType;
   visual: string;
+  logoUrl?: string;
 };
 
 export type EventData = {
@@ -38,6 +39,7 @@ export type EventData = {
   sport: string;
   competition: string;
   competitionSlug: string;
+  competitionLogoUrl?: string;
   stage?: string;
   group?: string;
   eventDate: string;
@@ -53,31 +55,27 @@ export type EventData = {
   eventEditionLabel?: string;
   sessionType?: SessionType;
   sequenceNumber?: number;
+  venueId?: string;
   venue?: string;
+  venueImageUrl?: string;
   country?: string;
 };
 
 export function participantEntityId(participant: Participant, sport: string): string {
-  if (participant.type === "club") {
-    return `club:${sport}:${clubSlug(participant.name)}`;
+  if (participant.type === "club" || participant.type === "team") {
+    return `${participant.type}:${sport}:${clubSlug(participant.name)}`;
   }
-
   return participant.id;
 }
 
 function normalizeParticipant(participant: Participant | undefined, sport: string): Participant | undefined {
   if (!participant) return undefined;
-
   const id = participantEntityId(participant, sport);
   return id === participant.id ? participant : { ...participant, id };
 }
 
 export function normalizeEventParticipants(event: EventData): EventData {
-  return {
-    ...event,
-    participant1: normalizeParticipant(event.participant1, event.sport),
-    participant2: normalizeParticipant(event.participant2, event.sport),
-  };
+  return { ...event, participant1: normalizeParticipant(event.participant1, event.sport), participant2: normalizeParticipant(event.participant2, event.sport) };
 }
 
 export function mapMatchToEvent(match: MatchData): EventData {
@@ -92,22 +90,8 @@ export function mapMatchToEvent(match: MatchData): EventData {
     group: match.group,
     eventDate: match.matchDate,
     status: match.status,
-    participant1: {
-      id: `national-team:${match.homeTeam.code.toLowerCase()}`,
-      name: match.homeTeam.name,
-      shortName: match.homeTeam.code,
-      type: "national_team",
-      visualType: "flag",
-      visual: match.homeTeam.code || "",
-    },
-    participant2: {
-      id: `national-team:${match.awayTeam.code.toLowerCase()}`,
-      name: match.awayTeam.name,
-      shortName: match.awayTeam.code,
-      type: "national_team",
-      visualType: "flag",
-      visual: match.awayTeam.code || "",
-    },
+    participant1: { id: `national-team:${match.homeTeam.code.toLowerCase()}`, name: match.homeTeam.name, shortName: match.homeTeam.code, type: "national_team", visualType: "flag", visual: match.homeTeam.code || "" },
+    participant2: { id: `national-team:${match.awayTeam.code.toLowerCase()}`, name: match.awayTeam.name, shortName: match.awayTeam.code, type: "national_team", visualType: "flag", visual: match.awayTeam.code || "" },
     title: `${match.homeTeam.name} vs ${match.awayTeam.name}`,
     broadcasts: match.broadcasts,
   };
@@ -129,7 +113,6 @@ export function getAllEvents(): EventData[] {
 export function getEventBySlug(slug: string): EventData | null {
   const genericEvent = getAllEvents().find((event) => event.slug === slug);
   if (genericEvent) return genericEvent;
-
   const match = getMatchBySlug(slug);
   return match ? prepareEvent(mapMatchToEvent(match)) : null;
 }
@@ -139,27 +122,13 @@ export function getEventByDetailPath(detailPath: string): EventData | null {
 }
 
 export function getEventTitle(event: EventData): string {
-  if (event.participant1 && event.participant2) {
-    return `${event.participant1.name} vs ${event.participant2.name}`;
-  }
-
+  if (event.participant1 && event.participant2) return `${event.participant1.name} vs ${event.participant2.name}`;
   return event.title;
 }
 
-export function getParticipantName(participant?: Participant): string {
-  return participant?.name || "";
-}
-
-export function getParticipantCode(participant?: Participant): string {
-  return participant?.shortName || participant?.visual || "";
-}
+export function getParticipantName(participant?: Participant): string { return participant?.name || ""; }
+export function getParticipantCode(participant?: Participant): string { return participant?.shortName || participant?.visual || ""; }
 
 export function getOtherEventsSimple(currentSlug: string) {
-  return getAllEvents()
-    .filter((event) => event.slug !== currentSlug)
-    .slice(0, 10)
-    .map((event) => ({
-      slug: event.slug,
-      title: getEventTitle(event),
-    }));
+  return getAllEvents().filter((event) => event.slug !== currentSlug).slice(0, 10).map((event) => ({ slug: event.slug, title: getEventTitle(event) }));
 }
