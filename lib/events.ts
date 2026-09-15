@@ -44,6 +44,8 @@ export type EventData = {
   eventGroupId?: string;
   eventGroupName?: string;
   eventGroupSlug?: string;
+  eventEditionKey?: string;
+  eventEditionLabel?: string;
   sessionType?: SessionType;
   venue?: string;
   country?: string;
