@@ -15,12 +15,12 @@ function competitionHref(event:EventData){if(event.sport==="football")return `/f
 function participantHref(event:EventData,p?:Participant){
   if(!p)return null;
   const clubPathSlug=p.slug||(p.id.startsWith("club:")?p.id.split(":").slice(2).join(":"):resolveClubSlug(p.name));
-  if(event.sport==="football"&&p.type==="club")return `/football/club/${clubPathSlug}`;
   if(event.sport==="football"&&p.type==="national_team")return `/football/nation/${slugify(p.name)}`;
-  if(p.type==="club")return `/sports/${event.sport}/club/${clubPathSlug}`;
-  if(p.type==="national_team")return `/sports/${event.sport}/club/${slugify(p.name)}`;
+  if(p.type==="club"||p.type==="national_team")return `/sports/${event.sport}/club/${p.type==="club"?clubPathSlug:slugify(p.name)}`;
   return null;
 }
+function schemaStatus(event:EventData){if(event.status==="live")return"https://schema.org/EventInProgress";if(event.status==="finished"||Date.parse(event.eventDate)<Date.now())return"https://schema.org/EventCompleted";return"https://schema.org/EventScheduled";}
+function latestChecked(event:EventData){const values=event.broadcasts.map(b=>b.lastChecked).filter((value):value is string=>Boolean(value)).sort();return values.at(-1)??null;}
 
 function ParticipantBlock({event,participant,href}:{event:EventData;participant?:Participant;href:string|null}){
   if(!participant)return <div><strong>TBC</strong></div>;
@@ -30,15 +30,17 @@ function ParticipantBlock({event,participant,href}:{event:EventData;participant?
 }
 
 export default async function UniversalEventPage({slug}:{slug:string}){
- const snapshot=await getPublicEventsSnapshot();const event=snapshot.events.find(e=>e.slug===slug);if(!event)notFound();
+ const snapshot=await getPublicEventsSnapshot({slug,limit:1});const event=snapshot.events.find(e=>e.slug===slug);if(!event)notFound();
  const eventSportHref=sportHref(event.sport);const eventCompetitionHref=competitionHref(event);const p1href=participantHref(event,event.participant1);const p2href=participantHref(event,event.participant2);const confirmed=event.broadcasts.filter(b=>b.coverageStatus==="confirmed");const free=confirmed.filter(b=>b.access==="Free");const countries=new Map<string,typeof confirmed>();for(const b of confirmed){countries.set(b.countryCode,[...(countries.get(b.countryCode)??[]),b]);}
- const favorite={kind:"event" as const,entityId:event.id,label:event.title};
+ const favorite={kind:"event" as const,entityId:event.id,label:event.title};const lastChecked=latestChecked(event);
+ const jsonLd={"@context":"https://schema.org","@type":"SportsEvent",name:event.title,startDate:event.eventDate,eventStatus:schemaStatus(event),sport:sportLabel(event.sport),url:`https://watchtvsport.com${event.detailPath}`,...(event.venue||event.country?{location:{"@type":"Place",name:[event.venue,event.country].filter(Boolean).join(", ")}}:{}),...((event.participant1||event.participant2)?{performer:[event.participant1,event.participant2].filter(Boolean).map(p=>({"@type":"SportsTeam",name:p!.name}))}:{})};
  return <main id="main-content" className="v2-calendar">
+   <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(jsonLd)}}/>
    <Breadcrumbs items={[{label:"Home",href:"/"},{label:sportLabel(event.sport),href:eventSportHref},{label:event.competition,href:eventCompetitionHref},{label:event.title}]}/>
-   <section className="v2-event-hero"><div><p className="v2-eyebrow">{sportLabel(event.sport)} · <Link href={eventCompetitionHref}>{event.competition}</Link></p><h1>{event.title}</h1><div className="v2-event-hero-meta"><span className="v2-status">{event.status??"scheduled"}</span><LocalTime date={event.eventDate}/>{event.venue?<span>{event.venue}</span>:null}</div></div><FavoriteButton favorite={favorite}/></section>
+   <section className="v2-event-hero"><div><p className="v2-eyebrow">{sportLabel(event.sport)} · <Link href={eventCompetitionHref}>{event.competition}</Link></p><h1>{event.title}</h1><div className="v2-event-hero-meta"><span className="v2-status">{event.status??"scheduled"}</span><LocalTime date={event.eventDate}/>{event.venue?<span>{event.venue}</span>:null}</div>{lastChecked?<p className="v2-signature">Broadcaster data last verified: {lastChecked}</p>:null}</div><FavoriteButton favorite={favorite}/></section>
    {event.participant1||event.participant2?<section className="v2-versus-card"><div><ParticipantBlock event={event} participant={event.participant1} href={p1href}/><b>VS</b><ParticipantBlock event={event} participant={event.participant2} href={p2href}/></div></section>:null}
    <section className="v2-stats-row"><div><strong>{confirmed.length}</strong><span>Confirmed listings</span></div><div><strong>{free.length}</strong><span>Free options</span></div><div><strong>{countries.size}</strong><span>Countries</span></div><div><strong>{event.stage??"Event"}</strong><span>Stage</span></div></section>
-   <section className="v2-results"><div className="v2-results-heading"><div><p className="v2-eyebrow">Official only</p><h2>Where to watch</h2></div><p>{confirmed.length} confirmed</p></div>{confirmed.length===0?<div className="v2-empty-state"><h3>Broadcasters not confirmed yet</h3><p>WatchTVSport does not guess missing coverage. Confirmed official options will appear here when verified.</p></div>:<div className="v2-broadcaster-country-list">{Array.from(countries.entries()).sort(([a],[b])=>a.localeCompare(b)).map(([code,list])=><section key={code}><h3>{list[0].countryName}</h3><div>{list.map(b=><a key={`${code}-${b.broadcaster}-${b.access}`} href={b.affiliateUrl||b.url} target="_blank" rel="noopener noreferrer"><span className={b.access==="Free"?"v2-chip is-free":"v2-chip is-paid"}>{b.access}</span><strong>{b.broadcaster}</strong><small>{b.broadcastType??"live"}{b.commentaryLanguages?.length?` · ${b.commentaryLanguages.join(", ")}`:""}</small><b>Open official service →</b></a>)}</div></section>)}</div>}</section>
-   <nav className="v2-related-nav" aria-label="Related pages"><Link href={eventSportHref}>← {sportLabel(event.sport)}</Link><Link href={eventCompetitionHref}>{event.competition} →</Link></nav>
+   <section className="v2-results"><div className="v2-results-heading"><div><p className="v2-eyebrow">Official only</p><h2>Where to watch</h2></div><p>{confirmed.length} confirmed</p></div>{confirmed.length===0?<div className="v2-empty-state"><h3>Broadcasters not confirmed yet</h3><p>WatchTVSport does not guess missing coverage. Confirmed official options will appear here when verified.</p><p><Link href="/methodology">How listings are verified →</Link></p></div>:<div className="v2-broadcaster-country-list">{Array.from(countries.entries()).sort(([a],[b])=>a.localeCompare(b)).map(([code,list])=><section key={code}><h3>{list[0].countryName}</h3><div>{list.map(b=><a key={`${code}-${b.broadcaster}-${b.access}`} href={b.affiliateUrl||b.url} target="_blank" rel="noopener noreferrer"><span className={b.access==="Free"?"v2-chip is-free":"v2-chip is-paid"}>{b.access}</span><strong>{b.broadcaster}</strong><small>{b.broadcastType??"live"}{b.commentaryLanguages?.length?` · ${b.commentaryLanguages.join(", ")}`:""}</small><b>Open official service →</b></a>)}</div></section>)}</div>}</section>
+   <nav className="v2-related-nav" aria-label="Related pages"><Link href={eventSportHref}>← {sportLabel(event.sport)}</Link><Link href={eventCompetitionHref}>{event.competition} →</Link><Link href="/methodology">Verification method →</Link></nav>
  </main>;
 }
