@@ -5,7 +5,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import FavoriteButton from "@/components/FavoriteButton";
 import LocalTime from "@/components/LocalTime";
 import ParticipantSportVisual from "@/components/ParticipantSportVisual";
-import { clubSlug } from "@/lib/club-aliases";
+import { resolveClubSlug } from "@/lib/club-aliases";
 import { getAllEvents, type EventData } from "@/lib/events";
 import type { FavoriteCandidate } from "@/lib/favorites";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
@@ -27,7 +27,7 @@ function competitionFavorite(slug: string, label: string): FavoriteCandidate {
 }
 
 function participantSlug(name?: string, slug?: string) {
-  return slug || (name ? clubSlug(name) : "");
+  return slug || (name ? resolveClubSlug(name) : "");
 }
 
 function participantLink(name?: string, slug?: string) {
