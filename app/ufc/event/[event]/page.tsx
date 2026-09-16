@@ -7,6 +7,7 @@ import ParticipantSportVisual from "@/components/ParticipantSportVisual";
 import { getAllEvents, type EventData } from "@/lib/events";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 import { getPublicUfcCard } from "@/lib/public-ufc-card";
+import { evaluateSeoEligibility, indexableRobots } from "@/lib/seo-indexability";
 
 type PageProps = {
   params: Promise<{ event: string }>;
@@ -19,6 +20,12 @@ function cardEvents(events: EventData[], slug: string) {
     .sort((a, b) => (a.sequenceNumber ?? 999) - (b.sequenceNumber ?? 999));
 }
 
+function schemaStatus(sessions: EventData[]): string {
+  if (sessions.some((session) => session.status === "live")) return "https://schema.org/EventInProgress";
+  if (sessions.length > 0 && sessions.every((session) => session.status === "finished")) return "https://schema.org/EventCompleted";
+  return "https://schema.org/EventScheduled";
+}
+
 export async function generateStaticParams() {
   return Array.from(
     new Set(
@@ -29,16 +36,32 @@ export async function generateStaticParams() {
   ).map((event) => ({ event }));
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { event } = await params;
-  const snapshot = await getPublicEventsSnapshot();
+  const resolvedSearch = (await searchParams) ?? {};
+  const snapshot = await getPublicEventsSnapshot({ sport: "ufc", limit: 500 });
   const sessions = cardEvents(snapshot.events, event);
   const first = sessions[0];
   if (!first) return { title: "UFC event not found | WatchTVSport", robots: { index: false, follow: false } };
+
+  const verifiedBroadcastCount = sessions.reduce(
+    (sum, session) => sum + session.broadcasts.filter((broadcast) => broadcast.coverageStatus === "confirmed").length,
+    0,
+  );
+  const eligibility = evaluateSeoEligibility({
+    kind: "event",
+    canonicalPath: `/ufc/event/${event}`,
+    usefulContentCount: [first.eventGroupName, first.eventDate, first.venue, first.country, sessions.length].filter(Boolean).length,
+    verifiedBroadcastCount,
+  });
+  const hasFacet = Boolean(resolvedSearch.country || resolvedSearch.access);
+  const robots = hasFacet ? { index: false, follow: true } : indexableRobots(eligibility.indexable);
+
   return {
     title: `${first.eventGroupName} – TV schedule & official broadcasters`,
     description: `Find official viewing options by country for ${first.eventGroupName}, including Early Prelims, Prelims and Main Card when available.`,
     alternates: { canonical: `/ufc/event/${event}` },
+    robots,
     openGraph: {
       title: `${first.eventGroupName} – Where to watch`,
       description: `Official UFC broadcasters and card times for ${first.eventGroupName}.`,
@@ -51,7 +74,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function UfcEventPage({ params, searchParams }: PageProps) {
   const { event } = await params;
   const resolved = (await searchParams) ?? {};
-  const [snapshot, bouts] = await Promise.all([getPublicEventsSnapshot(), getPublicUfcCard(event)]);
+  const [snapshot, bouts] = await Promise.all([
+    getPublicEventsSnapshot({ sport: "ufc", limit: 500 }),
+    getPublicUfcCard(event),
+  ]);
   const sessions = cardEvents(snapshot.events, event);
   const first = sessions[0];
   if (!first) notFound();
@@ -61,13 +87,14 @@ export default async function UfcEventPage({ params, searchParams }: PageProps) 
     "@type": "SportsEvent",
     name: first.eventGroupName,
     startDate: main.eventDate,
-    eventStatus: "https://schema.org/EventScheduled",
+    eventStatus: schemaStatus(sessions),
     location: first.venue ? { "@type": "Place", name: first.venue, address: first.country } : undefined,
     url: `https://watchtvsport.com/ufc/event/${event}`,
   };
 
   return (
     <main id="main-content" className="v2-calendar">
+      {snapshot.warning ? <p className="v2-data-warning" role="status">{snapshot.warning}</p> : null}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "UFC", href: "/ufc" }, { label: first.eventGroupName ?? "UFC event" }]} />
 
