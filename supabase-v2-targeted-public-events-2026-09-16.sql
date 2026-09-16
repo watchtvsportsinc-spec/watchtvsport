@@ -5,6 +5,7 @@ begin;
 create or replace function public.get_public_events_filtered_v1(
   p_sport_slug text default null,
   p_competition_slug text default null,
+  p_event_slug text default null,
   p_from timestamptz default null,
   p_to timestamptz default null,
   p_limit integer default 250
@@ -174,6 +175,7 @@ as $$
       and e.event_date is not null
       and (p_sport_slug is null or coalesce(s.public_slug, s.slug) = p_sport_slug)
       and (p_competition_slug is null or c.slug = p_competition_slug)
+      and (p_event_slug is null or e.slug = p_event_slug)
       and (p_from is null or e.event_date >= p_from)
       and (p_to is null or e.event_date < p_to)
     order by e.event_date, e.id
@@ -181,10 +183,10 @@ as $$
   ) event_record;
 $$;
 
-comment on function public.get_public_events_filtered_v1(text, text, timestamptz, timestamptz, integer) is
+comment on function public.get_public_events_filtered_v1(text, text, text, timestamptz, timestamptz, integer) is
   'Returns a bounded, filtered subset of confirmed public events using the V2 public event JSON contract.';
 
-revoke all on function public.get_public_events_filtered_v1(text, text, timestamptz, timestamptz, integer) from public;
-grant execute on function public.get_public_events_filtered_v1(text, text, timestamptz, timestamptz, integer) to anon, authenticated;
+revoke all on function public.get_public_events_filtered_v1(text, text, text, timestamptz, timestamptz, integer) from public;
+grant execute on function public.get_public_events_filtered_v1(text, text, text, timestamptz, timestamptz, integer) to anon, authenticated;
 
 commit;
