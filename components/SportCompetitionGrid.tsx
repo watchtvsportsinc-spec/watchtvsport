@@ -76,14 +76,16 @@ export default function SportCompetitionGrid({ items, backdrop }: { items: Sport
       <Link className={styles.cardBodyLink} href={item.href}>
         <small>{item.season ?? "Competition"}</small>
         <strong>{item.name}</strong>
-        <span className={styles.nextLine}>{item.nextTitle ? item.nextTitle : compactDate(item.next)}</span>
+        <span className={styles.nextLine}>
+          <span>{item.nextTitle ? item.nextTitle : compactDate(item.next)}</span>
+          <b aria-hidden="true">→</b>
+        </span>
         <span className={styles.dateLine}>{item.next ? compactDate(item.next) : `${item.eventCount} referenced events`}</span>
         <span className={styles.tvLine}>
           <b>{item.confirmedListings}</b> TV listings
           {item.freeCountries > 0 ? <em>{item.freeCountries} free countr{item.freeCountries === 1 ? "y" : "ies"}</em> : null}
           {item.paidCountries > 0 ? <em>{item.paidCountries} paid countr{item.paidCountries === 1 ? "y" : "ies"}</em> : null}
         </span>
-        <span className={styles.openLink}>Open competition →</span>
       </Link>
     </article>;
   })}</div>;
