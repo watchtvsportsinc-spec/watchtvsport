@@ -5,6 +5,7 @@ on:
     branches:
       - refonte/watchtvsport-v2
       - seo/**
+      - security/**
       - audit/universal-club-media
       - ux/friendly-navigation-cards
       - feature/entity-navigation-v2
@@ -40,4 +41,16 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      - name: Run live Supabase security contract
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run test:security 2>&1 | tee security-test.log
+      - name: Upload security diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-contract-log
+          path: security-test.log
+          if-no-files-found: ignore
       - run: npm run build
