@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import HomeFavoritesStrip from "@/components/HomeFavoritesStrip";
+import HomeWindowTabs from "@/components/HomeWindowTabs";
 import SearchAutocomplete from "@/components/SearchAutocomplete";
 import TimezoneSync from "@/components/TimezoneSync";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
@@ -12,11 +13,14 @@ import type { EventData } from "@/lib/events";
 type HomePageProps = { searchParams?: Promise<Record<string, string | string[] | undefined>> };
 type HomeWindow = "live" | "tonight" | "tomorrow" | "week";
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({ searchParams }: HomePageProps): Promise<Metadata> {
+  const params = (await searchParams) ?? {};
+  const hasViewState = Object.values(params).some((value) => Array.isArray(value) ? value.some(Boolean) : Boolean(value));
   return {
     title: "Where to watch sports – live & upcoming TV guide",
     description: "Search a team or competition, open your favorites and find official viewing options for live and upcoming sports.",
     alternates: { canonical: "/" },
+    robots: hasViewState ? { index: false, follow: true } : { index: true, follow: true },
   };
 }
 
@@ -89,19 +93,6 @@ function sportClass(sport: string): string {
   return "all";
 }
 
-function homeHref(window: HomeWindow, timeZone: string): string {
-  const params = new URLSearchParams({ when: window });
-  if (timeZone !== "UTC") params.set("tz", timeZone);
-  return `/?${params.toString()}#home-schedule`;
-}
-
-function eventsHref(timeZone: string, when?: HomeWindow): string {
-  const params = new URLSearchParams({ view: "all" });
-  if (when) params.set("when", when);
-  if (timeZone !== "UTC") params.set("tz", timeZone);
-  return `/events?${params.toString()}`;
-}
-
 function selectedEvents(events: EventData[], window: HomeWindow, now: Date, timeZone: string): EventData[] {
   const today = getDateKey(now, timeZone);
   const tomorrow = addDays(today, 1);
@@ -129,7 +120,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const params = (await searchParams) ?? {};
   const filters = parseCalendarFilters(params);
   const now = new Date();
-  const snapshot = await getPublicEventsSnapshot();
+  const snapshot = await getPublicEventsSnapshot({
+    from: new Date(now.getTime() - 12 * 60 * 60 * 1000).toISOString(),
+    limit: 500,
+  });
   const suggestions = buildSearchSuggestions(snapshot.events);
   const live = selectedEvents(snapshot.events, "live", now, filters.timeZone);
   const tonight = selectedEvents(snapshot.events, "tonight", now, filters.timeZone);
@@ -143,8 +137,25 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const visibleEvents = windowEvents.slice(0, 10);
   const counts: Record<HomeWindow, number> = { live: live.length, tonight: tonight.length, tomorrow: tomorrow.length, week: week.length };
 
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "WatchTVSport",
+    url: "https://watchtvsport.com",
+    logo: "https://watchtvsport.com/logo-watchtvsport-v3.png",
+    description: "Independent guide to official sports broadcasters and streaming platforms worldwide.",
+  };
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "WatchTVSport",
+    url: "https://watchtvsport.com",
+  };
+
   return (
     <main id="main-content" className="wts-home-v3">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
       <TimezoneSync />
       {snapshot.warning ? <p className="v2-data-warning" role="status">{snapshot.warning}</p> : null}
 
@@ -162,20 +173,13 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       <section id="home-schedule" className="wts-home-section wts-home-schedule" aria-labelledby="home-schedule-title">
         <div className="wts-home-section-heading wts-schedule-heading">
           <div><span className="wts-section-icon" aria-hidden="true">▣</span><h2 id="home-schedule-title">TV schedule</h2></div>
-          <Link href={eventsHref(filters.timeZone, activeWindow)}>View all events →</Link>
+          <Link href="/events">View all events →</Link>
         </div>
 
-        <div className="wts-home-window-tabs" role="navigation" aria-label="Schedule period">
-          {([
-            ["live", "Live", counts.live],
-            ["tonight", "Tonight", counts.tonight],
-            ["tomorrow", "Tomorrow", counts.tomorrow],
-            ["week", "This week", counts.week],
-          ] as const).map(([value, label, count]) => <Link className={activeWindow === value ? "is-active" : undefined} href={homeHref(value, filters.timeZone)} key={value}>{value === "live" ? <i aria-hidden="true" /> : null}{label}<span>{count}</span></Link>)}
-        </div>
+        <HomeWindowTabs activeWindow={activeWindow} counts={counts} timeZone={filters.timeZone} />
 
         {visibleEvents.length === 0 ? (
-          <div className="wts-home-empty"><strong>No events in this window.</strong><span>Try another period or open the full schedule.</span><Link href={eventsHref(filters.timeZone)}>Browse all events</Link></div>
+          <div className="wts-home-empty"><strong>No events in this window.</strong><span>Try another period or open the full schedule.</span><Link href="/events">Browse all events</Link></div>
         ) : (
           <div className="wts-schedule-list">
             <div className="wts-schedule-columns" aria-hidden="true"><span>Status</span><span>Sport / competition</span><span>Event</span><span>Time</span><span>Access</span><span>Match page</span></div>

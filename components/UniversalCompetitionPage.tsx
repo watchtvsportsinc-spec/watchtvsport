@@ -11,6 +11,7 @@ import { getFootballLeagueProfile } from "@/lib/football-league-profiles";
 import type { ParticipantVisualProfile } from "@/lib/participant-visuals";
 import { getPublicCompetition } from "@/lib/public-competition";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
+import { evaluateSeoEligibility, indexableRobots } from "@/lib/seo-indexability";
 import { getSportLabel } from "@/lib/sports-registry";
 import styles from "./competition-page.module.css";
 
@@ -26,7 +27,23 @@ function formatSeasonDate(value:string){return new Intl.DateTimeFormat("en",{mon
 
 async function competitionData(sport:string,competition:string){const[permanent,snapshot]=await Promise.all([getPublicCompetition(sport,competition),getPublicEventsSnapshot({sport,competition,limit:500})]);const events=snapshot.events.sort((a,b)=>Date.parse(a.eventDate)-Date.parse(b.eventDate));const leagueProfile=getFootballLeagueProfile(sport,competition);const rawName=leagueProfile?.displayName??permanent?.displayName??permanent?.name??events[0]?.competition??competition.replace(/-/g," ");const name=displayCompetitionName(sport,competition,rawName);return{permanent,events,name,leagueProfile};}
 
-export async function buildCompetitionMetadata(sport:string,competition:string):Promise<Metadata>{const{permanent,events,name,leagueProfile}=await competitionData(sport,competition);if(!permanent&&!events.length)return{title:"Competition not found | WatchTVSport",robots:{index:false,follow:false}};const next=events.find(e=>e.status==="live"||(e.status!=="finished"&&Date.parse(e.eventDate)>=Date.now()));const description=next?`${name} TV schedule, upcoming fixtures and official broadcasters by country. Next: ${next.title}.`:leagueProfile?`${name} ${leagueProfile.seasonLabel} schedule, ${leagueProfile.teamCount} clubs and official TV or streaming broadcasters by country.`:`${name} TV schedule, participants and official broadcaster information by country.`;return{title:`${name} TV schedule, fixtures & where to watch | WatchTVSport`,description,alternates:{canonical:competitionPath(sport,competition)},robots:{index:true,follow:true},openGraph:{title:`${name} TV schedule & fixtures | WatchTVSport`,description,url:competitionPath(sport,competition),type:"website"},twitter:{card:"summary_large_image",title:`${name} TV schedule | WatchTVSport`,description}};}
+function metadataParticipantCount(permanent:Awaited<ReturnType<typeof getPublicCompetition>>,events:Awaited<ReturnType<typeof competitionData>>["events"]){
+ const ids=new Set<string>((permanent?.teams??[]).map(team=>team.slug));
+ for(const event of events){for(const participant of[event.participant1,event.participant2])if(participant)ids.add(participant.id||participant.slug||participant.name);}
+ return ids.size;
+}
+
+export async function buildCompetitionMetadata(sport:string,competition:string):Promise<Metadata>{
+ const{permanent,events,name,leagueProfile}=await competitionData(sport,competition);
+ if(!permanent&&!events.length)return{title:"Competition not found | WatchTVSport",robots:{index:false,follow:false}};
+ const next=events.find(e=>e.status==="live"||(e.status!=="finished"&&Date.parse(e.eventDate)>=Date.now()));
+ const description=next?`${name} TV schedule, upcoming fixtures and official broadcasters by country. Next: ${next.title}.`:leagueProfile?`${name} ${leagueProfile.seasonLabel} schedule, ${leagueProfile.teamCount} clubs and official TV or streaming broadcasters by country.`:`${name} TV schedule, participants and official broadcaster information by country.`;
+ const verifiedBroadcastCount=events.reduce((sum,event)=>sum+event.broadcasts.filter(b=>b.coverageStatus==="confirmed").length,0);
+ const participantCount=metadataParticipantCount(permanent,events);
+ const usefulContentCount=[leagueProfile?.seasonLabel,leagueProfile?.officialSourceUrl,permanent?.seasonLabel,permanent?.regionLabel,permanent?.competitionType].filter(Boolean).length;
+ const eligibility=evaluateSeoEligibility({kind:"competition",canonicalPath:competitionPath(sport,competition),eventCount:events.length,participantCount,verifiedBroadcastCount,usefulContentCount,hasVerifiedProfile:Boolean(leagueProfile||permanent)});
+ return{title:`${name} TV schedule, fixtures & where to watch | WatchTVSport`,description,alternates:{canonical:competitionPath(sport,competition)},robots:indexableRobots(eligibility.indexable),openGraph:{title:`${name} TV schedule & fixtures | WatchTVSport`,description,url:competitionPath(sport,competition),type:"website"},twitter:{card:"summary_large_image",title:`${name} TV schedule | WatchTVSport`,description}};
+}
 
 export default async function UniversalCompetitionPage({sport,competition}:{sport:string;competition:string}){
  const{permanent,events,name,leagueProfile}=await competitionData(sport,competition);if(!permanent&&!events.length)notFound();

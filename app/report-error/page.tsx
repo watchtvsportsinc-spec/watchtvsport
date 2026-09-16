@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   description:
     "Report an incorrect sports TV channel, streaming platform, kickoff time or access condition on WatchTVSport.",
   alternates: { canonical: "/report-error" },
+  robots: { index: false, follow: true },
 };
 
 export default function ReportErrorPage() {

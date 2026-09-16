@@ -7,6 +7,7 @@ import LocalTime from "@/components/LocalTime";
 import { competitionPath, entitySlug, getFootballNationBySlug, getFootballNations } from "@/lib/entity-pages";
 import { getAllEvents, type EventData } from "@/lib/events";
 import type { FavoriteCandidate } from "@/lib/favorites";
+import { evaluateSeoEligibility, indexableRobots } from "@/lib/seo-indexability";
 
 type PageProps = { params: Promise<{ nation: string }> };
 
@@ -24,11 +25,23 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { nation } = await params;
   const participant = getFootballNationBySlug(getAllEvents(), nation);
   if (!participant) return { title: "National team not found | WatchTVSport", robots: { index: false, follow: false } };
+  const events = nationEvents(participant.id);
+  const now = Date.now();
+  const upcoming = events.filter((event) => event.status === "live" || (event.status !== "finished" && Date.parse(event.eventDate) >= now));
+  const canonicalPath = `/football/nation/${nation}`;
+  const eligibility = evaluateSeoEligibility({ kind: "archive", canonicalPath, historicalRecordCount: events.length });
+  const hasUpcoming = upcoming.length > 0;
+  const title = hasUpcoming
+    ? `${participant.name} football TV schedule & official broadcasters | WatchTVSport`
+    : `${participant.name} football match archive & TV records | WatchTVSport`;
+  const description = hasUpcoming
+    ? `Find upcoming ${participant.name} football matches and verified official TV and streaming broadcasters.`
+    : `Browse preserved ${participant.name} football match and broadcaster records on WatchTVSport.`;
   return {
-    title: `${participant.name} football TV schedule & official broadcasters | WatchTVSport`,
-    description: `Find upcoming ${participant.name} football matches and verified official TV and streaming broadcasters.`,
-    keywords: [participant.name, participant.shortName ?? "", `${participant.name} football`, `${participant.name} TV`, `${participant.name} schedule`].filter(Boolean),
-    alternates: { canonical: `/football/nation/${nation}` },
+    title,
+    description,
+    alternates: { canonical: canonicalPath },
+    robots: indexableRobots(eligibility.indexable),
   };
 }
 
@@ -59,7 +72,7 @@ export default async function NationPage({ params }: PageProps) {
       <section className="v2-calendar-hero" aria-labelledby="nation-title">
         <p className="v2-eyebrow">National football team</p>
         <h1 id="nation-title">{participant.name}</h1>
-        <p className="v2-hero-copy">Upcoming matches and verified official broadcasters for {participant.name}.</p>
+        <p className="v2-hero-copy">{upcoming.length > 0 ? `Upcoming matches and verified official broadcasters for ${participant.name}.` : `Historical matches and preserved broadcaster records for ${participant.name}.`}</p>
         <FavoriteButton favorite={favorite} />
       </section>
 
