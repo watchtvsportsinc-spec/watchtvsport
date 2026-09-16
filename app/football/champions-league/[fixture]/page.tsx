@@ -33,13 +33,16 @@ function eventPath(fixture: string) {
 }
 
 async function fixtureSeries(fixture: string) {
+  const path = eventPath(fixture);
+  const localEvents = getAllEvents().filter((event) => event.detailPath === path);
   const snapshot = await getPublicEventsSnapshot({
     sport: "football",
     competition: "champions-league",
     slug: fixture,
     limit: 50,
   });
-  return getFixtureSeries(snapshot.events, eventPath(fixture));
+  const liveEvents = snapshot.events.filter((event) => event.detailPath === path);
+  return getFixtureSeries(liveEvents.length ? liveEvents : localEvents, path);
 }
 
 function eventFavorite(event: NonNullable<Awaited<ReturnType<typeof fixtureSeries>>>["current"]): FavoriteCandidate {
