@@ -11,6 +11,7 @@ on:
       - feature/entity-media-policy-v2
       - feature/football-club-identities-v2
       - feature/automatic-participant-pages-v2
+      - feature/automatic-competition-event-pages-v2
       - fix/permanent-competition-pages
       - ux/home-premium-schedule
       - ux/home-premium-visual-pass
