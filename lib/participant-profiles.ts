@@ -166,7 +166,7 @@ async function loadParticipantProfile(slug: string, sport: string): Promise<Publ
           headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
           body: JSON.stringify({ p_slug: slug, p_sport_slug: sport }),
           signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-          next: { revalidate: 86400, tags: [`participant-profile:${sport}:${slug}`] },
+          next: { revalidate: 900, tags: [`participant-profile:${sport}:${slug}`] },
         });
         if (!response.ok) continue;
         const parsed = parseProfile(await response.json());
