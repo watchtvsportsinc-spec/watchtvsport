@@ -7,6 +7,7 @@ import type { PublicEventsPayload } from "./public-events-schema";
 
 const MAX_RESPONSE_BYTES = 8 * 1024 * 1024;
 const REQUEST_TIMEOUT_MS = 8_000;
+const TARGETED_REVALIDATE_SECONDS = 120;
 
 // Supabase project URL and publishable key are public identifiers, not secrets.
 // Environment variables still take precedence so rotation/migration remains easy.
@@ -19,6 +20,14 @@ export type PublicEventsSnapshot = {
   source: "local-archive" | "supabase" | "local-fallback";
   generatedAt: string;
   warning?: string;
+};
+
+export type PublicEventFilters = {
+  sport?: string;
+  competition?: string;
+  from?: string;
+  to?: string;
+  limit?: number;
 };
 
 function localArchiveGeneratedAt(events: EventData[]): string {
@@ -38,12 +47,31 @@ function localArchiveGeneratedAt(events: EventData[]): string {
     : "2026-07-20T00:00:00.000Z";
 }
 
-function localSnapshot(warning?: string): PublicEventsSnapshot {
-  const events = getAllEvents();
+function boundedLimit(limit?: number): number {
+  if (!Number.isFinite(limit)) return 250;
+  return Math.max(1, Math.min(Math.trunc(limit!), 500));
+}
+
+function filterEvents(events: EventData[], filters: PublicEventFilters): EventData[] {
+  const from = filters.from ? Date.parse(filters.from) : Number.NaN;
+  const to = filters.to ? Date.parse(filters.to) : Number.NaN;
+
+  return events
+    .filter((event) => !filters.sport || event.sport === filters.sport)
+    .filter((event) => !filters.competition || event.competitionSlug === filters.competition)
+    .filter((event) => !Number.isFinite(from) || Date.parse(event.eventDate) >= from)
+    .filter((event) => !Number.isFinite(to) || Date.parse(event.eventDate) < to)
+    .sort((a, b) => Date.parse(a.eventDate) - Date.parse(b.eventDate))
+    .slice(0, boundedLimit(filters.limit));
+}
+
+function localSnapshot(filters: PublicEventFilters, warning?: string): PublicEventsSnapshot {
+  const allEvents = getAllEvents();
+  const events = filterEvents(allEvents, filters);
   return {
     events,
     source: warning ? "local-fallback" : "local-archive",
-    generatedAt: localArchiveGeneratedAt(events),
+    generatedAt: localArchiveGeneratedAt(allEvents),
     ...(warning ? { warning } : {}),
   };
 }
@@ -100,28 +128,62 @@ async function parseEventResponse(response: Response): Promise<PublicEventsPaylo
   return parseMultisportPublicEventsPayload(value);
 }
 
-async function fetchSupabaseEvents(): Promise<PublicEventsPayload> {
+function hasFilters(filters: PublicEventFilters): boolean {
+  return Boolean(filters.sport || filters.competition || filters.from || filters.to || filters.limit);
+}
+
+async function postRpc(
+  rpcName: string,
+  body: Record<string, unknown>,
+  targeted: boolean,
+): Promise<Response> {
   const { url, key } = readSupabaseConfig();
-  const rpcNames = ["get_public_events_v3", "get_public_events_v2"];
-  let lastStatus = 0;
+  return fetch(`${url}/rest/v1/rpc/${rpcName}`, {
+    method: "POST",
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    ...(targeted
+      ? { next: { revalidate: TARGETED_REVALIDATE_SECONDS } }
+      : { cache: "no-store" as const }),
+  });
+}
 
-  for (const rpcName of rpcNames) {
-    const response = await fetch(`${url}/rest/v1/rpc/${rpcName}`, {
-      method: "POST",
-      headers: {
-        apikey: key,
-        Authorization: `Bearer ${key}`,
-        "Content-Type": "application/json",
+async function fetchSupabaseEvents(filters: PublicEventFilters): Promise<PublicEventsPayload> {
+  if (hasFilters(filters)) {
+    const targetedResponse = await postRpc(
+      "get_public_events_filtered_v1",
+      {
+        p_sport_slug: filters.sport ?? null,
+        p_competition_slug: filters.competition ?? null,
+        p_from: filters.from ?? null,
+        p_to: filters.to ?? null,
+        p_limit: boundedLimit(filters.limit),
       },
-      body: "{}",
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      // The current public payload is larger than Next.js' 2 MB data-cache
-      // item limit. React cache() still deduplicates this loader during one
-      // server render, while no-store avoids noisy cache write failures.
-      cache: "no-store",
-    });
+      true,
+    );
 
-    if (response.ok) return parseEventResponse(response);
+    if (targetedResponse.ok) return parseEventResponse(targetedResponse);
+    // Safe migration fallback: older databases can keep serving the site until
+    // the targeted RPC migration has been applied.
+    if (targetedResponse.status !== 404 && targetedResponse.status !== 400) {
+      throw new Error(`Supabase targeted event request failed with ${targetedResponse.status}`);
+    }
+  }
+
+  let lastStatus = 0;
+  for (const rpcName of ["get_public_events_v3", "get_public_events_v2"]) {
+    const response = await postRpc(rpcName, {}, false);
+    if (response.ok) {
+      const payload = await parseEventResponse(response);
+      return hasFilters(filters)
+        ? { ...payload, events: filterEvents(payload.events, filters) }
+        : payload;
+    }
     lastStatus = response.status;
     if (response.status !== 404 && response.status !== 400) break;
   }
@@ -129,25 +191,35 @@ async function fetchSupabaseEvents(): Promise<PublicEventsPayload> {
   throw new Error(`Supabase public event request failed with ${lastStatus || "unknown status"}`);
 }
 
-async function loadPublicEventsSnapshot(): Promise<PublicEventsSnapshot> {
+async function loadPublicEventsSnapshot(
+  sport?: string,
+  competition?: string,
+  from?: string,
+  to?: string,
+  limit?: number,
+): Promise<PublicEventsSnapshot> {
+  const filters: PublicEventFilters = { sport, competition, from, to, limit };
   const mode = process.env.WATCHTVSPORT_DATA_SOURCE?.trim() || "supabase";
 
-  if (mode === "local") return localSnapshot();
+  if (mode === "local") return localSnapshot(filters);
   if (mode !== "supabase") {
     return localSnapshot(
-      "Live data configuration is invalid. Showing the bundled archive instead."
+      filters,
+      "Live data configuration is invalid. Showing the bundled archive instead.",
     );
   }
 
   try {
-    const payload = await fetchSupabaseEvents();
+    const payload = await fetchSupabaseEvents(filters);
 
     // During the V2 migration the database can be structurally ready while all
     // imported records are deliberately unpublished. Never replace a useful
-    // bundled calendar with an empty public response.
-    if (payload.events.length === 0 && getAllEvents().length > 0) {
+    // matching bundled calendar with an empty public response.
+    const localEvents = filterEvents(getAllEvents(), filters);
+    if (payload.events.length === 0 && localEvents.length > 0) {
       return localSnapshot(
-        "The live database is connected but has no published events yet. Showing the bundled data during migration."
+        filters,
+        "The live database is connected but has no published matching events yet. Showing bundled data during migration.",
       );
     }
 
@@ -159,12 +231,23 @@ async function loadPublicEventsSnapshot(): Promise<PublicEventsSnapshot> {
   } catch (error) {
     console.error(
       "Public sports data could not be loaded; using the bundled archive.",
-      error instanceof Error ? error.message : "unknown error"
+      error instanceof Error ? error.message : "unknown error",
     );
     return localSnapshot(
-      "Live sports data is temporarily unavailable. Showing the bundled archive instead."
+      filters,
+      "Live sports data is temporarily unavailable. Showing the bundled archive instead.",
     );
   }
 }
 
-export const getPublicEventsSnapshot = cache(loadPublicEventsSnapshot);
+const getCachedSnapshot = cache(loadPublicEventsSnapshot);
+
+export function getPublicEventsSnapshot(filters: PublicEventFilters = {}) {
+  return getCachedSnapshot(
+    filters.sport,
+    filters.competition,
+    filters.from,
+    filters.to,
+    boundedLimit(filters.limit),
+  );
+}
