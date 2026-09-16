@@ -83,7 +83,7 @@ with identities(slug,aliases) as (values
   ('lens',array['Lens','Racing Club de Lens','RCL']::text[]),
   ('fc-lorient',array['Lorient','FCL']::text[]),
   ('lille',array['Lille','LOSC Lille','Lille OSC']::text[]),
-  ('olympique-lyonnais','Lyon','FR',array['Lyon','OL']::text[]),
+  ('olympique-lyonnais',array['Lyon','OL']::text[]),
   ('olympique-de-marseille',array['Marseille','OM']::text[]),
   ('as-monaco',array['Monaco','ASM']::text[]),
   ('ogc-nice',array['Nice','OGCN']::text[]),
