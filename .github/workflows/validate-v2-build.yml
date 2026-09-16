@@ -9,6 +9,7 @@ on:
       - ux/friendly-navigation-cards
       - feature/entity-navigation-v2
       - feature/entity-media-policy-v2
+      - feature/football-club-identities-v2
       - fix/permanent-competition-pages
       - ux/home-premium-schedule
       - ux/home-premium-visual-pass
