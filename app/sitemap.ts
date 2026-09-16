@@ -4,6 +4,7 @@ import { entitySlug, getFootballNations } from "@/lib/entity-pages";
 import { getAllEvents, type Participant } from "@/lib/events";
 import { getAllMatches, type MatchData } from "@/lib/matches";
 import { getPublicCompetitionFixtures } from "@/lib/public-fixtures";
+import { getPublicParticipantDirectory } from "@/lib/public-participants";
 import { isSeoIndexable } from "@/lib/seo-indexability";
 import { sportsRegistry, sportAllowsParticipantPages } from "@/lib/sports-registry";
 
@@ -58,9 +59,10 @@ function participantSlug(participant: Participant): string {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const events = getAllEvents();
   const worldCupMatches = getAllMatches();
-  const [ligue1Fixtures, premierLeagueFixtures] = await Promise.all([
+  const [ligue1Fixtures, premierLeagueFixtures, participantDirectory] = await Promise.all([
     getPublicCompetitionFixtures("football", "ligue-1"),
     getPublicCompetitionFixtures("football", "premier-league"),
+    getPublicParticipantDirectory(),
   ]);
 
   const eventCountBySport = new Map<string, number>();
@@ -101,7 +103,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     new Set([...eventCompetitionPages, ...fixtureCompetitionPages]),
   ).map((path) => sitemapEntry(path));
 
-  const clubMap = new Map(
+  // Primary source: Supabase participant directory. This makes every active
+  // club/team/franchise discoverable even before its first event is imported.
+  const databaseClubPages = participantDirectory
+    .filter((participant) => sportAllowsParticipantPages(participant.sport))
+    .map((participant) => `/sports/${participant.sport}/club/${participant.slug}`);
+
+  // Compatibility fallback while the directory RPC is unavailable or during a
+  // partial migration: participants present in runtime events stay discoverable.
+  const eventClubMap = new Map(
     events.flatMap((event) => {
       if (!sportAllowsParticipantPages(event.sport)) return [];
       return [event.participant1, event.participant2]
@@ -118,9 +128,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         );
     }),
   );
-  const clubPages = Array.from(clubMap.values()).map(({ sport, participant }) =>
-    sitemapEntry(`/sports/${sport}/club/${participantSlug(participant)}`),
+  const eventClubPages = Array.from(eventClubMap.values()).map(({ sport, participant }) =>
+    `/sports/${sport}/club/${participantSlug(participant)}`,
   );
+  const clubPages = Array.from(new Set([...databaseClubPages, ...eventClubPages])).map((path) => sitemapEntry(path));
 
   const nationPages = getFootballNations(events).map((nation) =>
     sitemapEntry(`/football/nation/${entitySlug(nation.name)}`),
