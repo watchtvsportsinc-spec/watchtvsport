@@ -2,8 +2,8 @@ import {
   canRenderEntityMedia,
   getAllEntityMediaCandidates,
   getEntityMediaCandidate,
-} from "@/lib/entity-media";
-import type { ParticipantVisualProfile } from "@/lib/participant-visuals";
+} from "./entity-media";
+import type { ParticipantVisualProfile } from "./participant-visuals";
 
 export type EntityVisualKind = "flag" | "logo" | "initials" | "badge";
 
