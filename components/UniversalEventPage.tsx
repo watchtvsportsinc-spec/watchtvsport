@@ -21,6 +21,7 @@ function participantHref(event:EventData,p?:Participant){
 }
 function schemaStatus(event:EventData){if(event.status==="live")return"https://schema.org/EventInProgress";if(event.status==="finished"||Date.parse(event.eventDate)<Date.now())return"https://schema.org/EventCompleted";return"https://schema.org/EventScheduled";}
 function latestChecked(event:EventData){const values=event.broadcasts.map(b=>b.lastChecked).filter((value):value is string=>Boolean(value)).sort();return values.at(-1)??null;}
+function schemaPerformer(participant:Participant){return participant.type==="player"?{"@type":"Person",name:participant.name}:{"@type":"SportsTeam",name:participant.name};}
 
 function ParticipantBlock({event,participant,href}:{event:EventData;participant?:Participant;href:string|null}){
   if(!participant)return <div><strong>TBC</strong></div>;
@@ -33,7 +34,7 @@ export default async function UniversalEventPage({slug}:{slug:string}){
  const snapshot=await getPublicEventsSnapshot({slug,limit:1});const event=snapshot.events.find(e=>e.slug===slug);if(!event)notFound();
  const eventSportHref=sportHref(event.sport);const eventCompetitionHref=competitionHref(event);const p1href=participantHref(event,event.participant1);const p2href=participantHref(event,event.participant2);const confirmed=event.broadcasts.filter(b=>b.coverageStatus==="confirmed");const free=confirmed.filter(b=>b.access==="Free");const countries=new Map<string,typeof confirmed>();for(const b of confirmed){countries.set(b.countryCode,[...(countries.get(b.countryCode)??[]),b]);}
  const favorite={kind:"event" as const,entityId:event.id,label:event.title};const lastChecked=latestChecked(event);
- const jsonLd={"@context":"https://schema.org","@type":"SportsEvent",name:event.title,startDate:event.eventDate,eventStatus:schemaStatus(event),sport:sportLabel(event.sport),url:`https://watchtvsport.com${event.detailPath}`,...(event.venue||event.country?{location:{"@type":"Place",name:[event.venue,event.country].filter(Boolean).join(", ")}}:{}),...((event.participant1||event.participant2)?{performer:[event.participant1,event.participant2].filter(Boolean).map(p=>({"@type":"SportsTeam",name:p!.name}))}:{})};
+ const jsonLd={"@context":"https://schema.org","@type":"SportsEvent",name:event.title,startDate:event.eventDate,eventStatus:schemaStatus(event),sport:sportLabel(event.sport),url:`https://watchtvsport.com${event.detailPath}`,...(event.venue||event.country?{location:{"@type":"Place",name:event.venue??event.country,...(event.country?{address:{"@type":"PostalAddress",addressCountry:event.country}}:{})}}:{}),...((event.participant1||event.participant2)?{performer:[event.participant1,event.participant2].filter((participant):participant is Participant=>Boolean(participant)).map(schemaPerformer)}:{})};
  return <main id="main-content" className="v2-calendar">
    <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(jsonLd)}}/>
    <Breadcrumbs items={[{label:"Home",href:"/"},{label:sportLabel(event.sport),href:eventSportHref},{label:event.competition,href:eventCompetitionHref},{label:event.title}]}/>
