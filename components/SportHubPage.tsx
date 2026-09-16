@@ -5,6 +5,7 @@ import SportCompetitionGrid, { type SportCompetitionCard } from "@/components/Sp
 import { classifyCompetition, displayCompetitionName, type CompetitionCategory } from "@/lib/competition-catalog";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 import { getPublicSportCompetitions } from "@/lib/public-sport-competitions";
+import { evaluateSeoEligibility, indexableRobots } from "@/lib/seo-indexability";
 import { getSportLabel } from "@/lib/sports-registry";
 import styles from "./sport-hub.module.css";
 
@@ -25,7 +26,15 @@ const CATEGORY_LABELS:Record<CompetitionCategory,string>={continental:"European 
 function competitionHref(sport:string,slug:string){return sport==="football"?`/football/competition/${slug}`:`/sports/${sport}/competition/${slug}`;}
 function dayKey(value:string|number|Date){return new Date(value).toISOString().slice(0,10);}
 
-export async function buildSportHubMetadata(sport:string,canonical?:string):Promise<Metadata>{const cfg=SPORT_COPY[sport];if(!cfg)return{title:"Sport not found | WatchTVSport",robots:{index:false,follow:false}};const url=canonical??`/sports/${sport}`;return{title:`${cfg.title} competitions, TV schedules & where to watch | WatchTVSport`,description:`Browse ${cfg.title.toLowerCase()} competitions, upcoming events and confirmed official TV and streaming options by country.`,alternates:{canonical:url},robots:{index:true,follow:true},openGraph:{title:`${cfg.title} competitions & TV schedules | WatchTVSport`,description:cfg.description,url,type:"website"},twitter:{card:"summary_large_image",title:`${cfg.title} competitions | WatchTVSport`,description:cfg.description}};}
+export async function buildSportHubMetadata(sport:string,canonical?:string):Promise<Metadata>{
+ const cfg=SPORT_COPY[sport];
+ if(!cfg)return{title:"Sport not found | WatchTVSport",robots:{index:false,follow:false}};
+ const url=canonical??`/sports/${sport}`;
+ const snapshot=await getPublicEventsSnapshot({sport,limit:100});
+ const verifiedBroadcastCount=snapshot.events.reduce((sum,event)=>sum+event.broadcasts.filter(b=>b.coverageStatus==="confirmed").length,0);
+ const eligibility=evaluateSeoEligibility({kind:"sport",canonicalPath:url,eventCount:snapshot.events.length,verifiedBroadcastCount});
+ return{title:`${cfg.title} competitions, TV schedules & where to watch | WatchTVSport`,description:`Browse ${cfg.title.toLowerCase()} competitions, upcoming events and confirmed official TV and streaming options by country.`,alternates:{canonical:url},robots:indexableRobots(eligibility.indexable),openGraph:{title:`${cfg.title} competitions & TV schedules | WatchTVSport`,description:cfg.description,url,type:"website"},twitter:{card:"summary_large_image",title:`${cfg.title} competitions | WatchTVSport`,description:cfg.description}};
+}
 
 export default async function SportHubPage({sport,canonical}:{sport:string;canonical?:string}){
  const cfg=SPORT_COPY[sport];if(!cfg)return null;
@@ -45,11 +54,11 @@ export default async function SportHubPage({sport,canonical}:{sport:string;canon
   <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(jsonLd)}}/>
   <Breadcrumbs items={[{label:"Home",href:"/"},{label:"Sports",href:"/sports"},{label:title}]}/>
   <section className={styles.hero} style={{backgroundImage:`linear-gradient(90deg,rgba(3,10,18,.97),rgba(3,12,22,.72)),url('${cfg.backdrop}')`}}><p>{cfg.eyebrow}</p><h1>{title}</h1><span>{cfg.description}</span><div className={styles.heroActions}><a href="#competitions">Competitions</a>{current.length?<a href="#next">Live & next</a>:null}</div></section>
-  {current.length>0?<section id="next" className={styles.current} aria-labelledby={`${sport}-current-title`}><div className={styles.heading}><div><p>What matters now</p><h2 id={`${sport}-current-title`}>Live & next</h2></div><Link href={`/events?view=all&sport=${sport}`}>Full schedule →</Link></div><div className={styles.currentGrid}>{current.map(event=>{const confirmed=event.broadcasts.filter(b=>b.coverageStatus==="confirmed");const freeCountries=new Set(confirmed.filter(b=>b.access==="Free").map(b=>b.countryCode)).size;return <Link href={event.detailPath} key={event.id}><span className={event.status==="live"?styles.liveBadge:dayKey(event.eventDate)===today?styles.todayBadge:styles.statusBadge}>{event.status==="live"?"LIVE":dayKey(event.eventDate)===today?"TODAY":"UPCOMING"}</span><small>{displayCompetitionName(sport,event.competitionSlug,event.competition)}</small><strong>{event.title}</strong><span>{event.status==="live"?"Live now":new Intl.DateTimeFormat("en",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}).format(new Date(event.eventDate))}</span><em>{confirmed.length} confirmed{freeCountries?` · free in ${freeCountries}`:""}</em></Link>})}</div></section>:null}
+  {current.length>0?<section id="next" className={styles.current} aria-labelledby={`${sport}-current-title`}><div className={styles.heading}><div><p>What matters now</p><h2 id={`${sport}-current-title`}>Live & next</h2></div><Link href="/events#sports-filters">Full schedule →</Link></div><div className={styles.currentGrid}>{current.map(event=>{const confirmed=event.broadcasts.filter(b=>b.coverageStatus==="confirmed");const freeCountries=new Set(confirmed.filter(b=>b.access==="Free").map(b=>b.countryCode)).size;return <Link href={event.detailPath} key={event.id}><span className={event.status==="live"?styles.liveBadge:dayKey(event.eventDate)===today?styles.todayBadge:styles.statusBadge}>{event.status==="live"?"LIVE":dayKey(event.eventDate)===today?"TODAY":"UPCOMING"}</span><small>{displayCompetitionName(sport,event.competitionSlug,event.competition)}</small><strong>{event.title}</strong><span>{event.status==="live"?"Live now":new Intl.DateTimeFormat("en",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}).format(new Date(event.eventDate))}</span><em>{confirmed.length} confirmed{freeCountries?` · free in ${freeCountries}`:""}</em></Link>})}</div></section>:null}
   <aside className={styles.monetizationSlot} data-monetization-slot="sport-hub-top" aria-label="Partner placement reserved"><span>Partner placement</span><strong>Reserved for relevant broadcaster or connectivity offers</strong></aside>
   <section id="competitions" className={styles.section} aria-labelledby={`${sport}-competitions-title`}><div className={styles.heading}><div><p>Choose where to go next</p><h2 id={`${sport}-competitions-title`}>Competitions & tournaments</h2></div><span>{competitions.length} available</span></div>
    {!groups.length?<div className={styles.empty}><strong>No competition published yet</strong><span>The page is ready. New active competitions will appear here automatically when imported.</span></div>:groups.map(group=><div className={styles.group} key={group.category}><div className={styles.groupHeading}><h3>{group.label}</h3><span>{group.items.length}</span></div><SportCompetitionGrid items={group.items} backdrop={cfg.backdrop}/></div>)}
   </section>
-  <section className={styles.about}><p>About {title}</p><h2>{title} on WatchTVSport</h2><span>{cfg.about}</span><div><Link href={`/events?view=all&sport=${sport}`}>Browse all {title.toLowerCase()} events →</Link><Link href="/sports">Explore other sports →</Link></div></section>
+  <section className={styles.about}><p>About {title}</p><h2>{title} on WatchTVSport</h2><span>{cfg.about}</span><div><Link href="/events#sports-filters">Browse all {title.toLowerCase()} events →</Link><Link href="/sports">Explore other sports →</Link></div></section>
  </main>;
 }
