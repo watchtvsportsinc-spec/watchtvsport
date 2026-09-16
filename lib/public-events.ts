@@ -23,6 +23,7 @@ export type PublicEventFilters = {
   sport?: string;
   competition?: string;
   slug?: string;
+  country?: string;
   from?: string;
   to?: string;
   limit?: number;
@@ -47,10 +48,12 @@ function boundedLimit(limit?: number): number {
 function filterEvents(events: EventData[], filters: PublicEventFilters): EventData[] {
   const from = filters.from ? Date.parse(filters.from) : Number.NaN;
   const to = filters.to ? Date.parse(filters.to) : Number.NaN;
+  const country = filters.country?.trim().toLowerCase();
   return events
     .filter((event) => !filters.sport || event.sport === filters.sport)
     .filter((event) => !filters.competition || event.competitionSlug === filters.competition)
     .filter((event) => !filters.slug || event.slug === filters.slug)
+    .filter((event) => !country || event.broadcasts.some((broadcast) => broadcast.coverageStatus === "confirmed" && broadcast.countryCode?.toLowerCase() === country))
     .filter((event) => !Number.isFinite(from) || Date.parse(event.eventDate) >= from)
     .filter((event) => !Number.isFinite(to) || Date.parse(event.eventDate) < to)
     .sort((a, b) => Date.parse(a.eventDate) - Date.parse(b.eventDate))
@@ -97,7 +100,7 @@ async function parseEventResponse(response: Response): Promise<PublicEventsPaylo
 }
 
 function hasFilters(filters: PublicEventFilters): boolean {
-  return Boolean(filters.sport || filters.competition || filters.slug || filters.from || filters.to || filters.limit);
+  return Boolean(filters.sport || filters.competition || filters.slug || filters.country || filters.from || filters.to || filters.limit);
 }
 
 async function postRpc(rpcName: string, body: Record<string, unknown>, targeted: boolean): Promise<Response> {
@@ -117,6 +120,7 @@ async function fetchSupabaseEvents(filters: PublicEventFilters): Promise<PublicE
       p_sport_slug: filters.sport ?? null,
       p_competition_slug: filters.competition ?? null,
       p_event_slug: filters.slug ?? null,
+      p_country_code: filters.country?.toLowerCase() ?? null,
       p_from: filters.from ?? null,
       p_to: filters.to ?? null,
       p_limit: boundedLimit(filters.limit),
@@ -140,8 +144,16 @@ async function fetchSupabaseEvents(filters: PublicEventFilters): Promise<PublicE
   throw new Error(`Supabase public event request failed with ${lastStatus || "unknown status"}`);
 }
 
-async function loadPublicEventsSnapshot(sport?: string, competition?: string, slug?: string, from?: string, to?: string, limit?: number): Promise<PublicEventsSnapshot> {
-  const filters: PublicEventFilters = { sport, competition, slug, from, to, limit };
+async function loadPublicEventsSnapshot(
+  sport?: string,
+  competition?: string,
+  slug?: string,
+  country?: string,
+  from?: string,
+  to?: string,
+  limit?: number,
+): Promise<PublicEventsSnapshot> {
+  const filters: PublicEventFilters = { sport, competition, slug, country, from, to, limit };
   const mode = process.env.WATCHTVSPORT_DATA_SOURCE?.trim() || "supabase";
   if (mode === "local") return localSnapshot(filters);
   if (mode !== "supabase") return localSnapshot(filters, "Live data configuration is invalid. Showing the bundled archive instead.");
@@ -162,5 +174,13 @@ async function loadPublicEventsSnapshot(sport?: string, competition?: string, sl
 const getCachedSnapshot = cache(loadPublicEventsSnapshot);
 
 export function getPublicEventsSnapshot(filters: PublicEventFilters = {}) {
-  return getCachedSnapshot(filters.sport, filters.competition, filters.slug, filters.from, filters.to, boundedLimit(filters.limit));
+  return getCachedSnapshot(
+    filters.sport,
+    filters.competition,
+    filters.slug,
+    filters.country,
+    filters.from,
+    filters.to,
+    boundedLimit(filters.limit),
+  );
 }
