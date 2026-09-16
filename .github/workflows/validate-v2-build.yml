@@ -8,6 +8,7 @@ on:
       - ux/friendly-navigation-cards
       - feature/entity-navigation-v2
       - fix/permanent-competition-pages
+      - ux/home-premium-schedule
     paths:
       - '.github/workflows/validate-v2-build.yml'
       - 'app/**'
