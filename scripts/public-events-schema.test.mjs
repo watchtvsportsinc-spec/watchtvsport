@@ -30,6 +30,18 @@ function validPayload() {
           type: "club",
           visualType: "crest",
           visual: "home",
+          countryCode: "FR",
+          visualProfile: {
+            renderFamily: "football_shirt",
+            primaryColor: "#004170",
+            secondaryColor: "#DA291C",
+            accentColor: "#FFFFFF",
+            patternStyle: "center_stripe",
+            visualStatus: "verified",
+            seasonLabel: "2026-27",
+            sourceName: "Official club source",
+            sourceUrl: "https://example.test/kit",
+          },
         },
         participant2: {
           id: "participant-002",
@@ -67,6 +79,17 @@ test("parses the bounded public Supabase contract", () => {
   assert.equal(parsed.events[0].broadcasts[0].countryCode, "ca");
   assert.equal(parsed.events[0].broadcasts[0].broadcastType, "live");
   assert.equal(parsed.events[0].participant1.name, "Home");
+  assert.equal(parsed.events[0].participant1.countryCode, "FR");
+  assert.equal(parsed.events[0].participant1.visualProfile.renderFamily, "football_shirt");
+  assert.equal(parsed.events[0].participant1.visualProfile.primaryColor, "#004170");
+  assert.equal(parsed.events[0].participant1.visualProfile.patternStyle, "center_stripe");
+  assert.equal(parsed.events[0].participant1.visualProfile.visualStatus, "verified");
+});
+
+test("rejects unsafe participant visual values", () => {
+  const payload = validPayload();
+  payload.events[0].participant1.visualProfile.renderFamily = "official_logo";
+  assert.throws(() => parsePublicEventsPayload(payload), /unsupported visual family or pattern/);
 });
 
 test("rejects unconfirmed offers instead of presenting them as available", () => {
