@@ -25,6 +25,7 @@ export type SessionType =
 
 export type Participant = {
   id: string;
+  slug?: string;
   name: string;
   shortName?: string;
   type: EntityType;
@@ -62,7 +63,7 @@ export type EventData = {
 
 export function participantEntityId(participant: Participant, sport: string): string {
   if (participant.type === "club") {
-    return `club:${sport}:${clubSlug(participant.name)}`;
+    return `club:${sport}:${participant.slug || clubSlug(participant.name)}`;
   }
 
   return participant.id;
