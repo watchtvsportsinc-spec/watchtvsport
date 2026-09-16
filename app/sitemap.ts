@@ -1,12 +1,11 @@
 import type { MetadataRoute } from "next";
-import { clubSlug } from "@/lib/club-aliases";
 import { getCurrentCountrySummaries } from "@/lib/country-tv";
 import { entitySlug, getFootballNations } from "@/lib/entity-pages";
-import { getAllEvents, type EventData, type Participant } from "@/lib/events";
+import { getAllEvents, type EventData } from "@/lib/events";
 import { getAllMatches, type MatchData } from "@/lib/matches";
 import { getPublicCompetitionFixtures, type PublicFixture } from "@/lib/public-fixtures";
 import { shouldIncludeInSitemap } from "@/lib/seo-indexability";
-import { sportsRegistry, sportAllowsParticipantPages } from "@/lib/sports-registry";
+import { sportsRegistry } from "@/lib/sports-registry";
 
 const BASE_URL = "https://watchtvsport.com";
 
@@ -42,15 +41,6 @@ function sportHubPath(sport: string): string {
 function competitionPath(sport: string, slug: string): string {
   if (sport === "football") return `/football/competition/${slug}`;
   return `/sports/${sport}/competition/${slug}`;
-}
-
-function participantSlug(participant: Participant): string {
-  if (participant.slug) return participant.slug;
-  if (participant.id.startsWith("club:")) {
-    const parsed = participant.id.split(":").slice(2).join(":");
-    if (parsed) return parsed;
-  }
-  return clubSlug(participant.name);
 }
 
 function verifiedBroadcastCount(event: EventData): number {
@@ -149,27 +139,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })
     .map((competition) => sitemapEntry(competitionPath(competition.sport, competition.slug)));
 
-  const clubMap = new Map(
-    events.flatMap((event) => {
-      if (!sportAllowsParticipantPages(event.sport)) return [];
-      return [event.participant1, event.participant2]
-        .filter(
-          (participant): participant is Participant =>
-            Boolean(
-              participant &&
-                (participant.type === "club" || participant.type === "national_team"),
-            ),
-        )
-        .map(
-          (participant) =>
-            [`${event.sport}:${participant.id}`, { sport: event.sport, participant }] as const,
-        );
-    }),
-  );
-  const clubPages = Array.from(clubMap.values()).map(({ sport, participant }) =>
-    sitemapEntry(`/sports/${sport}/club/${participantSlug(participant)}`),
-  );
-
+  // Team pages remain discoverable through competition and event links, but are
+  // intentionally not submitted here. Their metadata uses a separate verified
+  // participant-profile gate, so a future participant sitemap should be built
+  // from that profile source rather than assuming every referenced team is indexable.
   const nationPages = getFootballNations(events).map((nation) =>
     sitemapEntry(`/football/nation/${entitySlug(nation.name)}`),
   );
@@ -242,7 +215,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...staticPages,
     ...sportPages,
     ...competitionPages,
-    ...clubPages,
     ...nationPages,
     ...permanentEventPages,
     ...leagueFixturePages,
