@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import EntityVisual from "@/components/EntityVisual";
 import FavoriteButton from "@/components/FavoriteButton";
 import LocalTime from "@/components/LocalTime";
 import ParticipantSportVisual from "@/components/ParticipantSportVisual";
 import type { EventData, Participant } from "@/lib/events";
 import type { FavoriteCandidate } from "@/lib/favorites";
+import { getApprovedParticipantMedia } from "@/lib/public-participant-media";
 import { getPublicParticipantEvents } from "@/lib/public-participant-events";
 import { getPublicParticipantProfile } from "@/lib/participant-profiles";
 import { getSportBySlug, getSportLabel, sportAllowsParticipantPages } from "@/lib/sports-registry";
@@ -125,7 +127,11 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
   const verified = await getPublicParticipantProfile(club, sport);
   if (!verified) notFound();
 
-  const events = await getPublicParticipantEvents(verified.participantId);
+  const mediaEntityId = `participant:${sport}:${verified.slug}`;
+  const [events, approvedMedia] = await Promise.all([
+    getPublicParticipantEvents(verified.participantId),
+    getApprovedParticipantMedia(mediaEntityId),
+  ]);
   const profile = verified.profile;
   const clubName = verified.name;
   const sportLabel = verified.sportName || getSportLabel(sport);
@@ -155,6 +161,7 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
     description: profile?.summary ?? `${clubName} ${sportLabel} team profile, schedule and official broadcaster guide.`,
     sport: sportLabel,
     url: canonicalUrl,
+    logo: approvedMedia?.src,
     foundingDate: profile?.foundedYear ? String(profile.foundedYear) : undefined,
     location: profile?.city ? {
       "@type": "Place",
@@ -197,7 +204,7 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
         <div className={styles.heroGlow} aria-hidden="true" />
         <div className={styles.heroContent}>
           <div className={styles.crest} aria-label={`${clubName} team visual`}>
-            <ParticipantSportVisual sport={sport} label={clubName} countryCode={profile?.countryCode} visual={verified.visual} size="hero" />
+            <EntityVisual entityId={mediaEntityId} label={clubName} participantVisual={verified.visual} approvedMedia={approvedMedia} size="hero" />
           </div>
 
           <div className={styles.identity}>
