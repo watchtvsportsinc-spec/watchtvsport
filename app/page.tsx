@@ -1,37 +1,206 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import FavoriteButton from "@/components/FavoriteButton";
+import HomeFavoritesStrip from "@/components/HomeFavoritesStrip";
 import SearchAutocomplete from "@/components/SearchAutocomplete";
 import TimezoneSync from "@/components/TimezoneSync";
-import HomePopularNow from "@/components/HomePopularNow";
-import type { FavoriteCandidate } from "@/lib/favorites";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 import { buildSearchSuggestions } from "@/lib/search-suggestions";
-import { buildCalendarHref,formatCalendarDay,formatCalendarTime,getCalendarFilterOptions,getCalendarPage,getDateKey,parseCalendarFilters,type CalendarEvent,type CalendarFilters,type CalendarView } from "@/lib/calendar";
+import { formatCalendarTime, getDateKey, parseCalendarFilters } from "@/lib/calendar";
+import { getSportLabel } from "@/lib/sports-registry";
+import type { EventData } from "@/lib/events";
 
-type HomePageProps={searchParams?:Promise<Record<string,string|string[]|undefined>>};
-export async function generateMetadata({searchParams}:HomePageProps):Promise<Metadata>{const params=(await searchParams)??{};const utility=Object.values(params).some(v=>Array.isArray(v)?v.some(Boolean):Boolean(v));return{title:"Where to watch sports – official TV & streaming guide",description:"Find official TV channels and streaming platforms by event, team, competition and country.",alternates:{canonical:"/"},robots:utility?{index:false,follow:true}:{index:true,follow:true}};}
+type HomePageProps = { searchParams?: Promise<Record<string, string | string[] | undefined>> };
+type HomeWindow = "live" | "tonight" | "tomorrow" | "week";
 
-const VIEW_OPTIONS:Array<{value:CalendarView;label:string}>=[{value:"today",label:"Today"},{value:"tomorrow",label:"Tomorrow"},{value:"archive",label:"Archives"}];
-const SPORT_SHORTCUTS=[["/","All",""],["/football","Football","football"],["/formula-1","Formula 1","formula-1"],["/ufc","UFC","ufc"],["/sports/basketball","Basketball","basketball"],["/sports/hockey","Hockey","hockey"],["/sports/tennis","Tennis","tennis"],["/sports/motogp","MotoGP","motogp"]] as const;
-const COUNTRIES=[["🇨🇦","Canada"],["🇫🇷","France"],["🇺🇸","United States"],["🇬🇧","United Kingdom"],["🇪🇸","Spain"],["🇩🇪","Germany"],["🇮🇹","Italy"],["🌐","More countries"]] as const;
-function pageTitle(filters:CalendarFilters){if(filters.view==="all")return filters.query?"Search results":"All events";if(filters.view==="archive")return"Past events";if(filters.view==="tomorrow")return"Tomorrow's events";if(filters.view==="date"&&filters.date)return new Intl.DateTimeFormat("en",{weekday:"long",month:"long",day:"numeric",year:"numeric",timeZone:"UTC"}).format(new Date(`${filters.date}T12:00:00Z`));return"Today's events";}
-function eventHref(event:CalendarEvent,returnTo:string){const p=new URLSearchParams({returnTo});return `${event.detailPath}${event.detailPath.includes("?")?"&":"?"}${p}`;}
-function eventStage(event:CalendarEvent){return[event.stage,event.group?`Group ${event.group}`:""].filter(Boolean).join(" · ");}
-function hiddenInput(name:string,value?:string){return value?<input type="hidden" name={name} value={value}/>:null;}
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "Where to watch sports – live & upcoming TV guide",
+    description: "Search a team or competition, open your favorites and find official viewing options for live and upcoming sports.",
+    alternates: { canonical: "/" },
+  };
+}
 
-export default async function HomePage({searchParams}:HomePageProps){
- const filters=parseCalendarFilters((await searchParams)??{});const now=new Date();const snapshot=await getPublicEventsSnapshot();const calendar=getCalendarPage(snapshot.events,filters,now);const options=getCalendarFilterOptions(snapshot.events);const suggestions=buildSearchSuggestions(snapshot.events);const today=getDateKey(now,filters.timeZone);const grouped=new Map<string,CalendarEvent[]>();for(const event of calendar.events){const key=getDateKey(new Date(event.eventDate),filters.timeZone);grouped.set(key,[...(grouped.get(key)??[]),event]);}
- const hasFilters=Boolean(filters.query||filters.sport||filters.competition);const selectedCompetition=filters.competition?snapshot.events.find(e=>e.competitionSlug===filters.competition&&(!filters.sport||e.sport===filters.sport)):undefined;const favorite:FavoriteCandidate|null=selectedCompetition?{kind:"competition",entityId:`${selectedCompetition.sport}:${selectedCompetition.competitionSlug}`,label:selectedCompetition.competition}:null;
- const featured=snapshot.events.filter(e=>Date.parse(e.eventDate)>=now.getTime()).sort((a,b)=>Date.parse(a.eventDate)-Date.parse(b.eventDate)).slice(0,4);
- return <main id="main-content" className="v2-calendar v2-home"><TimezoneSync/><a className="v2-skip-link" href="#calendar-results">Skip to events</a>{snapshot.warning?<p className="v2-data-warning" role="status">{snapshot.warning}</p>:null}
- <section className="v2-calendar-hero v2-home-hero"><div className="v2-hero-content"><p className="v2-eyebrow">Official sports broadcast guide</p><h1>Find the game.<br/><span>Find the screen.</span></h1><p className="v2-hero-copy">Search a team, competition or event and find verified official TV and streaming options in your country.</p><SearchAutocomplete defaultValue={filters.query} sport={filters.sport} competition={filters.competition} timeZone={filters.timeZone} suggestions={suggestions}/><nav className="v2-sport-pills" aria-label="Sports shortcuts">{SPORT_SHORTCUTS.map(([href,label,value])=><Link key={label} className={filters.sport===value?"is-active":undefined} href={href}>{label}</Link>)}</nav></div><div className="v2-hero-collage" aria-hidden="true"><div className="v2-hero-photo v2-photo-football"><span>Football</span></div><div className="v2-hero-photo v2-photo-f1"><span>Formula 1</span></div><div className="v2-hero-photo v2-photo-ufc"><span>UFC</span></div></div></section>
- <section className="v2-trust-strip"><div><b>◎</b><strong>By country</strong><span>Official broadcasters near you</span></div><div><b>⌕</b><strong>Entity search</strong><span>Teams, competitions and events</span></div><div><b>ϟ</b><strong>Always current</strong><span>Verified data, TBC when unknown</span></div><div><b>♡</b><strong>Favorites</strong><span>Keep important sports close</span></div></section>
- <HomePopularNow/>
- <section className="v2-featured"><div className="v2-section-heading"><div><p className="v2-eyebrow">Coming up</p><h2>Next events</h2></div><Link href="/?view=all#calendar-results">Full calendar →</Link></div><div className="v2-featured-grid">{featured.map(event=><Link className="v2-featured-card" href={event.detailPath} key={event.id}><div className="v2-featured-body"><p>{event.competition}</p><h3>{event.title}</h3><time dateTime={event.eventDate}>{new Intl.DateTimeFormat("en",{weekday:"short",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"}).format(new Date(event.eventDate))}</time><div><span>{event.broadcasts.filter(b=>b.coverageStatus==="confirmed").length} confirmed</span><strong>Where to watch →</strong></div></div></Link>)}</div></section>
- <section id="sports" className="v2-visual-section"><div className="v2-section-heading"><div><p className="v2-eyebrow">Explore</p><h2>Choose your sport</h2></div></div><div className="v2-sport-gallery"><Link className="football" href="/football"><span>⚽</span><strong>Football</strong></Link><Link className="f1" href="/formula-1"><span>F1</span><strong>Formula 1</strong></Link><Link className="ufc" href="/ufc"><span>UFC</span><strong>UFC</strong></Link><Link className="nba" href="/sports/basketball"><span>●</span><strong>Basketball</strong></Link><Link className="nhl" href="/sports/hockey"><span>◆</span><strong>Hockey</strong></Link><Link className="tennis" href="/sports/tennis"><span>●</span><strong>Tennis</strong></Link><Link className="motogp" href="/sports/motogp"><span>GP</span><strong>MotoGP</strong></Link></div></section>
- <section id="countries" className="v2-visual-section"><div className="v2-section-heading"><div><p className="v2-eyebrow">Worldwide</p><h2>Browse by country</h2></div></div><div className="v2-country-grid">{COUNTRIES.map(([flag,name])=><div key={name}><span>{flag}</span><strong>{name}</strong></div>)}</div></section>
- <section className="v2-calendar-controls" aria-label="Calendar filters"><nav className="v2-date-tabs">{VIEW_OPTIONS.map(o=><Link key={o.value} href={buildCalendarHref(filters,{view:o.value,date:undefined,page:1})} className={filters.view===o.value?"is-active":undefined}>{o.label}</Link>)}</nav><form className="v2-date-picker" action="/" method="get"><input type="hidden" name="view" value="date"/>{hiddenInput("q",filters.query)}{hiddenInput("sport",filters.sport)}{hiddenInput("competition",filters.competition)}{filters.timeZone!=="UTC"?hiddenInput("tz",filters.timeZone):null}<label htmlFor="calendar-date">Choose date</label><div><input id="calendar-date" type="date" name="date" defaultValue={filters.date??today} required/><button type="submit">Go</button></div></form><form className="v2-filter-form" action="/" method="get">{filters.view!=="today"?hiddenInput("view",filters.view):null}{filters.view==="date"?hiddenInput("date",filters.date):null}{hiddenInput("q",filters.query)}{filters.timeZone!=="UTC"?hiddenInput("tz",filters.timeZone):null}<label>Sport<select name="sport" defaultValue={filters.sport}><option value="">All sports</option>{options.sports.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}</select></label><label>Competition<select name="competition" defaultValue={filters.competition}><option value="">All competitions</option>{options.competitions.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}</select></label><button type="submit">Apply</button>{hasFilters?<Link className="v2-reset-link" href={buildCalendarHref(filters,{query:"",sport:"",competition:"",page:1})}>Clear</Link>:null}</form></section>
- <section id="calendar-results" className="v2-results"><div className="v2-results-heading"><div><p className="v2-eyebrow">Full schedule</p><h2>{pageTitle(filters)}</h2></div><p>{calendar.total} events</p></div>{favorite?<div className="v2-follow-row"><FavoriteButton favorite={favorite}/></div>:null}<p className="v2-timezone-note">Times shown in {filters.timeZone.replaceAll("_"," ")}.</p>{calendar.total===0?<div className="v2-empty-state"><h3>{hasFilters?"No matching events":"No events on this date"}</h3><p>Missing schedules and broadcaster information are never guessed.</p><Link href={hasFilters?buildCalendarHref(filters,{query:"",sport:"",competition:"",page:1}):buildCalendarHref(filters,{view:"all",page:1})}>{hasFilters?"Clear filters":"Browse all events"}</Link></div>:<div className="v2-event-groups">{Array.from(grouped.entries()).map(([dateKey,events])=><section className="v2-event-group" key={dateKey}><h3>{formatCalendarDay(events[0].eventDate,filters.timeZone)}</h3><div className="v2-event-list">{events.map(event=>{const anchor=`event-${event.id}`;const href=eventHref(event,buildCalendarHref(filters,{},anchor));return <article className="v2-event-card" id={anchor} key={event.id}><div className="v2-event-time"><time dateTime={event.eventDate}>{formatCalendarTime(event.eventDate,filters.timeZone)}</time><span className={`v2-status v2-status-${event.statusLabel.toLowerCase().replaceAll(" ","-")}`}>{event.statusLabel}</span></div><div className="v2-event-main"><p className="v2-event-competition"><Link href={`/sports/${event.sport}/competition/${event.competitionSlug}`}>{event.sportLabel} · {event.competition}</Link></p><h4><Link prefetch={false} href={href}>{event.title}</Link></h4><p className="v2-event-stage">{eventStage(event)||"Event"}</p></div><Link prefetch={false} className="v2-broadcast-link" href={href}><span>{event.confirmedBroadcastCount} confirmed official {event.confirmedBroadcastCount===1?"listing":"listings"}</span><strong>Where to watch →</strong></Link></article>})}</div></section>)}</div>}{calendar.pageCount>1?<nav className="v2-pagination">{calendar.page>1?<Link href={buildCalendarHref(filters,{page:calendar.page-1},"calendar-results")}>← Previous</Link>:<span/>}<span>Page {calendar.page} of {calendar.pageCount}</span>{calendar.page<calendar.pageCount?<Link href={buildCalendarHref(filters,{page:calendar.page+1},"calendar-results")}>Next →</Link>:<span/>}</nav>:null}</section>
- </main>;
+const SHORTCUTS = [
+  { href: "/events", label: "All sports", icon: "▦", sport: "all" },
+  { href: "/football", label: "Football", icon: "⚽", sport: "football" },
+  { href: "/sports/basketball/competition/nba", label: "NBA", icon: "🏀", sport: "basketball" },
+  { href: "/sports/hockey/competition/nhl", label: "NHL", icon: "🏒", sport: "hockey" },
+  { href: "/formula-1", label: "Formula 1", icon: "🏁", sport: "formula-1" },
+  { href: "/sports/tennis", label: "Tennis", icon: "🎾", sport: "tennis" },
+  { href: "/ufc", label: "UFC", icon: "🥊", sport: "ufc" },
+  { href: "/sports/motogp", label: "MotoGP", icon: "🏍", sport: "motogp" },
+] as const;
+
+const MAJOR_COMPETITIONS = [
+  { href: "/football/competition/champions-league", title: "Champions League", subtitle: "Football", sport: "football" },
+  { href: "/events?view=all&sport=tennis&q=US%20Open", title: "US Open", subtitle: "Tennis", sport: "tennis" },
+  { href: "/events?view=all&sport=formula-1&q=Australian%20Grand%20Prix", title: "Australian Grand Prix", subtitle: "Formula 1", sport: "formula-1" },
+  { href: "/sports/hockey/competition/nhl", title: "NHL", subtitle: "Ice hockey", sport: "hockey" },
+] as const;
+
+function firstValue(value: string | string[] | undefined): string {
+  return Array.isArray(value) ? value[0] ?? "" : value ?? "";
+}
+
+function addDays(dateKey: string, days: number): string {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
+}
+
+function localHour(date: Date, timeZone: string): number {
+  const parts = new Intl.DateTimeFormat("en", { timeZone, hour: "2-digit", hourCycle: "h23" }).formatToParts(date);
+  const hour = Number(parts.find((part) => part.type === "hour")?.value ?? "0");
+  return Number.isFinite(hour) ? hour : 0;
+}
+
+function isUpcoming(event: EventData, now: Date): boolean {
+  if (event.status === "finished") return false;
+  if (event.status === "live") return true;
+  return Date.parse(event.eventDate) >= now.getTime();
+}
+
+function accessLabel(event: EventData): "Free" | "Paid" | "Access TBC" {
+  const confirmed = event.broadcasts.filter((broadcast) => broadcast.coverageStatus === "confirmed");
+  if (confirmed.some((broadcast) => broadcast.access === "Free")) return "Free";
+  if (confirmed.some((broadcast) => broadcast.access === "Paid")) return "Paid";
+  return "Access TBC";
+}
+
+function sportGlyph(sport: string): string {
+  if (sport === "football") return "⚽";
+  if (sport === "basketball") return "🏀";
+  if (sport === "hockey" || sport === "ice-hockey") return "🏒";
+  if (sport === "formula-1") return "🏁";
+  if (sport === "tennis") return "🎾";
+  if (sport === "ufc" || sport === "mma") return "🥊";
+  if (sport === "motogp") return "🏍";
+  return "●";
+}
+
+function sportClass(sport: string): string {
+  if (sport === "football") return "football";
+  if (sport === "basketball") return "basketball";
+  if (sport === "hockey" || sport === "ice-hockey") return "hockey";
+  if (sport === "formula-1") return "formula-1";
+  if (sport === "tennis") return "tennis";
+  if (sport === "ufc" || sport === "mma") return "ufc";
+  if (sport === "motogp") return "motogp";
+  return "all";
+}
+
+function homeHref(window: HomeWindow, timeZone: string): string {
+  const params = new URLSearchParams({ when: window });
+  if (timeZone !== "UTC") params.set("tz", timeZone);
+  return `/?${params.toString()}#home-schedule`;
+}
+
+function eventsHref(timeZone: string, when?: HomeWindow): string {
+  const params = new URLSearchParams({ view: "all" });
+  if (when) params.set("when", when);
+  if (timeZone !== "UTC") params.set("tz", timeZone);
+  return `/events?${params.toString()}`;
+}
+
+function selectedEvents(events: EventData[], window: HomeWindow, now: Date, timeZone: string): EventData[] {
+  const today = getDateKey(now, timeZone);
+  const tomorrow = addDays(today, 1);
+  const endOfWeek = now.getTime() + 7 * 24 * 60 * 60 * 1000;
+  const thresholdHour = localHour(now, timeZone) >= 17 ? localHour(now, timeZone) : 17;
+
+  return events.filter((event) => {
+    if (window === "live") return event.status === "live";
+    if (!isUpcoming(event, now) || event.status === "live") return false;
+    const date = new Date(event.eventDate);
+    const dateKey = getDateKey(date, timeZone);
+    if (window === "tonight") return dateKey === today && localHour(date, timeZone) >= thresholdHour;
+    if (window === "tomorrow") return dateKey === tomorrow;
+    const time = date.getTime();
+    return time >= now.getTime() && time <= endOfWeek;
+  }).sort((a, b) => Date.parse(a.eventDate) - Date.parse(b.eventDate));
+}
+
+function eventMeta(event: EventData, timeZone: string): string {
+  if (event.status === "live") return "Live now";
+  return formatCalendarTime(event.eventDate, timeZone);
+}
+
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const params = (await searchParams) ?? {};
+  const filters = parseCalendarFilters(params);
+  const now = new Date();
+  const snapshot = await getPublicEventsSnapshot();
+  const suggestions = buildSearchSuggestions(snapshot.events);
+  const live = selectedEvents(snapshot.events, "live", now, filters.timeZone);
+  const tonight = selectedEvents(snapshot.events, "tonight", now, filters.timeZone);
+  const tomorrow = selectedEvents(snapshot.events, "tomorrow", now, filters.timeZone);
+  const week = selectedEvents(snapshot.events, "week", now, filters.timeZone);
+  const requested = firstValue(params.when) as HomeWindow;
+  const valid = requested === "live" || requested === "tonight" || requested === "tomorrow" || requested === "week";
+  const defaultWindow: HomeWindow = live.length > 0 ? "live" : tonight.length > 0 ? "tonight" : "week";
+  const activeWindow = valid ? requested : defaultWindow;
+  const windowEvents = activeWindow === "live" ? live : activeWindow === "tonight" ? tonight : activeWindow === "tomorrow" ? tomorrow : week;
+  const visibleEvents = windowEvents.slice(0, 10);
+  const counts: Record<HomeWindow, number> = { live: live.length, tonight: tonight.length, tomorrow: tomorrow.length, week: week.length };
+
+  return (
+    <main id="main-content" className="wts-home-v3">
+      <TimezoneSync />
+      {snapshot.warning ? <p className="v2-data-warning" role="status">{snapshot.warning}</p> : null}
+
+      <section className="wts-home-search-zone" aria-label="Find sports">
+        <div className="wts-home-search-copy"><p>Official sports TV guide</p><h1>Find your event. Find where it is shown.</h1></div>
+        <SearchAutocomplete searchPath="/events" timeZone={filters.timeZone} suggestions={suggestions} />
+        <nav className="wts-home-shortcuts" aria-label="Sports and competitions">
+          {SHORTCUTS.map((item) => <Link href={item.href} key={item.label}><span aria-hidden="true">{item.icon}</span><strong>{item.label}</strong></Link>)}
+          <Link href="/events"><span aria-hidden="true">•••</span><strong>More</strong></Link>
+        </nav>
+      </section>
+
+      <HomeFavoritesStrip />
+
+      <section id="home-schedule" className="wts-home-section wts-home-schedule" aria-labelledby="home-schedule-title">
+        <div className="wts-home-section-heading wts-schedule-heading">
+          <div><span className="wts-section-icon" aria-hidden="true">▣</span><h2 id="home-schedule-title">TV schedule</h2></div>
+          <Link href={eventsHref(filters.timeZone, activeWindow)}>View all events →</Link>
+        </div>
+
+        <div className="wts-home-window-tabs" role="navigation" aria-label="Schedule period">
+          {([
+            ["live", "Live", counts.live],
+            ["tonight", "Tonight", counts.tonight],
+            ["tomorrow", "Tomorrow", counts.tomorrow],
+            ["week", "This week", counts.week],
+          ] as const).map(([value, label, count]) => <Link className={activeWindow === value ? "is-active" : undefined} href={homeHref(value, filters.timeZone)} key={value}>{value === "live" ? <i aria-hidden="true" /> : null}{label}<span>{count}</span></Link>)}
+        </div>
+
+        {visibleEvents.length === 0 ? (
+          <div className="wts-home-empty"><strong>No events in this window.</strong><span>Try another period or open the full schedule.</span><Link href={eventsHref(filters.timeZone)}>Browse all events</Link></div>
+        ) : (
+          <div className="wts-schedule-list">
+            <div className="wts-schedule-columns" aria-hidden="true"><span>Status</span><span>Sport / competition</span><span>Event</span><span>Time</span><span>Access</span><span>Match page</span></div>
+            {visibleEvents.map((event) => {
+              const access = accessLabel(event);
+              return (
+                <article className="wts-schedule-row" key={event.id}>
+                  <div className="wts-schedule-status"><span className={event.status === "live" ? "is-live" : "is-upcoming"}>{event.status === "live" ? "Live" : "Upcoming"}</span></div>
+                  <div className="wts-schedule-competition"><b aria-hidden="true">{sportGlyph(event.sport)}</b><span><strong>{getSportLabel(event.sport)}</strong><small>{event.competition}</small></span></div>
+                  <div className="wts-schedule-event"><strong>{event.title}</strong><small>{event.stage ?? event.venue ?? "Event"}</small></div>
+                  <div className="wts-schedule-time"><strong>{eventMeta(event, filters.timeZone)}</strong><small>{event.status === "live" ? "In progress" : new Intl.DateTimeFormat("en", { month: "short", day: "numeric", timeZone: filters.timeZone }).format(new Date(event.eventDate))}</small></div>
+                  <div className={`wts-access-pill ${access === "Free" ? "is-free" : access === "Paid" ? "is-paid" : "is-tbc"}`}>{access}</div>
+                  <Link className="wts-open-event" prefetch={false} href={event.detailPath}><span>Open</span><b aria-hidden="true">›</b></Link>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      <section className="wts-home-section wts-major-section" aria-labelledby="major-title">
+        <div className="wts-home-section-heading"><div><span className="wts-section-icon" aria-hidden="true">🏆</span><h2 id="major-title">Major competitions</h2></div><Link href="/events">View all →</Link></div>
+        <div className="wts-major-grid">
+          {MAJOR_COMPETITIONS.map((item) => <Link className={`wts-major-card wts-sport-bg wts-bg-${sportClass(item.sport)}`} href={item.href} key={item.title}><span><strong>{item.title}</strong><small>{item.subtitle}</small></span><b aria-hidden="true">→</b></Link>)}
+        </div>
+      </section>
+    </main>
+  );
 }
