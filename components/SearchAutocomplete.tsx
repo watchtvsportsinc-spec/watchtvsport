@@ -10,6 +10,7 @@ type Props = {
   competition?: string;
   timeZone?: string;
   suggestions: SearchSuggestion[];
+  searchPath?: string;
 };
 
 const GROUP_ORDER: SearchSuggestion["kind"][] = ["Sport", "Club", "Nation", "Grand Prix", "UFC Event", "Competition"];
@@ -42,7 +43,7 @@ function withTimeZone(href: string, timeZone?: string): string {
   if (!timeZone || timeZone === "UTC") return href;
   const url = new URL(href, window.location.origin);
   if (url.origin !== window.location.origin) return href;
-  if (url.pathname === "/") url.searchParams.set("tz", timeZone);
+  if (url.pathname === "/" || url.pathname === "/events") url.searchParams.set("tz", timeZone);
   return `${url.pathname}${url.search}${url.hash}`;
 }
 
@@ -55,7 +56,7 @@ function kindIcon(kind: SearchSuggestion["kind"]): string {
   return "●";
 }
 
-export default function SearchAutocomplete({ defaultValue, sport, competition, timeZone, suggestions }: Props) {
+export default function SearchAutocomplete({ defaultValue, sport, competition, timeZone, suggestions, searchPath = "/" }: Props) {
   const router = useRouter();
   const [query, setQuery] = useState(defaultValue ?? "");
   const [open, setOpen] = useState(false);
@@ -91,7 +92,7 @@ export default function SearchAutocomplete({ defaultValue, sport, competition, t
     if (sport) params.set("sport", sport);
     if (competition) params.set("competition", competition);
     if (timeZone && timeZone !== "UTC") params.set("tz", timeZone);
-    router.push(`/?${params.toString()}`);
+    router.push(`${searchPath}?${params.toString()}`);
     setOpen(false);
   }
 
