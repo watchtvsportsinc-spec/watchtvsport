@@ -8,6 +8,7 @@ import "./entity-navigation.css";
 import "./home-premium.css";
 import "./home-premium-visual.css";
 import "./seo-crawl.css";
+import "./mobile-density.css";
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
 import HeaderNav from "./HeaderNav";
