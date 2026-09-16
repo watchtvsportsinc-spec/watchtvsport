@@ -124,11 +124,9 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         <SearchAutocomplete defaultValue={filters.query} sport={filters.sport} competition={filters.competition} timeZone={filters.timeZone} suggestions={suggestions} searchPath="/events" />
       </header>
 
-      <section className="wts-events-filters" aria-label="Event filters">
+      <section id="sports-filters" className="wts-events-filters" aria-label="Event filters">
         <nav className="wts-filter-pills" aria-label="Time filters">
-          {([[
-            "all", "All current"
-          ], ["live", "Live"], ["today", "Today"], ["tonight", "Tonight"], ["tomorrow", "Tomorrow"], ["week", "This week"]] as const).map(([value, label]) => <Link className={when === value ? "is-active" : undefined} href={hrefWith(state, { when: value })} key={value}>{label}</Link>)}
+          {([["all", "All current"], ["live", "Live"], ["today", "Today"], ["tonight", "Tonight"], ["tomorrow", "Tomorrow"], ["week", "This week"]] as const).map(([value, label]) => <Link className={when === value ? "is-active" : undefined} href={hrefWith(state, { when: value })} key={value}>{label}</Link>)}
         </nav>
 
         <nav className="wts-filter-pills wts-sport-filter-pills" aria-label="Sports filters">
