@@ -1,6 +1,12 @@
 import "server-only";
 
 import { cache } from "react";
+import {
+  isParticipantPatternStyle,
+  isParticipantRenderFamily,
+  safeVisualColor,
+  type ParticipantVisualProfile,
+} from "./participant-visuals";
 
 const DEFAULT_SUPABASE_URL = "https://jywqhiiwsmudthaujhmi.supabase.co";
 const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_30SkJ3gyUbPvH5sGFXpyHg_a4Qlzdi-";
@@ -51,6 +57,7 @@ export type PublicParticipantProfile = {
   sport: string;
   sportName?: string;
   profile: ParticipantProfile | null;
+  visual: ParticipantVisualProfile | null;
   competitions: ParticipantCompetition[];
   sources: ParticipantProfileSource[];
 };
@@ -77,6 +84,24 @@ function optionalString(value: unknown): string | undefined {
 
 function optionalNumber(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function parseVisual(value: unknown): ParticipantVisualProfile | null {
+  if (!isObject(value)) return null;
+  if (!isParticipantRenderFamily(value.renderFamily) || !isParticipantPatternStyle(value.patternStyle)) return null;
+  const visualStatus = value.visualStatus === "verified" || value.visualStatus === "reviewed" || value.visualStatus === "needs_review" ? value.visualStatus : "generated";
+  return {
+    renderFamily: value.renderFamily,
+    primaryColor: safeVisualColor(value.primaryColor, "#123A63"),
+    secondaryColor: safeVisualColor(value.secondaryColor, "#F8FAFC"),
+    accentColor: safeVisualColor(value.accentColor, "#2F9CFF"),
+    patternStyle: value.patternStyle,
+    visualStatus,
+    seasonLabel: optionalString(value.seasonLabel),
+    sourceName: optionalString(value.sourceName),
+    sourceUrl: optionalString(value.sourceUrl),
+    observedAt: optionalString(value.observedAt),
+  };
 }
 
 function parseProfile(value: unknown): PublicParticipantProfile | null {
@@ -124,13 +149,14 @@ function parseProfile(value: unknown): PublicParticipantProfile | null {
     sport,
     sportName: optionalString(value.sportName),
     profile,
+    visual: parseVisual(value.visual),
     competitions,
     sources,
   };
 }
 
 async function loadParticipantProfile(slug: string, sport: string): Promise<PublicParticipantProfile | null> {
-  const rpcNames = ["get_public_participant_profile_v3", "get_public_participant_profile_v2"];
+  const rpcNames = ["get_public_participant_profile_v4", "get_public_participant_profile_v3", "get_public_participant_profile_v2"];
 
   for (const { url, key } of configCandidates()) {
     for (const rpcName of rpcNames) {

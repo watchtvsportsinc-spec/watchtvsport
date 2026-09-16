@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import FavoriteButton from "@/components/FavoriteButton";
 import LocalTime from "@/components/LocalTime";
+import ParticipantSportVisual from "@/components/ParticipantSportVisual";
 import type { EventData, Participant } from "@/lib/events";
 import type { FavoriteCandidate } from "@/lib/favorites";
 import { getPublicParticipantEvents } from "@/lib/public-participant-events";
@@ -114,8 +115,8 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
       <section className={styles.hero} aria-labelledby="club-title" style={profile?.heroImageUrl ? { backgroundImage: `linear-gradient(180deg,rgba(5,15,26,.12),rgba(4,13,23,.82)),url('${profile.heroImageUrl}')` } : undefined}>
         <div className={styles.heroShade} />
         <div className={styles.heroContent}>
-          <div className={styles.crest} aria-label={`${clubName} team mark`}>
-            {profile?.logoUrl ? <img src={profile.logoUrl} alt={`${clubName} logo`} loading="eager" /> : <><span>{initials(clubName)}</span><small>{sportLabel}</small></>}
+          <div className={styles.crest} aria-label={`${clubName} team visual`}>
+            <ParticipantSportVisual sport={sport} label={clubName} countryCode={profile?.countryCode} visual={verified.visual} size="hero" />
           </div>
           <div className={styles.identity}>
             <p className="v2-eyebrow">{sportLabel} team</p>

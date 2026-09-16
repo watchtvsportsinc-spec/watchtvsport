@@ -1,6 +1,12 @@
 import "server-only";
 
 import { cache } from "react";
+import {
+  isParticipantPatternStyle,
+  isParticipantRenderFamily,
+  safeVisualColor,
+  type ParticipantVisualProfile,
+} from "./participant-visuals";
 
 const DEFAULT_SUPABASE_URL = "https://jywqhiiwsmudthaujhmi.supabase.co";
 const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_30SkJ3gyUbPvH5sGFXpyHg_a4Qlzdi-";
@@ -13,6 +19,7 @@ export type PublicCompetitionTeam = {
   slug: string;
   name: string;
   shortName?: string;
+  visual?: ParticipantVisualProfile;
 };
 
 export type PublicCompetition = {
@@ -52,6 +59,24 @@ function text(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function parseVisual(row: Row): ParticipantVisualProfile | undefined {
+  if (!isParticipantRenderFamily(row.render_family) || !isParticipantPatternStyle(row.pattern_style)) return undefined;
+  const rawStatus = text(row.visual_status);
+  const visualStatus: ParticipantVisualProfile["visualStatus"] = rawStatus === "verified" || rawStatus === "reviewed" || rawStatus === "needs_review" ? rawStatus : "generated";
+  return {
+    renderFamily: row.render_family,
+    primaryColor: safeVisualColor(row.primary_color, "#123A63"),
+    secondaryColor: safeVisualColor(row.secondary_color, "#F8FAFC"),
+    accentColor: safeVisualColor(row.accent_color, "#2F9CFF"),
+    patternStyle: row.pattern_style,
+    visualStatus,
+    seasonLabel: text(row.season_label) || undefined,
+    sourceName: text(row.source_name) || undefined,
+    sourceUrl: text(row.source_url) || undefined,
+    observedAt: text(row.observed_at) || undefined,
+  };
+}
+
 async function loadPublicCompetition(sportSlug: string, competitionSlug: string): Promise<PublicCompetition | null> {
   try {
     const { url, key } = config();
@@ -73,14 +98,23 @@ async function loadPublicCompetition(sportSlug: string, competitionSlug: string)
     let teams: PublicCompetitionTeam[] = [];
     if (participantIds.length) {
       const filter = participantIds.map((id) => `\"${id.replaceAll('"', '')}\"`).join(",");
-      const participantRows = rows(await getJson(`${url}/rest/v1/participants?id=in.(${encodeURIComponent(filter)})&is_active=eq.true&select=id,slug,name,short_name&order=name.asc`, key));
+      const [participantRows, visualRows] = await Promise.all([
+        getJson(`${url}/rest/v1/participants?id=in.(${encodeURIComponent(filter)})&is_active=eq.true&select=id,slug,name,short_name&order=name.asc`, key).then(rows),
+        getJson(`${url}/rest/v1/participant_visual_profiles?participant_id=in.(${encodeURIComponent(filter)})&select=participant_id,render_family,primary_color,secondary_color,accent_color,pattern_style,visual_status,season_label,source_name,source_url,observed_at`, key).then(rows),
+      ]);
+      const visualByParticipant = new Map<string, ParticipantVisualProfile>();
+      for (const row of visualRows) {
+        const participantId = text(row.participant_id);
+        const visual = parseVisual(row);
+        if (participantId && visual) visualByParticipant.set(participantId, visual);
+      }
       teams = participantRows.flatMap((row) => {
         const id = text(row.id);
         const slug = text(row.slug);
         const name = text(row.name);
         if (!id || !slug || !name) return [];
         const shortName = text(row.short_name) || undefined;
-        return [{ id, slug, name, shortName }];
+        return [{ id, slug, name, shortName, visual: visualByParticipant.get(id) }];
       });
     }
 

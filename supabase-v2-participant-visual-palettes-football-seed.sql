@@ -1,0 +1,133 @@
+begin;
+
+with palette(slug,primary_color,secondary_color,accent_color,pattern_style) as (values
+('aek-athens','#F7D117','#111111','#FFFFFF','solid'),
+('afc-bournemouth','#DA291C','#111111','#FFFFFF','vertical_stripes'),
+('aj-auxerre','#FFFFFF','#0057A8','#D9E7F5','side_panels'),
+('angers-sco','#111111','#FFFFFF','#D1D5DB','vertical_stripes'),
+('arsenal','#EF0107','#FFFFFF','#063672','sleeves_contrast'),
+('as-monaco','#E30613','#FFFFFF','#D4AF37','half_and_half'),
+('aston-villa','#670E36','#95BFE5','#FFFFFF','sleeves_contrast'),
+('athletic-club','#D71920','#FFFFFF','#111111','vertical_stripes'),
+('atletico-de-madrid','#CB3524','#FFFFFF','#272E61','vertical_stripes'),
+('augsburg','#FFFFFF','#BA3733','#46714D','side_panels'),
+('barcelona','#091F5B','#A50044','#004D98','vertical_stripes'),
+('bayer-leverkusen','#E32221','#111111','#FFFFFF','vertical_stripes'),
+('bayern-munchen','#DC052D','#FFFFFF','#0066B2','solid'),
+('bodo-glimt','#F9E000','#111111','#FFFFFF','solid'),
+('borussia-dortmund','#FDE100','#111111','#FFFFFF','solid'),
+('borussia-monchengladbach','#FFFFFF','#111111','#1A8A4B','side_panels'),
+('brentford','#E30613','#FFFFFF','#111111','vertical_stripes'),
+('brighton-hove-albion','#0057B8','#FFFFFF','#FFCD00','vertical_stripes'),
+('ca-osasuna','#D91E36','#0B1D3A','#FFFFFF','solid'),
+('celta','#8AC7E8','#FFFFFF','#C8102E','solid'),
+('chelsea','#034694','#FFFFFF','#DBA111','solid'),
+('club-brugge','#0055A4','#111111','#FFFFFF','vertical_stripes'),
+('cologne','#FFFFFF','#E30613','#111111','sleeves_contrast'),
+('como','#0057B8','#FFFFFF','#D9E7F5','solid'),
+('coventry-city','#7FC7E8','#FFFFFF','#0B3158','solid'),
+('crystal-palace','#1B458F','#C4122E','#FFFFFF','vertical_stripes'),
+('deportivo-alaves','#005BAC','#FFFFFF','#111111','vertical_stripes'),
+('eintracht-frankfurt','#111111','#E1000F','#FFFFFF','vertical_stripes'),
+('elche-cf','#FFFFFF','#007A3D','#111111','center_stripe'),
+('elversberg','#111111','#FFFFFF','#C8102E','solid'),
+('estac-troyes','#0057B8','#FFFFFF','#8AC7E8','solid'),
+('everton','#003399','#FFFFFF','#111111','solid'),
+('fc-lorient','#F36F21','#111111','#FFFFFF','solid'),
+('fenerbahce','#FDE100','#001F5B','#FFFFFF','vertical_stripes'),
+('feyenoord','#FFFFFF','#E30613','#111111','half_and_half'),
+('freiburg','#E30613','#111111','#FFFFFF','solid'),
+('fulham','#FFFFFF','#111111','#CC0000','sleeves_contrast'),
+('galatasaray','#A90432','#F9A01B','#111111','half_and_half'),
+('getafe-cf','#0057B8','#FFFFFF','#D71920','solid'),
+('hamburg','#FFFFFF','#005CA9','#111111','side_panels'),
+('havre-ac','#8CC8E8','#0B2F5B','#FFFFFF','half_and_half'),
+('hoffenheim','#0057B8','#FFFFFF','#6FA8DC','solid'),
+('hull-city','#F5A623','#111111','#FFFFFF','vertical_stripes'),
+('inter','#0057B8','#111111','#FFFFFF','vertical_stripes'),
+('ipswich-town','#0057B8','#FFFFFF','#E30613','solid'),
+('lask','#111111','#FFFFFF','#D1D5DB','vertical_stripes'),
+('le-mans-fc','#D71920','#F3D03E','#111111','solid'),
+('leeds-united','#FFFFFF','#1D428A','#FFCD00','side_panels'),
+('leipzig','#FFFFFF','#E30613','#0B1F3A','side_panels'),
+('lens','#D71920','#F7D117','#111111','vertical_stripes'),
+('levante-ud','#0057B8','#7A263A','#FFFFFF','vertical_stripes'),
+('lille','#E30613','#0B1F3A','#FFFFFF','solid'),
+('liverpool','#C8102E','#FFFFFF','#00B2A9','solid'),
+('mainz','#E30613','#FFFFFF','#111111','solid'),
+('malaga-cf','#8AC7E8','#FFFFFF','#0057B8','vertical_stripes'),
+('manchester-city','#6CABDD','#FFFFFF','#1C2C5B','solid'),
+('manchester-united','#DA291C','#111111','#FBE122','solid'),
+('napoli','#12A0D7','#FFFFFF','#0B2F5B','solid'),
+('newcastle-united','#111111','#FFFFFF','#41B6E6','vertical_stripes'),
+('nottingham-forest','#DD0000','#FFFFFF','#111111','solid'),
+('ogc-nice','#E30613','#111111','#FFFFFF','vertical_stripes'),
+('olympique-de-marseille','#FFFFFF','#2FAEE0','#0B3158','side_panels'),
+('olympique-lyonnais','#FFFFFF','#D71920','#1D428A','center_stripe'),
+('paderborn','#0057B8','#111111','#FFFFFF','vertical_stripes'),
+('paris-fc','#0B2F5B','#67B7E1','#FFFFFF','solid'),
+('paris-saint-germain','#004170','#DA291C','#FFFFFF','center_stripe'),
+('porto','#0057B8','#FFFFFF','#111111','vertical_stripes'),
+('psv-eindhoven','#E30613','#FFFFFF','#111111','vertical_stripes'),
+('racing-club','#00843D','#FFFFFF','#111111','vertical_stripes'),
+('rayo-vallecano','#FFFFFF','#E30613','#111111','sash'),
+('rc-deportivo','#0057B8','#FFFFFF','#111111','vertical_stripes'),
+('rc-strasbourg-alsace','#0057B8','#FFFFFF','#8AC7E8','solid'),
+('rcd-espanyol','#0057B8','#FFFFFF','#111111','vertical_stripes'),
+('real-betis','#00954C','#FFFFFF','#111111','vertical_stripes'),
+('real-madrid','#FFFFFF','#111827','#D4AF37','solid'),
+('real-sociedad','#0057B8','#FFFFFF','#111111','vertical_stripes'),
+('roma','#8E1F2F','#F0BC42','#FFFFFF','solid'),
+('sabah','#172B4D','#36A9E1','#FFFFFF','solid'),
+('schalke','#0057B8','#FFFFFF','#111111','solid'),
+('sevilla-fc','#FFFFFF','#D71920','#111111','side_panels'),
+('shakhtar-donetsk','#F47B20','#111111','#FFFFFF','vertical_stripes'),
+('slavia-praha','#FFFFFF','#D71920','#0057B8','half_and_half'),
+('slovan-bratislava','#69B3E7','#FFFFFF','#0B3158','solid'),
+('sporting-cp','#00843D','#FFFFFF','#111111','horizontal_hoops'),
+('stade-brestois-29','#E30613','#FFFFFF','#111111','solid'),
+('stade-rennais','#E30613','#111111','#FFFFFF','solid'),
+('stuttgart','#FFFFFF','#E30613','#111111','horizontal_hoops'),
+('sunderland','#E30613','#FFFFFF','#111111','vertical_stripes'),
+('tottenham-hotspur','#FFFFFF','#132257','#C4CED4','solid'),
+('toulouse-fc','#4F2D7F','#FFFFFF','#D6C6E6','solid'),
+('union-berlin','#E30613','#FFFFFF','#F7D117','solid'),
+('valencia-cf','#FFFFFF','#111111','#F47B20','sleeves_contrast'),
+('viking','#12284C','#FFFFFF','#D71920','solid'),
+('villarreal','#FDE100','#0057B8','#FFFFFF','solid'),
+('werder-bremen','#00843D','#FFFFFF','#111111','solid')
+)
+update public.participant_visual_profiles pv
+set primary_color=palette.primary_color,
+    secondary_color=palette.secondary_color,
+    accent_color=palette.accent_color,
+    pattern_style=palette.pattern_style,
+    notes='WatchTVSport club-colour baseline. Exact current home kit still requires official-source review.',
+    updated_at=now()
+from public.participants p, palette
+where pv.participant_id=p.id and p.slug=palette.slug
+  and pv.visual_status='generated';
+
+-- Current 2026-27 home-kit references manually verified from official club sources.
+update public.participant_visual_profiles pv
+set primary_color='#004170',secondary_color='#DA291C',accent_color='#FFFFFF',pattern_style='center_stripe',
+    visual_status='verified',season_label='2026-27',source_name='Paris Saint-Germain',
+    source_url='https://www.psg.fr/en/content/actu_en_-paris-saint-germain-and-nike-unveil-the-2026-2027-psg-club-news-25-26',
+    observed_at=now(),notes='Royal blue shirt with a wide central red stripe bordered by fine white lines; logos/sponsors intentionally omitted.',updated_at=now()
+from public.participants p where pv.participant_id=p.id and p.slug='paris-saint-germain';
+
+update public.participant_visual_profiles pv
+set primary_color='#091F5B',secondary_color='#A50044',accent_color='#004D98',pattern_style='vertical_stripes',
+    visual_status='verified',season_label='2026-27',source_name='FC Barcelona Official Store',
+    source_url='https://store.fcbarcelona.com/en-ca/pages/home-26-27',
+    observed_at=now(),notes='Classic blaugrana striped home identity using dark blue, brighter blue and garnet red; logos/sponsors intentionally omitted.',updated_at=now()
+from public.participants p where pv.participant_id=p.id and p.slug='barcelona';
+
+update public.participant_visual_profiles pv
+set primary_color='#EF0107',secondary_color='#FFFFFF',accent_color='#063672',pattern_style='sleeves_contrast',
+    visual_status='reviewed',season_label='2026-27',source_name='Arsenal FC Official Website',
+    source_url='https://www.arsenal.com/news/gallery-2627-adidas-home-kit-launches-in-the-armoury-afAJd0y8JygH',
+    observed_at=now(),notes='Red-and-white Arsenal home identity based on the official 2026-27 launch gallery; exact graphic detailing intentionally simplified.',updated_at=now()
+from public.participants p where pv.participant_id=p.id and p.slug='arsenal';
+
+commit;

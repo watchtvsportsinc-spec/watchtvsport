@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import ParticipantSportVisual from "@/components/ParticipantSportVisual";
 import { getPublicCompetition } from "@/lib/public-competition";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
+import type { ParticipantVisualProfile } from "@/lib/participant-visuals";
 
 type PageProps = { params: Promise<{ sport: string; competition: string }> };
 
-type TeamLink = { name: string; slug: string };
+type TeamLink = { name: string; slug: string; visual?: ParticipantVisualProfile; countryCode?: string };
 
 function slugify(value: string) {
   return value
@@ -24,13 +26,15 @@ function sportLabel(value: string) {
     ? "Basketball"
     : value === "hockey"
       ? "Ice hockey"
-      : value === "formula-1"
-        ? "Formula 1"
-        : value === "motogp"
-          ? "MotoGP"
-          : value === "ufc"
-            ? "UFC"
-            : value.charAt(0).toUpperCase() + value.slice(1);
+      : value === "american-football"
+        ? "American football"
+        : value === "formula-1"
+          ? "Formula 1"
+          : value === "motogp"
+            ? "MotoGP"
+            : value === "ufc"
+              ? "UFC"
+              : value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 function canonicalCompetitionPath(sport: string, competition: string) {
@@ -80,15 +84,19 @@ export default async function CompetitionPage({ params }: PageProps) {
 
   const participants = new Map<string, TeamLink>();
   for (const team of permanentCompetition?.teams ?? []) {
-    participants.set(team.id, { name: team.name, slug: team.slug });
+    participants.set(team.slug, { name: team.name, slug: team.slug, visual: team.visual });
   }
   for (const event of events) {
     for (const participant of [event.participant1, event.participant2]) {
       if (!participant || (participant.type !== "club" && participant.type !== "national_team")) continue;
-      const slug = participant.id.startsWith("club:")
-        ? participant.id.split(":").slice(2).join(":")
-        : slugify(participant.name);
-      participants.set(participant.id, { name: participant.name, slug });
+      const eventSlug = participant.slug || (participant.id.startsWith("club:") ? participant.id.split(":").slice(2).join(":") : slugify(participant.name));
+      const existing = participants.get(eventSlug);
+      participants.set(eventSlug, {
+        name: participant.name,
+        slug: eventSlug,
+        visual: participant.visualProfile ?? existing?.visual,
+        countryCode: participant.countryCode ?? existing?.countryCode,
+      });
     }
   }
   const teams = Array.from(participants.values()).sort((a, b) => a.name.localeCompare(b.name));
@@ -104,15 +112,11 @@ export default async function CompetitionPage({ params }: PageProps) {
       <section className="v2-calendar-hero">
         <p className="v2-eyebrow">Competition</p>
         <h1>{name}</h1>
-        <p className="v2-hero-copy">
-          Schedule, participating teams and verified official broadcast information in one permanent competition page.
-        </p>
+        <p className="v2-hero-copy">Schedule, participating teams and verified official broadcast information in one permanent competition page.</p>
         <div className="v2-sport-pills">
           <a href="#schedule">Schedule</a>
           {teams.length ? <a href="#teams">Teams</a> : null}
-          <Link href={`/?view=all&sport=${encodeURIComponent(sport)}&competition=${encodeURIComponent(competition)}#calendar-results`}>
-            Full calendar
-          </Link>
+          <Link href={`/?view=all&sport=${encodeURIComponent(sport)}&competition=${encodeURIComponent(competition)}#calendar-results`}>Full calendar</Link>
         </div>
       </section>
 
@@ -124,43 +128,28 @@ export default async function CompetitionPage({ params }: PageProps) {
       </section>
 
       <section id="schedule" className="v2-results">
-        <div className="v2-results-heading">
-          <div><p className="v2-eyebrow">Schedule</p><h2>Next events</h2></div>
-          <p>{upcoming.length}</p>
-        </div>
+        <div className="v2-results-heading"><div><p className="v2-eyebrow">Schedule</p><h2>Next events</h2></div><p>{upcoming.length}</p></div>
         {upcoming.length ? (
           <div className="v2-event-list">
             {upcoming.slice(0, 50).map((event) => (
               <article className="v2-event-card" key={event.id}>
-                <div className="v2-event-main">
-                  <p className="v2-event-competition">{name}{event.stage ? ` · ${event.stage}` : ""}</p>
-                  <h3><Link href={event.detailPath}>{event.title}</Link></h3>
-                  <p className="v2-event-stage">{new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(new Date(event.eventDate))}</p>
-                </div>
-                <Link className="v2-broadcast-link" href={event.detailPath}>
-                  <span>{event.broadcasts.filter((broadcast) => broadcast.coverageStatus === "confirmed").length} confirmed</span>
-                  <strong>Where to watch →</strong>
-                </Link>
+                <div className="v2-event-main"><p className="v2-event-competition">{name}{event.stage ? ` · ${event.stage}` : ""}</p><h3><Link href={event.detailPath}>{event.title}</Link></h3><p className="v2-event-stage">{new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(new Date(event.eventDate))}</p></div>
+                <Link className="v2-broadcast-link" href={event.detailPath}><span>{event.broadcasts.filter((broadcast) => broadcast.coverageStatus === "confirmed").length} confirmed</span><strong>Where to watch →</strong></Link>
               </article>
             ))}
           </div>
         ) : (
-          <div className="v2-empty-state" role="status">
-            <h3>Schedule import in progress</h3>
-            <p>The competition page and team directory are already available. Confirmed fixtures will appear here as soon as the schedule import is published.</p>
-          </div>
+          <div className="v2-empty-state" role="status"><h3>Schedule import in progress</h3><p>The competition page and team directory are already available. Confirmed fixtures will appear here as soon as the schedule import is published.</p></div>
         )}
       </section>
 
       {teams.length ? (
         <section id="teams" className="v2-visual-section">
-          <div className="v2-section-heading">
-            <div><p className="v2-eyebrow">Participants</p><h2>Teams</h2></div>
-          </div>
+          <div className="v2-section-heading"><div><p className="v2-eyebrow">Participants</p><h2>Teams</h2></div></div>
           <div className="v2-team-link-grid">
             {teams.map((team) => (
               <Link key={`${team.name}-${team.slug}`} href={`/sports/${sport}/club/${team.slug}`}>
-                <span>{team.name.slice(0, 2).toUpperCase()}</span>
+                <ParticipantSportVisual sport={sport} label={team.name} countryCode={team.countryCode} visual={team.visual} size="sm" />
                 <strong>{team.name}</strong>
                 <small>Team profile →</small>
               </Link>
@@ -174,12 +163,7 @@ export default async function CompetitionPage({ params }: PageProps) {
           <div className="v2-results-heading"><div><p className="v2-eyebrow">Archive</p><h2>Recent events</h2></div></div>
           <div className="v2-event-list">
             {recent.map((event) => (
-              <article className="v2-event-card" key={event.id}>
-                <div className="v2-event-main">
-                  <h3><Link href={event.detailPath}>{event.title}</Link></h3>
-                  <p className="v2-event-stage">{new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(new Date(event.eventDate))}</p>
-                </div>
-              </article>
+              <article className="v2-event-card" key={event.id}><div className="v2-event-main"><h3><Link href={event.detailPath}>{event.title}</Link></h3><p className="v2-event-stage">{new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(new Date(event.eventDate))}</p></div></article>
             ))}
           </div>
         </section>

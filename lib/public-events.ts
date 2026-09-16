@@ -79,24 +79,7 @@ function readSupabaseConfig(): { url: string; key: string } {
   return { url: url.replace(/\/$/, ""), key };
 }
 
-async function fetchSupabaseEvents(): Promise<PublicEventsPayload> {
-  const { url, key } = readSupabaseConfig();
-  const response = await fetch(`${url}/rest/v1/rpc/get_public_events_v2`, {
-    method: "POST",
-    headers: {
-      apikey: key,
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-    },
-    body: "{}",
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-    next: { revalidate: 300, tags: ["public-events-v2"] },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Supabase public event request failed with ${response.status}`);
-  }
-
+async function parseEventResponse(response: Response): Promise<PublicEventsPayload> {
   const declaredLength = Number(response.headers.get("content-length") ?? 0);
   if (Number.isFinite(declaredLength) && declaredLength > MAX_RESPONSE_BYTES) {
     throw new Error("Supabase public event response is too large");
@@ -115,6 +98,32 @@ async function fetchSupabaseEvents(): Promise<PublicEventsPayload> {
   }
 
   return parseMultisportPublicEventsPayload(value);
+}
+
+async function fetchSupabaseEvents(): Promise<PublicEventsPayload> {
+  const { url, key } = readSupabaseConfig();
+  const rpcNames = ["get_public_events_v3", "get_public_events_v2"];
+  let lastStatus = 0;
+
+  for (const rpcName of rpcNames) {
+    const response = await fetch(`${url}/rest/v1/rpc/${rpcName}`, {
+      method: "POST",
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+      },
+      body: "{}",
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      next: { revalidate: 300, tags: ["public-events-v3"] },
+    });
+
+    if (response.ok) return parseEventResponse(response);
+    lastStatus = response.status;
+    if (response.status !== 404 && response.status !== 400) break;
+  }
+
+  throw new Error(`Supabase public event request failed with ${lastStatus || "unknown status"}`);
 }
 
 async function loadPublicEventsSnapshot(): Promise<PublicEventsSnapshot> {

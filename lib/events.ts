@@ -9,6 +9,7 @@ import { championsLeague202627LeaguePhase } from "../source/champions-league-202
 import { formula1Season2026Sessions } from "../source/formula-1-2026-season";
 import { ufc2026UpcomingSessions } from "../source/ufc-2026-upcoming";
 import { withPriorityBroadcasts } from "./priority-broadcasts";
+import type { ParticipantVisualProfile } from "./participant-visuals";
 
 export type EntityType = "national_team" | "club" | "player" | "event";
 export type VisualType = "flag" | "crest" | "player" | "generic";
@@ -24,11 +25,14 @@ export type SessionType =
 
 export type Participant = {
   id: string;
+  slug?: string;
   name: string;
   shortName?: string;
   type: EntityType;
   visualType: VisualType;
   visual: string;
+  countryCode?: string;
+  visualProfile?: ParticipantVisualProfile;
 };
 
 export type EventData = {
@@ -59,7 +63,7 @@ export type EventData = {
 
 export function participantEntityId(participant: Participant, sport: string): string {
   if (participant.type === "club") {
-    return `club:${sport}:${clubSlug(participant.name)}`;
+    return `club:${sport}:${participant.slug || clubSlug(participant.name)}`;
   }
 
   return participant.id;
