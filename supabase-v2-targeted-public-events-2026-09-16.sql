@@ -2,10 +2,15 @@ begin;
 
 -- Targeted public read contract for V2 pages. It keeps the v3 public JSON shape
 -- while avoiding the cost and payload of loading every sport for every page.
+-- Participant presentation stays on WatchTVSport-generated visual profiles;
+-- official club/team logos are intentionally not exposed by this RPC.
+drop function if exists public.get_public_events_filtered_v1(text, text, text, timestamptz, timestamptz, integer);
+
 create or replace function public.get_public_events_filtered_v1(
   p_sport_slug text default null,
   p_competition_slug text default null,
   p_event_slug text default null,
+  p_country_code text default null,
   p_from timestamptz default null,
   p_to timestamptz default null,
   p_limit integer default 250
@@ -49,10 +54,9 @@ as $$
           'name', hp.name,
           'shortName', hp.short_name,
           'type', case hp.participant_type when 'country' then 'national_team' when 'national_team' then 'national_team' when 'individual' then 'player' else 'club' end,
-          'visualType', case hp.participant_type when 'country' then 'flag' when 'national_team' then 'flag' when 'individual' then 'player' else 'crest' end,
+          'visualType', case hp.participant_type when 'country' then 'flag' when 'national_team' then 'flag' when 'individual' then 'player' else 'generic' end,
           'visual', coalesce(hp.country_code, hp.short_name, ''),
           'countryCode', hp.country_code,
-          'logoUrl', hm.storage_url,
           'visualProfile', case when hpv.participant_id is null then null else jsonb_strip_nulls(jsonb_build_object(
             'renderFamily', hpv.render_family,
             'primaryColor', hpv.primary_color,
@@ -71,10 +75,9 @@ as $$
           'name', ap.name,
           'shortName', ap.short_name,
           'type', case ap.participant_type when 'country' then 'national_team' when 'national_team' then 'national_team' when 'individual' then 'player' else 'club' end,
-          'visualType', case ap.participant_type when 'country' then 'flag' when 'national_team' then 'flag' when 'individual' then 'player' else 'crest' end,
+          'visualType', case ap.participant_type when 'country' then 'flag' when 'national_team' then 'flag' when 'individual' then 'player' else 'generic' end,
           'visual', coalesce(ap.country_code, ap.short_name, ''),
           'countryCode', ap.country_code,
-          'logoUrl', am.storage_url,
           'visualProfile', case when apv.participant_id is null then null else jsonb_strip_nulls(jsonb_build_object(
             'renderFamily', apv.render_family,
             'primaryColor', apv.primary_color,
@@ -112,28 +115,6 @@ as $$
       limit 1
     ) event_url on true
     left join lateral (
-      select ma.storage_url
-      from public.media_assets ma
-      where ma.entity_type = 'participant'
-        and ma.entity_key = hp.slug
-        and ma.asset_kind = 'team_logo'
-        and ma.verification_status = 'approved'
-        and ma.is_current = true
-      order by ma.verified_at desc nulls last
-      limit 1
-    ) hm on true
-    left join lateral (
-      select ma.storage_url
-      from public.media_assets ma
-      where ma.entity_type = 'participant'
-        and ma.entity_key = ap.slug
-        and ma.asset_kind = 'team_logo'
-        and ma.verification_status = 'approved'
-        and ma.is_current = true
-      order by ma.verified_at desc nulls last
-      limit 1
-    ) am on true
-    left join lateral (
       select jsonb_agg(x.payload order by x.country_name, x.broadcaster) payload
       from (
         select
@@ -167,6 +148,7 @@ as $$
           and eb.decision = 'included'
           and eb.access_type in ('Free', 'Paid')
           and coalesce(eb.official_url, pl.url, b.website_url) ~ '^https://'
+          and (p_country_code is null or lower(t.code) = lower(p_country_code))
         limit 300
       ) x
     ) pb on true
@@ -176,6 +158,17 @@ as $$
       and (p_sport_slug is null or coalesce(s.public_slug, s.slug) = p_sport_slug)
       and (p_competition_slug is null or c.slug = p_competition_slug)
       and (p_event_slug is null or e.slug = p_event_slug)
+      and (p_country_code is null or exists (
+        select 1
+        from public.event_broadcasts eb_country
+        join public.territories t_country on t_country.id = eb_country.territory_id
+        where eb_country.event_id = e.id
+          and eb_country.is_published = true
+          and eb_country.verification_status = 'confirmed'
+          and eb_country.decision = 'included'
+          and eb_country.access_type in ('Free', 'Paid')
+          and lower(t_country.code) = lower(p_country_code)
+      ))
       and (p_from is null or e.event_date >= p_from)
       and (p_to is null or e.event_date < p_to)
     order by e.event_date, e.id
@@ -183,10 +176,10 @@ as $$
   ) event_record;
 $$;
 
-comment on function public.get_public_events_filtered_v1(text, text, text, timestamptz, timestamptz, integer) is
-  'Returns a bounded, filtered subset of confirmed public events using the V2 public event JSON contract.';
+comment on function public.get_public_events_filtered_v1(text, text, text, text, timestamptz, timestamptz, integer) is
+  'Returns a bounded, optionally territory-filtered subset of confirmed public events using the V2 public event JSON contract.';
 
-revoke all on function public.get_public_events_filtered_v1(text, text, text, timestamptz, timestamptz, integer) from public;
-grant execute on function public.get_public_events_filtered_v1(text, text, text, timestamptz, timestamptz, integer) to anon, authenticated;
+revoke all on function public.get_public_events_filtered_v1(text, text, text, text, timestamptz, timestamptz, integer) from public;
+grant execute on function public.get_public_events_filtered_v1(text, text, text, text, timestamptz, timestamptz, integer) to anon, authenticated;
 
 commit;
