@@ -2,3 +2,10 @@
 .wts-filter-pills button:hover{border-color:rgba(73,174,255,.55);background:rgba(19,79,132,.28)}
 .wts-filter-pills button.is-active{background:#0a84f7;border-color:#0a84f7;color:#fff}
 .wts-filter-pills button:focus-visible{outline:2px solid #6ac7ff;outline-offset:2px}
+
+.wts-home-window-tabs button{min-height:40px;display:flex;align-items:center;justify-content:center;gap:7px;padding:8px 12px;border:1px solid rgba(91,175,250,.24);border-radius:999px;background:linear-gradient(180deg,rgba(8,29,49,.88),rgba(3,16,28,.86));box-shadow:inset 0 1px rgba(255,255,255,.04);color:#bfd0e0;font:inherit;font-size:11px;font-weight:850;cursor:pointer}
+.wts-home-window-tabs button span{color:#7e9ab4}
+.wts-home-window-tabs button i{width:7px;height:7px;border-radius:50%;background:#ff3947;box-shadow:0 0 11px rgba(255,57,71,.5)}
+.wts-home-window-tabs button.is-active{color:#fff;border-color:rgba(69,176,255,.62);background:linear-gradient(135deg,#159eff,#0878ec);box-shadow:0 9px 28px rgba(0,126,255,.23),inset 0 1px rgba(255,255,255,.18)}
+.wts-home-window-tabs button.is-active span{color:#d9eeff}
+.wts-home-window-tabs button:focus-visible{outline:2px solid #6ac7ff;outline-offset:2px}
