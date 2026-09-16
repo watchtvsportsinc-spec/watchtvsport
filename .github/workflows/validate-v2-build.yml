@@ -9,6 +9,7 @@ on:
       - feature/entity-navigation-v2
       - fix/permanent-competition-pages
       - ux/home-premium-schedule
+      - ux/home-premium-visual-pass
     paths:
       - '.github/workflows/validate-v2-build.yml'
       - 'app/**'
