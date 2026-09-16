@@ -1,8 +1,4 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import MatchPage, {
-  generateMetadata as generateBaseMetadata,
-} from "@/app/match/[slug]/page";
+import { notFound, permanentRedirect } from "next/navigation";
 import { isValidLocale } from "@/lib/i18n";
 
 type PageProps = {
@@ -10,40 +6,15 @@ type PageProps = {
     locale: string;
     slug: string;
   }>;
-  searchParams?: Promise<{
-    access?: string;
-    language?: string;
-  }>;
 };
 
-export async function generateMetadata({
-  params,
-}: PageProps): Promise<Metadata> {
+export default async function LocalizedMatchPage({ params }: PageProps) {
   const { locale, slug } = await params;
 
   if (!isValidLocale(locale)) {
     notFound();
   }
 
-  return generateBaseMetadata({
-    params: Promise.resolve({ slug }),
-  });
-}
-
-export default async function LocalizedMatchPage({
-  params,
-  searchParams,
-}: PageProps) {
-  const { locale, slug } = await params;
-
-  if (!isValidLocale(locale)) {
-    notFound();
-  }
-
-  return (
-    <MatchPage
-      params={Promise.resolve({ slug })}
-      searchParams={searchParams}
-    />
-  );
+  // Locale-prefixed match pages remain reserved until translations are real.
+  permanentRedirect(`/match/${encodeURIComponent(slug)}`);
 }
