@@ -1,6 +1,6 @@
 # V2 data-source policy
 
-Last reviewed: 2026-09-14
+Last reviewed: 2026-09-16
 
 WatchTVSport separates reference material, collection, validation, database writes,
 and publication. A page being official does not by itself authorize automated or
@@ -81,6 +81,32 @@ A future provider can use scheduled collection only after all of these are true:
 Automatic publication remains off. Enabling collection does not authorize
 publication, adding competitions, spending money, deployment, or production
 database access.
+
+## Broadcast-right propagation
+
+`supabase-v2-automatic-broadcaster-propagation.sql` prepares a separate gate for
+turning verified competition-level rights into event-level offers.
+
+- Every right starts in `manual` propagation mode.
+- `auto_full` is restricted to `full` coverage rights with `confirmed`
+  verification, Free/Paid access, HTTPS delivery, recorded evidence, and an
+  explicit propagation approver + timestamp.
+- `partial` and `unknown` rights are never expanded across an entire competition.
+  They remain event-specific until their exact coverage is verified.
+- A newly added or rescheduled event automatically resynchronizes approved
+  `auto_full` rights for the matching competition, season, and validity dates.
+- Generated event offers are unpublished automatically when a right is paused,
+  blocked, no longer valid, or the event stops matching.
+- Existing right-linked offers are marked `legacy_linked_right` and are not
+  rewritten by the new automation.
+- Any event-level correction can set `propagation_locked=true`; locked rows are
+  never overwritten or withdrawn by propagation.
+- The approval/sync functions are service-role only. Public clients continue to
+  read only published, confirmed, included event-level offers.
+
+This distinction is deliberate: possession of a competition-level right is not
+itself enough to infer every event unless the right has been explicitly reviewed
+as full coverage.
 
 ## Safe run sequence
 
