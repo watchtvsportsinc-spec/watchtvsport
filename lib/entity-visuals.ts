@@ -2,6 +2,7 @@ import {
   canRenderEntityMedia,
   getAllEntityMediaCandidates,
   getEntityMediaCandidate,
+  type EntityMediaAsset,
 } from "./entity-media";
 import type { ParticipantVisualProfile } from "./participant-visuals";
 
@@ -74,7 +75,10 @@ function reviewedParticipantPalette(
 export function getEntityVisual(
   entityId: string,
   label: string,
-  options: { participantVisual?: ParticipantVisualProfile | null } = {},
+  options: {
+    participantVisual?: ParticipantVisualProfile | null;
+    approvedMedia?: EntityMediaAsset | null;
+  } = {},
 ): EntityVisual {
   if (entityId.startsWith("national-team:")) {
     const code = entityId.split(":").at(-1)?.toLowerCase() ?? "";
@@ -92,7 +96,10 @@ export function getEntityVisual(
   const assetKey = entityId.startsWith("football:")
     ? `competition:${entityId}`
     : entityId;
-  const media = getEntityMediaCandidate(assetKey);
+  const approvedRuntimeMedia = options.approvedMedia && canRenderEntityMedia(options.approvedMedia)
+    ? options.approvedMedia
+    : null;
+  const media = approvedRuntimeMedia ?? getEntityMediaCandidate(assetKey);
   if (media && canRenderEntityMedia(media)) {
     return {
       kind: "logo",
