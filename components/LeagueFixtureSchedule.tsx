@@ -1,7 +1,7 @@
 import Link from "next/link";
 import LocalTime from "@/components/LocalTime";
 import { fixtureWindowLabel, type PublicFixture } from "@/lib/public-fixtures";
-import styles from "./competition-page.module.css";
+import styles from "./league-fixture.module.css";
 
 function label(matchweek:number|undefined){return matchweek?`Matchweek ${matchweek}`:"Matchweek TBC";}
 
