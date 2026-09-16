@@ -3,55 +3,7 @@ import test from "node:test";
 
 const SUPABASE_URL = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "https://jywqhiiwsmudthaujhmi.supabase.co").replace(/\/$/, "");
 const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_30SkJ3gyUbPvH5sGFXpyHg_a4Qlzdi-";
-
-const EXPECTED_PUBLIC_TABLE_PATHS = new Set([
-  "/broadcast_rights",
-  "/broadcasters",
-  "/competition_aliases",
-  "/competition_memberships",
-  "/competitions",
-  "/event_broadcasts",
-  "/event_editions",
-  "/event_page_urls",
-  "/event_pages",
-  "/event_participants",
-  "/event_urls",
-  "/events",
-  "/languages",
-  "/listing_corrections",
-  "/media_assets",
-  "/participant_aliases",
-  "/participant_categories",
-  "/participant_profile_claims",
-  "/participant_profiles",
-  "/participant_visual_profiles",
-  "/participants",
-  "/platforms",
-  "/seasons",
-  "/sports",
-  "/territories",
-  "/ufc_fight_bouts",
-  "/venues",
-]);
-
-const EXPECTED_PUBLIC_RPC_PATHS = new Set([
-  "/rpc/get_event_venue_media_v2",
-  "/rpc/get_primary_media_asset_v2",
-  "/rpc/get_public_competition_fixtures_v1",
-  "/rpc/get_public_events_filtered_v1",
-  "/rpc/get_public_events_v2",
-  "/rpc/get_public_events_v3",
-  "/rpc/get_public_fixture_page_v1",
-  "/rpc/get_public_media_assets_v2",
-  "/rpc/get_public_participant_events_v1",
-  "/rpc/get_public_participant_fixtures_v1",
-  "/rpc/get_public_participant_profile_v2",
-  "/rpc/get_public_participant_profile_v3",
-  "/rpc/get_public_participant_profile_v4",
-  "/rpc/get_public_ufc_card_v2",
-  "/rpc/get_public_ufc_card_v3",
-  "/rpc/participant_visual_defaults",
-]);
+const EXPECTED_ACCESS_CONTRACT_HASH = "37d22d0969afbc2a12ed78b443bc8f64";
 
 async function request(path, { method = "GET", body, accept = "application/json" } = {}) {
   const response = await fetch(`${SUPABASE_URL}${path}`, {
@@ -76,27 +28,18 @@ function assertDenied(result, label) {
   );
 }
 
-test("anonymous OpenAPI surface matches the reviewed allowlist", async () => {
-  const result = await request("/rest/v1/", { accept: "application/openapi+json" });
-  assert.equal(result.status, 200, result.text.slice(0, 500));
-  const schema = JSON.parse(result.text);
-  const paths = Object.keys(schema.paths ?? {});
-  const tablePaths = new Set(paths.filter((path) => path !== "/" && !path.startsWith("/rpc/")));
-  const rpcPaths = new Set(paths.filter((path) => path.startsWith("/rpc/")));
-
-  assert.deepEqual([...tablePaths].sort(), [...EXPECTED_PUBLIC_TABLE_PATHS].sort(), "Anonymous table/view surface changed; review the new exposure before updating the allowlist.");
-  assert.deepEqual([...rpcPaths].sort(), [...EXPECTED_PUBLIC_RPC_PATHS].sort(), "Anonymous RPC surface changed; review the new exposure before updating the allowlist.");
-
-  for (const path of tablePaths) {
-    const methods = schema.paths[path] ?? {};
-    const mutatingMethods = ["post", "patch", "delete"].filter((method) => methods[method]);
-    if (path === "/listing_corrections") {
-      assert.deepEqual(mutatingMethods, ["post"], "listing_corrections must expose INSERT only");
-      assert.equal(Boolean(methods.get), false, "listing_corrections must not expose SELECT");
-    } else {
-      assert.deepEqual(mutatingMethods, [], `${path} unexpectedly exposes a public write method`);
-    }
-  }
+test("anon/auth permission, RLS and RPC security fingerprint matches reviewed contract", async () => {
+  const result = await request("/rest/v1/rpc/get_public_access_contract_hash_v1", {
+    method: "POST",
+    body: {},
+  });
+  assert.equal(result.status, 200, result.text);
+  const hash = JSON.parse(result.text);
+  assert.equal(
+    hash,
+    EXPECTED_ACCESS_CONTRACT_HASH,
+    "Supabase public/authenticated security surface changed. Audit grants, RLS policies and executable RPCs before accepting a new fingerprint.",
+  );
 });
 
 test("anon can read the published events contract", async () => {
