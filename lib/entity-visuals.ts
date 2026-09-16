@@ -1,4 +1,17 @@
-export type EntityVisualKind = "flag" | "logo" | "initials";
+import {
+  canRenderEntityMedia,
+  getAllEntityMediaCandidates,
+  getEntityMediaCandidate,
+} from "@/lib/entity-media";
+import type { ParticipantVisualProfile } from "@/lib/participant-visuals";
+
+export type EntityVisualKind = "flag" | "logo" | "initials" | "badge";
+
+export type EntityVisualPalette = {
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+};
 
 export type EntityVisual = {
   kind: EntityVisualKind;
@@ -7,6 +20,7 @@ export type EntityVisual = {
   source?: string;
   license?: string;
   usageStatus: "approved" | "review" | "fallback";
+  palette?: EntityVisualPalette;
 };
 
 const FIFA_TO_ISO2: Record<string, string> = {
@@ -18,6 +32,14 @@ const FIFA_TO_ISO2: Record<string, string> = {
   rsa: "za", sco: "gb", sen: "sn", sui: "ch", swe: "se", tun: "tn", tur: "tr",
   uru: "uy", usa: "us", uzb: "uz", cod: "cd", ksa: "sa", cpv: "cv",
 };
+
+const WATCHTVSPORT_BADGE: EntityVisualPalette = {
+  primaryColor: "#123A63",
+  secondaryColor: "#0F172A",
+  accentColor: "#F8FAFC",
+};
+
+const HEX = /^#[0-9a-f]{6}$/i;
 
 function flagEmoji(iso2: string): string {
   return iso2
@@ -35,19 +57,25 @@ function initials(label: string): string {
   return words.slice(0, 3).map((word) => word[0]).join("").toUpperCase();
 }
 
-// Assets that are trademarked or whose commercial reuse is not yet cleared are
-// deliberately NOT rendered. They remain candidates for the later media audit.
-const REVIEW_ASSETS: Record<string, Omit<EntityVisual, "usageStatus">> = {
-  "competition:football:champions-league": {
-    kind: "logo",
-    value: "https://commons.wikimedia.org/wiki/File:UEFA_Champions_League_logo.svg",
-    alt: "UEFA Champions League logo",
-    source: "Wikimedia Commons / UEFA",
-    license: "PD-textlogo; trademark restrictions may apply",
-  },
-};
+function reviewedParticipantPalette(
+  visual?: ParticipantVisualProfile | null,
+): EntityVisualPalette | null {
+  if (!visual || !["reviewed", "verified"].includes(visual.visualStatus)) return null;
+  if (![visual.primaryColor, visual.secondaryColor, visual.accentColor].every((color) => HEX.test(color))) {
+    return null;
+  }
+  return {
+    primaryColor: visual.primaryColor.toUpperCase(),
+    secondaryColor: visual.secondaryColor.toUpperCase(),
+    accentColor: visual.accentColor.toUpperCase(),
+  };
+}
 
-export function getEntityVisual(entityId: string, label: string): EntityVisual {
+export function getEntityVisual(
+  entityId: string,
+  label: string,
+  options: { participantVisual?: ParticipantVisualProfile | null } = {},
+): EntityVisual {
   if (entityId.startsWith("national-team:")) {
     const code = entityId.split(":").at(-1)?.toLowerCase() ?? "";
     const iso2 = FIFA_TO_ISO2[code];
@@ -64,23 +92,38 @@ export function getEntityVisual(entityId: string, label: string): EntityVisual {
   const assetKey = entityId.startsWith("football:")
     ? `competition:${entityId}`
     : entityId;
-  const reviewAsset = REVIEW_ASSETS[assetKey];
-  if (reviewAsset) {
-    return { ...reviewAsset, usageStatus: "review" };
+  const media = getEntityMediaCandidate(assetKey);
+  if (media && canRenderEntityMedia(media)) {
+    return {
+      kind: "logo",
+      value: media.src,
+      alt: media.alt,
+      source: media.sourceName ?? undefined,
+      license: media.licenseNote ?? undefined,
+      usageStatus: "approved",
+    };
   }
 
   return {
-    kind: "initials",
+    kind: "badge",
     value: initials(label),
     alt: "",
+    source: "WatchTVSport",
     usageStatus: "fallback",
+    palette: reviewedParticipantPalette(options.participantVisual) ?? WATCHTVSPORT_BADGE,
   };
 }
 
+// Kept as a compatibility/audit surface. A candidate may appear here while still
+// being strictly non-renderable by getEntityVisual().
 export function getVisualAuditCandidates(): Array<{ entityId: string } & EntityVisual> {
-  return Object.entries(REVIEW_ASSETS).map(([entityId, visual]) => ({
-    entityId,
-    ...visual,
-    usageStatus: "review" as const,
+  return getAllEntityMediaCandidates().map((asset) => ({
+    entityId: asset.entityId,
+    kind: "logo" as const,
+    value: asset.src,
+    alt: asset.alt,
+    source: asset.sourceName ?? undefined,
+    license: asset.licenseNote ?? undefined,
+    usageStatus: asset.usageStatus === "approved" ? "approved" as const : "review" as const,
   }));
 }
