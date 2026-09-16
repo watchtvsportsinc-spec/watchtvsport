@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "source": "formula1-official-web",
+  "sourceUrl": "https://www.formula1.com/en/information/f1-broadcast-information.45y3LNsT1D6VoK0ZmX8ciJ",
+  "observedAt": "2026-09-16T20:00:00Z",
+  "note": "Official Formula 1 territory/broadcaster reference. Listing a broadcaster does not prove every session is carried; coverage/access stay unknown unless separately evidenced.",
+  "territories": [
+    {"code":"au","broadcasters":[{"name":"Fox Sports"},{"name":"Foxtel"},{"name":"Kayo"}]},
+    {"code":"be","broadcasters":[{"name":"RTBF"},{"name":"Play Sports"}]},
+    {"code":"ca","broadcasters":[{"name":"RDS"},{"name":"RDS 2"},{"name":"TSN"},{"name":"Noovo"}]},
+    {"code":"ch","broadcasters":[{"name":"SRF"},{"name":"RSI"},{"name":"RTS"},{"name":"Sky"}]},
+    {"code":"es","broadcasters":[{"name":"DAZN"}]},
+    {"code":"fr","broadcasters":[{"name":"CANAL+","accessType":"Paid","coverageType":"full"}]},
+    {"code":"gb","broadcasters":[{"name":"Sky Sports","accessType":"Paid","coverageType":"full"},{"name":"Channel 4"}]},
+    {"code":"in","broadcasters":[{"name":"FanCode"},{"name":"TATA Play FanCode Sports"}]},
+    {"code":"pt","broadcasters":[{"name":"DAZN"}]},
+    {"code":"us","broadcasters":[{"name":"Apple TV","accessType":"Paid","coverageType":"full"}]}
+  ]
+}
