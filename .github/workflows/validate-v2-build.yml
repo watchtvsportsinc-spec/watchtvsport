@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - refonte/watchtvsport-v2
+      - seo/**
       - audit/universal-club-media
       - ux/friendly-navigation-cards
       - feature/entity-navigation-v2

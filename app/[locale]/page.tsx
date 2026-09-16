@@ -1,24 +1,24 @@
-import { notFound } from "next/navigation";
-import HomePage from "@/app/page";
+import { notFound, permanentRedirect } from "next/navigation";
 import { isValidLocale, locales } from "@/lib/i18n";
 
 type PageProps = {
   params: Promise<{
     locale: string;
   }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export default async function LocalizedHomePage({ params, searchParams }: PageProps) {
+export default async function LocalizedHomePage({ params }: PageProps) {
   const { locale } = await params;
 
   if (!isValidLocale(locale)) {
     notFound();
   }
 
-  return <HomePage searchParams={searchParams} />;
+  // Locale-prefixed pages are reserved for future fully translated versions.
+  // Until then, keep one canonical language URL instead of indexing duplicates.
+  permanentRedirect("/");
 }

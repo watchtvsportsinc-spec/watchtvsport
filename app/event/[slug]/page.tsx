@@ -14,7 +14,7 @@ export async function generateMetadata({params}:PageProps):Promise<Metadata>{
     const description=`${fixture.title} ${fixture.seasonLabel??""} TV guide and official broadcaster information. ${fixture.matchweek?`Matchweek ${fixture.matchweek}. `:""}${schedule}.`;
     return{title:`${fixture.title} TV schedule & where to watch | WatchTVSport`,description,alternates:{canonical:fixture.detailPath},robots:{index:true,follow:true},openGraph:{title:`${fixture.title} – where to watch`,description,url:fixture.detailPath,type:"website"},twitter:{card:"summary_large_image",title:`${fixture.title} – where to watch`,description}};
   }
-  const snapshot=await getPublicEventsSnapshot();const event=snapshot.events.find(e=>e.slug===slug);
+  const snapshot=await getPublicEventsSnapshot({slug,limit:1});const event=snapshot.events.find(e=>e.slug===slug);
   if(!event)return{title:"Event not found",robots:{index:false,follow:false}};
   return{title:`${event.title} – where to watch`,description:`Find official TV channels and streaming platforms for ${event.title} by country.`,alternates:{canonical:`/event/${slug}`}};
 }

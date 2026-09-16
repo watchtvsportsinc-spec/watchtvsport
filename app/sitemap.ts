@@ -1,36 +1,213 @@
 import type { MetadataRoute } from "next";
 import { clubSlug } from "@/lib/club-aliases";
-import { allCompetitionCatalogEntries } from "@/lib/competition-catalog";
 import { entitySlug, getFootballNations } from "@/lib/entity-pages";
 import { getAllEvents, type Participant } from "@/lib/events";
 import { getAllMatches, type MatchData } from "@/lib/matches";
 import { getPublicCompetitionFixtures } from "@/lib/public-fixtures";
+import { isSeoIndexable } from "@/lib/seo-indexability";
 import { sportsRegistry, sportAllowsParticipantPages } from "@/lib/sports-registry";
 
-const BASE_URL="https://watchtvsport.com";
-function sitemapEntry(path:string,priority:number,changeFrequency:MetadataRoute.Sitemap[number]["changeFrequency"],lastModified:Date=new Date()):MetadataRoute.Sitemap[number]{return{url:`${BASE_URL}${path}`,lastModified,changeFrequency,priority};}
-function confirmedCountryCodes(match:MatchData):string[]{return Array.from(new Set(match.broadcasts.filter(b=>b.coverageStatus==="confirmed"&&b.countryCode&&b.broadcaster&&b.url).map(b=>b.countryCode.toLowerCase())));}
-function sportHubPath(sport:string):string{if(sport==="football")return"/football";if(sport==="formula-1")return"/formula-1";if(sport==="ufc")return"/ufc";return`/sports/${sport}`;}
-function competitionPath(sport:string,slug:string):string{if(sport==="football")return`/football/competition/${slug}`;return`/sports/${sport}/competition/${slug}`;}
-function participantSlug(participant:Participant):string{if(participant.slug)return participant.slug;if(participant.id.startsWith("club:")){const parsed=participant.id.split(":").slice(2).join(":");if(parsed)return parsed;}return clubSlug(participant.name);}
+const BASE_URL = "https://watchtvsport.com";
 
-export default async function sitemap():Promise<MetadataRoute.Sitemap>{
- const events=getAllEvents();const worldCupMatches=getAllMatches();
- const [ligue1Fixtures,premierLeagueFixtures]=await Promise.all([getPublicCompetitionFixtures("football","ligue-1"),getPublicCompetitionFixtures("football","premier-league")]);
- const sportPages=sportsRegistry.filter(s=>s.enabled).map(s=>sitemapEntry(sportHubPath(s.slug),.95,"weekly"));
- const staticPages=[sitemapEntry("/",1,"daily"),sitemapEntry("/sports",.98,"weekly"),sitemapEntry("/motorsports",.95,"weekly"),sitemapEntry("/combat-sports",.95,"weekly"),sitemapEntry("/combat-sports/mma",.93,"weekly")];
- const catalogCompetitionPages=allCompetitionCatalogEntries().filter(c=>c.sport!=="ufc").map(c=>sitemapEntry(competitionPath(c.sport,c.slug),.9,"weekly"));
- const eventCompetitionPages=events.filter(e=>e.sport!=="formula-1"&&e.sport!=="ufc").map(e=>competitionPath(e.sport,e.competitionSlug));
- const competitionPages=Array.from(new Set([...catalogCompetitionPages.map(e=>e.url.replace(BASE_URL,"")),...eventCompetitionPages])).map(path=>sitemapEntry(path,.9,"daily"));
- const clubMap=new Map(events.flatMap(event=>{if(!sportAllowsParticipantPages(event.sport))return[];return[event.participant1,event.participant2].filter((participant):participant is Participant=>Boolean(participant&&(participant.type==="club"||participant.type==="national_team"))).map(participant=>[`${event.sport}:${participant.id}`,{sport:event.sport,participant}] as const);}));
- const clubPages=Array.from(clubMap.values()).map(({sport,participant})=>sitemapEntry(`/sports/${sport}/club/${participantSlug(participant)}`,.88,"daily"));
- const nationPages=getFootballNations(events).map(n=>sitemapEntry(`/football/nation/${entitySlug(n.name)}`,.85,"daily"));
- const permanentEventPages=Array.from(new Map(events.filter(e=>e.detailPath.startsWith("/football/")).map(e=>[e.detailPath,e] as const)).values()).map(e=>sitemapEntry(e.detailPath,.9,"daily",new Date(e.eventDate)));
- const leagueFixturePages=[...ligue1Fixtures,...premierLeagueFixtures].map(fixture=>sitemapEntry(fixture.detailPath,.9,"daily",fixture.exactDate?new Date(fixture.exactDate):new Date()));
- const f1Pages=Array.from(new Map(events.filter(e=>e.sport==="formula-1"&&e.eventGroupId&&e.eventGroupSlug).map(e=>[e.eventGroupId!,e] as const)).values()).map(e=>sitemapEntry(`/formula-1/grand-prix/${e.eventGroupSlug}`,.9,"daily",new Date(e.eventDate)));
- const ufcPages=Array.from(new Map(events.filter(e=>e.sport==="ufc"&&e.eventGroupSlug).map(e=>[e.eventGroupSlug!,e] as const)).values()).map(e=>sitemapEntry(`/ufc/event/${e.eventGroupSlug}`,.9,"daily",new Date(e.eventDate)));
- const archiveMatchPages=worldCupMatches.map(m=>sitemapEntry(`/match/${m.slug}`,.85,"monthly",new Date(m.matchDate)));
- const watchPages=worldCupMatches.flatMap(m=>confirmedCountryCodes(m).map(code=>sitemapEntry(`/watch/${m.slug}/${code}`,.75,"monthly",new Date(m.matchDate))));
- const countryPages=Array.from(new Set(worldCupMatches.flatMap(m=>confirmedCountryCodes(m)))).map(code=>sitemapEntry(`/country/${code}`,.8,"daily"));
- const dedup=new Map<string,MetadataRoute.Sitemap[number]>();for(const entry of[...staticPages,...sportPages,...competitionPages,...clubPages,...nationPages,...permanentEventPages,...leagueFixturePages,...f1Pages,...ufcPages,...archiveMatchPages,...watchPages,...countryPages])dedup.set(entry.url,entry);return Array.from(dedup.values());
+type SitemapEntry = MetadataRoute.Sitemap[number];
+
+function sitemapEntry(path: string, lastModified?: Date): SitemapEntry {
+  return {
+    url: `${BASE_URL}${path}`,
+    ...(lastModified && !Number.isNaN(lastModified.getTime()) ? { lastModified } : {}),
+  };
+}
+
+function confirmedCountryCodes(match: MatchData): string[] {
+  return Array.from(
+    new Set(
+      match.broadcasts
+        .filter(
+          (broadcast) =>
+            broadcast.coverageStatus === "confirmed" &&
+            broadcast.countryCode &&
+            broadcast.broadcaster &&
+            broadcast.url,
+        )
+        .map((broadcast) => broadcast.countryCode.toLowerCase()),
+    ),
+  );
+}
+
+function sportHubPath(sport: string): string {
+  if (sport === "football") return "/football";
+  if (sport === "formula-1") return "/formula-1";
+  if (sport === "ufc") return "/ufc";
+  return `/sports/${sport}`;
+}
+
+function competitionPath(sport: string, slug: string): string {
+  if (sport === "football") return `/football/competition/${slug}`;
+  return `/sports/${sport}/competition/${slug}`;
+}
+
+function participantSlug(participant: Participant): string {
+  if (participant.slug) return participant.slug;
+  if (participant.id.startsWith("club:")) {
+    const parsed = participant.id.split(":").slice(2).join(":");
+    if (parsed) return parsed;
+  }
+  return clubSlug(participant.name);
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const events = getAllEvents();
+  const worldCupMatches = getAllMatches();
+  const [ligue1Fixtures, premierLeagueFixtures] = await Promise.all([
+    getPublicCompetitionFixtures("football", "ligue-1"),
+    getPublicCompetitionFixtures("football", "premier-league"),
+  ]);
+
+  const eventCountBySport = new Map<string, number>();
+  for (const event of events) {
+    eventCountBySport.set(event.sport, (eventCountBySport.get(event.sport) ?? 0) + 1);
+  }
+
+  const staticPages = [
+    sitemapEntry("/"),
+    sitemapEntry("/sports"),
+    sitemapEntry("/events"),
+    sitemapEntry("/motorsports"),
+    sitemapEntry("/combat-sports"),
+    sitemapEntry("/combat-sports/mma"),
+    sitemapEntry("/archive/world-cup-2026"),
+    sitemapEntry("/methodology"),
+    sitemapEntry("/report-error"),
+  ];
+
+  const sportPages = sportsRegistry
+    .filter((sport) =>
+      isSeoIndexable({
+        canonicalPath: sportHubPath(sport.slug),
+        published: sport.enabled,
+        usefulContentCount: eventCountBySport.get(sport.slug) ?? 0,
+      }),
+    )
+    .map((sport) => sitemapEntry(sportHubPath(sport.slug)));
+
+  const eventCompetitionPages = events
+    .filter((event) => event.sport !== "formula-1" && event.sport !== "ufc")
+    .map((event) => competitionPath(event.sport, event.competitionSlug));
+  const fixtureCompetitionPages = [
+    ...(ligue1Fixtures.length ? [competitionPath("football", "ligue-1")] : []),
+    ...(premierLeagueFixtures.length ? [competitionPath("football", "premier-league")] : []),
+  ];
+  const competitionPages = Array.from(
+    new Set([...eventCompetitionPages, ...fixtureCompetitionPages]),
+  ).map((path) => sitemapEntry(path));
+
+  const clubMap = new Map(
+    events.flatMap((event) => {
+      if (!sportAllowsParticipantPages(event.sport)) return [];
+      return [event.participant1, event.participant2]
+        .filter(
+          (participant): participant is Participant =>
+            Boolean(
+              participant &&
+                (participant.type === "club" || participant.type === "national_team"),
+            ),
+        )
+        .map(
+          (participant) =>
+            [`${event.sport}:${participant.id}`, { sport: event.sport, participant }] as const,
+        );
+    }),
+  );
+  const clubPages = Array.from(clubMap.values()).map(({ sport, participant }) =>
+    sitemapEntry(`/sports/${sport}/club/${participantSlug(participant)}`),
+  );
+
+  const nationPages = getFootballNations(events).map((nation) =>
+    sitemapEntry(`/football/nation/${entitySlug(nation.name)}`),
+  );
+
+  const permanentEventPages = Array.from(
+    new Map(
+      events
+        .filter((event) => event.detailPath.startsWith("/football/"))
+        .map((event) => [event.detailPath, event] as const),
+    ).values(),
+  ).map((event) => sitemapEntry(event.detailPath));
+
+  const leagueFixturePages = [...ligue1Fixtures, ...premierLeagueFixtures]
+    .filter((fixture) =>
+      isSeoIndexable({
+        canonicalPath: fixture.detailPath,
+        usefulContentCount: fixture.exactDate ? 1 : 0,
+      }),
+    )
+    .map((fixture) =>
+      sitemapEntry(
+        fixture.detailPath,
+        fixture.exactDate ? new Date(fixture.exactDate) : undefined,
+      ),
+    );
+
+  const f1Pages = Array.from(
+    new Map(
+      events
+        .filter((event) => event.sport === "formula-1" && event.eventGroupId && event.eventGroupSlug)
+        .map((event) => [event.eventGroupId!, event] as const),
+    ).values(),
+  ).map((event) => sitemapEntry(`/formula-1/grand-prix/${event.eventGroupSlug}`));
+
+  const f1EditionPages = Array.from(
+    new Map(
+      events
+        .filter((event) => event.sport === "formula-1" && event.eventGroupSlug)
+        .map((event) => {
+          const year = new Date(event.eventDate).getUTCFullYear();
+          return [`${event.eventGroupSlug}:${year}`, { event, year }] as const;
+        }),
+    ).values(),
+  ).map(({ event, year }) =>
+    sitemapEntry(`/formula-1/grand-prix/${event.eventGroupSlug}/${year}`, new Date(event.eventDate)),
+  );
+
+  const ufcPages = Array.from(
+    new Map(
+      events
+        .filter((event) => event.sport === "ufc" && event.eventGroupSlug)
+        .map((event) => [event.eventGroupSlug!, event] as const),
+    ).values(),
+  ).map((event) => sitemapEntry(`/ufc/event/${event.eventGroupSlug}`));
+
+  // Keep historical World Cup URLs discoverable: they already carry search equity.
+  const archiveMatchPages = worldCupMatches.map((match) =>
+    sitemapEntry(`/match/${match.slug}`, new Date(match.matchDate)),
+  );
+  const watchPages = worldCupMatches.flatMap((match) =>
+    confirmedCountryCodes(match).map((code) =>
+      sitemapEntry(`/watch/${match.slug}/${code}`, new Date(match.matchDate)),
+    ),
+  );
+  const countryPages = Array.from(
+    new Set(worldCupMatches.flatMap((match) => confirmedCountryCodes(match))),
+  ).map((code) => sitemapEntry(`/country/${code}`));
+
+  const deduped = new Map<string, SitemapEntry>();
+  for (const entry of [
+    ...staticPages,
+    ...sportPages,
+    ...competitionPages,
+    ...clubPages,
+    ...nationPages,
+    ...permanentEventPages,
+    ...leagueFixturePages,
+    ...f1Pages,
+    ...f1EditionPages,
+    ...ufcPages,
+    ...archiveMatchPages,
+    ...watchPages,
+    ...countryPages,
+  ]) {
+    deduped.set(entry.url, entry);
+  }
+
+  return Array.from(deduped.values());
 }

@@ -8,10 +8,10 @@ import { getPublicEventsSnapshot } from "@/lib/public-events";
 
 function sportHref(sport:string){return sport==="football"?"/football":`/sports/${sport}`;}
 function competitionHref(item:PublicFixture){return item.sport==="football"?`/football/competition/${item.competitionSlug}`:`/sports/${item.sport}/competition/${item.competitionSlug}`;}
-function clubHref(item:PublicFixture,slug:string){return item.sport==="football"?`/football/club/${slug}`:`/sports/${item.sport}/club/${slug}`;}
+function clubHref(item:PublicFixture,slug:string){return `/sports/${item.sport}/club/${slug}`;}
 
 export default async function PermanentFixturePage({fixture}:{fixture:PublicFixture}){
-  const snapshot=await getPublicEventsSnapshot();
+  const snapshot=await getPublicEventsSnapshot({sport:fixture.sport,competition:fixture.competitionSlug,limit:500});
   const exactEvent=fixture.eventId?snapshot.events.find(event=>event.id===fixture.eventId):undefined;
   const confirmed=exactEvent?.broadcasts.filter(b=>b.coverageStatus==="confirmed")??[];
   const free=confirmed.filter(b=>b.access==="Free");
