@@ -55,10 +55,16 @@ export type PublicParticipantProfile = {
   sources: ParticipantProfileSource[];
 };
 
-function config() {
-  const url = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/$/, "");
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY;
-  return { url, key };
+type SupabaseReadConfig = { url: string; key: string };
+
+function configCandidates(): SupabaseReadConfig[] {
+  const configuredUrl = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/$/, "");
+  const configuredKey = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY;
+  const candidates: SupabaseReadConfig[] = [
+    { url: configuredUrl, key: configuredKey },
+    { url: DEFAULT_SUPABASE_URL, key: DEFAULT_SUPABASE_PUBLISHABLE_KEY },
+  ];
+  return candidates.filter((candidate, index, all) => all.findIndex((entry) => entry.url === candidate.url && entry.key === candidate.key) === index);
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -124,25 +130,28 @@ function parseProfile(value: unknown): PublicParticipantProfile | null {
 }
 
 async function loadParticipantProfile(slug: string, sport: string): Promise<PublicParticipantProfile | null> {
-  try {
-    const { url, key } = config();
-    const rpcNames = ["get_public_participant_profile_v3", "get_public_participant_profile_v2"];
+  const rpcNames = ["get_public_participant_profile_v3", "get_public_participant_profile_v2"];
+
+  for (const { url, key } of configCandidates()) {
     for (const rpcName of rpcNames) {
-      const response = await fetch(`${url}/rest/v1/rpc/${rpcName}`, {
-        method: "POST",
-        headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ p_slug: slug, p_sport_slug: sport }),
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-        next: { revalidate: 86400, tags: [`participant-profile:${sport}:${slug}`] },
-      });
-      if (!response.ok) continue;
-      const parsed = parseProfile(await response.json());
-      if (parsed) return parsed;
+      try {
+        const response = await fetch(`${url}/rest/v1/rpc/${rpcName}`, {
+          method: "POST",
+          headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ p_slug: slug, p_sport_slug: sport }),
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+          next: { revalidate: 86400, tags: [`participant-profile:${sport}:${slug}`] },
+        });
+        if (!response.ok) continue;
+        const parsed = parseProfile(await response.json());
+        if (parsed) return parsed;
+      } catch {
+        continue;
+      }
     }
-    return null;
-  } catch {
-    return null;
   }
+
+  return null;
 }
 
 export const getPublicParticipantProfile = cache(loadParticipantProfile);
