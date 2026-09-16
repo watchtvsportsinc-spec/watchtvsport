@@ -15,7 +15,14 @@ function participantSlug(participant:Participant):string{if(participant.slug)ret
 export default function sitemap():MetadataRoute.Sitemap{
  const events=getAllEvents(); const worldCupMatches=getAllMatches();
  const activeSports=Array.from(new Set(events.map(event=>event.sport)));
- const staticPages=[sitemapEntry("/",1,"daily"),...activeSports.map(sport=>sitemapEntry(sportHubPath(sport),.95,"daily"))];
+ const staticPages=[
+  sitemapEntry("/",1,"daily"),
+  sitemapEntry("/sports",.97,"weekly"),
+  sitemapEntry("/motorsports",.94,"weekly"),
+  sitemapEntry("/combat-sports",.94,"weekly"),
+  sitemapEntry("/combat-sports/mma",.92,"weekly"),
+  ...activeSports.map(sport=>sitemapEntry(sportHubPath(sport),.95,"daily")),
+ ];
  const competitionPages=Array.from(new Set(events.filter(e=>e.sport==="football").map(e=>e.competitionSlug))).map(slug=>sitemapEntry(`/football/competition/${slug}`,.9,"daily"));
  const clubMap=new Map(events.flatMap(event=>{
    if(!sportAllowsParticipantPages(event.sport))return[];
