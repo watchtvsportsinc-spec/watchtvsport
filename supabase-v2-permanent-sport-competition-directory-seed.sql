@@ -13,6 +13,8 @@ on conflict (slug) do nothing;
 with rows(sport_slug,slug,name,display_name,season_label,competition_type,region_label,country_code,sort_priority) as (values
  ('football','europa-league','UEFA Europa League','UEFA Europa League','2026/27','continental','Europe',null,2),
  ('football','conference-league','UEFA Conference League','UEFA Conference League','2026/27','continental','Europe',null,3),
+ ('football','premier-league','Premier League','Premier League','2026/27','domestic-league','Europe','GB',10),
+ ('football','ligue-1','Ligue 1 McDonald''s','Ligue 1 McDonald''s','2026/27','domestic-league','Europe','FR',11),
  ('football','serie-a','Serie A','Serie A','2026/27','domestic-league','Europe','IT',14),
  ('football','mls','Major League Soccer','Major League Soccer','2026','domestic-league','North America',null,15),
  ('football','fa-cup','FA Cup','FA Cup','2026/27','domestic-cup','Europe','GB',30),
