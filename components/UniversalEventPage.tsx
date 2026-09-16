@@ -4,6 +4,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import LocalTime from "@/components/LocalTime";
 import FavoriteButton from "@/components/FavoriteButton";
 import ParticipantSportVisual from "@/components/ParticipantSportVisual";
+import { resolveClubSlug } from "@/lib/club-aliases";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 import type { EventData, Participant } from "@/lib/events";
 
@@ -11,7 +12,15 @@ function slugify(value:string){return value.normalize("NFD").replace(/[\u0300-\u
 function sportLabel(value:string){return value==="basketball"?"Basketball":value==="hockey"?"Ice hockey":value==="american-football"?"American football":value==="formula-1"?"Formula 1":value==="motogp"?"MotoGP":value==="ufc"?"UFC":value.charAt(0).toUpperCase()+value.slice(1);}
 function sportHref(sport:string){if(sport==="football")return "/football";if(sport==="formula-1")return "/formula-1";if(sport==="ufc")return "/ufc";return `/sports/${sport}`;}
 function competitionHref(event:EventData){if(event.sport==="football")return `/football/competition/${event.competitionSlug}`;if(event.sport==="formula-1")return "/formula-1";if(event.sport==="ufc")return "/ufc";return `/sports/${event.sport}/competition/${event.competitionSlug}`;}
-function participantHref(event:EventData,p?:Participant){if(!p)return null;if(event.sport==="football"&&p.type==="club")return `/football/club/${p.id.startsWith("club:")?p.id.split(":").slice(2).join(":"):slugify(p.name)}`;if(event.sport==="football"&&p.type==="national_team")return `/football/nation/${slugify(p.name)}`;if(p.type==="club")return `/sports/${event.sport}/club/${p.id.startsWith("club:")?p.id.split(":").slice(2).join(":"):slugify(p.name)}`;if(p.type==="national_team")return `/sports/${event.sport}/club/${slugify(p.name)}`;return null;}
+function participantHref(event:EventData,p?:Participant){
+  if(!p)return null;
+  const clubPathSlug=p.slug||(p.id.startsWith("club:")?p.id.split(":").slice(2).join(":"):resolveClubSlug(p.name));
+  if(event.sport==="football"&&p.type==="club")return `/football/club/${clubPathSlug}`;
+  if(event.sport==="football"&&p.type==="national_team")return `/football/nation/${slugify(p.name)}`;
+  if(p.type==="club")return `/sports/${event.sport}/club/${clubPathSlug}`;
+  if(p.type==="national_team")return `/sports/${event.sport}/club/${slugify(p.name)}`;
+  return null;
+}
 
 function ParticipantBlock({event,participant,href}:{event:EventData;participant?:Participant;href:string|null}){
   if(!participant)return <div><strong>TBC</strong></div>;
