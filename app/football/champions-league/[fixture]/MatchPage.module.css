@@ -2,6 +2,14 @@
   width: min(100%, 1240px);
 }
 
+.mobileBack {
+  display: none;
+}
+
+.stageCompact {
+  display: none;
+}
+
 .hero {
   position: relative;
   overflow: hidden;
@@ -140,25 +148,14 @@
   text-align: right;
 }
 
-.teamText {
-  display: grid;
-  min-width: 0;
-  gap: 5px;
-}
-
 .teamName {
+  min-width: 0;
   overflow: hidden;
   color: #ffffff;
   font-size: clamp(18px, 2.5vw, 27px);
   font-weight: 900;
   line-height: 1.1;
   text-overflow: ellipsis;
-}
-
-.teamLink {
-  color: #60a5fa;
-  font-size: 11px;
-  font-weight: 750;
 }
 
 .vs {
@@ -181,7 +178,7 @@
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 9px;
   margin-top: 12px;
 }
@@ -210,11 +207,6 @@
   letter-spacing: 0.05em;
   line-height: 1.25;
   text-transform: uppercase;
-}
-
-.statStage strong {
-  font-size: 15px;
-  line-height: 1.2;
 }
 
 .followRow {
@@ -328,103 +320,216 @@
 }
 
 @media (max-width: 760px) {
+  .page {
+    padding-top: 10px;
+  }
+
+  .desktopBreadcrumb {
+    display: none;
+  }
+
+  .mobileBack {
+    display: inline-flex;
+    max-width: 100%;
+    align-items: center;
+    margin: 0 0 7px;
+    overflow: hidden;
+    color: #93c5fd;
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .hero {
-    border-radius: 16px;
-    padding: 16px 13px;
+    border-radius: 14px;
+    padding: 11px 10px 9px;
   }
 
   .heroTop {
     display: grid;
-    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 7px;
   }
 
   .heroAction {
-    justify-self: start;
+    margin-top: 13px;
+  }
+
+  .heroAction :global(.v2-favorite-button) {
+    min-width: 0;
+    min-height: 32px;
+    gap: 4px;
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .heroAction :global(.v2-favorite-button) > span:first-child {
+    font-size: 14px;
+  }
+
+  .competitionLine {
+    margin-bottom: 4px;
+    font-size: 8.5px;
+    letter-spacing: 0.075em;
   }
 
   .hero h1 {
-    font-size: clamp(31px, 10vw, 43px);
+    font-size: clamp(24px, 7.4vw, 31px);
+    line-height: 1.01;
+    letter-spacing: -0.035em;
   }
 
   .meta {
-    gap: 8px 10px;
-    margin-top: 13px;
-    font-size: 12px;
+    flex-wrap: nowrap;
+    gap: 6px;
+    margin-top: 8px;
+    overflow: hidden;
+    color: #cbd5e1;
+    font-size: 10.5px;
+    white-space: nowrap;
+  }
+
+  .status {
+    min-height: 21px;
+    padding: 0 6px;
+    font-size: 8px;
+  }
+
+  .stageFull {
+    display: none;
+  }
+
+  .stageCompact {
+    display: inline;
+    color: #93c5fd;
+    font-weight: 850;
   }
 
   .matchup {
-    gap: 7px;
-    margin-top: 16px;
+    grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1fr);
+    gap: 4px;
+    margin-top: 9px;
+    border-top: 1px solid rgba(148, 163, 184, 0.12);
+    padding-top: 7px;
   }
 
   .teamCard,
   .teamCardAway {
-    flex-direction: column;
-    justify-content: center;
-    gap: 8px;
-    min-height: 126px;
-    padding: 10px 6px;
-    text-align: center;
+    min-height: 48px;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 7px;
+    border: 0;
+    border-radius: 10px;
+    background: rgba(8, 24, 40, 0.38);
+    padding: 3px 5px;
+    text-align: left;
+    backdrop-filter: none;
   }
 
-  .teamText {
-    justify-items: center;
+  .teamCardAway {
+    flex-direction: row-reverse;
+    text-align: right;
+  }
+
+  .teamCard:hover,
+  .teamCardAway:hover {
+    background: rgba(13, 36, 59, 0.62);
   }
 
   .teamName {
-    width: 100%;
-    font-size: 15px;
-    white-space: normal;
-  }
-
-  .teamLink {
-    font-size: 10px;
+    display: block;
+    overflow: hidden;
+    font-size: 11.5px;
+    line-height: 1.15;
+    text-overflow: ellipsis;
   }
 
   .vs {
-    width: 42px;
-    min-height: 48px;
-    border-radius: 11px;
-    font-size: 14px;
+    width: 24px;
+    min-height: 42px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #60a5fa;
+    font-size: 10px;
+    box-shadow: none;
   }
 
   .stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+    overflow: hidden;
+    margin-top: 7px;
+    border: 1px solid rgba(96, 165, 250, 0.18);
+    border-radius: 9px;
+    background: rgba(8, 24, 40, 0.46);
   }
 
   .stat {
-    min-height: 72px;
-    padding: 11px 12px;
+    display: flex;
+    min-height: 31px;
+    align-items: baseline;
+    justify-content: center;
+    gap: 4px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 5px 4px;
+  }
+
+  .stat + .stat {
+    border-left: 1px solid rgba(148, 163, 184, 0.13);
   }
 
   .stat strong {
-    font-size: 18px;
-  }
-
-  .statStage strong {
+    display: inline;
     font-size: 13px;
+    line-height: 1;
   }
 
-  .tabs a {
-    flex: 0 0 auto;
-    min-width: 132px;
+  .stat span {
+    display: inline;
+    margin: 0;
+    font-size: 7.5px;
+    letter-spacing: 0.03em;
+    line-height: 1;
+  }
+
+  .followRow,
+  .tabs {
+    display: none;
+  }
+
+  .secondarySection {
+    margin-top: 16px;
   }
 }
 
 @media (max-width: 430px) {
   .page {
-    padding-inline: 10px;
+    padding: 8px 7px 36px;
   }
 
-  .competitionLine {
-    font-size: 10px;
+  .hero {
+    padding-inline: 9px;
   }
 
-  .matchup {
-    grid-template-columns: minmax(0, 1fr) 38px minmax(0, 1fr);
+  .hero h1 {
+    font-size: clamp(23px, 7.1vw, 29px);
   }
 
-  .vs {
-    width: 38px;
+  .teamCard,
+  .teamCardAway {
+    gap: 5px;
+    padding-inline: 3px;
+  }
+
+  .teamName {
+    font-size: 10.8px;
   }
 }
