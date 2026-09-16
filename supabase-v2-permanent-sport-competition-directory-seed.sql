@@ -1,5 +1,5 @@
 -- Permanent sport/competition directory used by sport hubs even before schedules are imported.
--- Mirrors production migration seed_permanent_sport_competition_directory_v2.
+-- Mirrors production migration seed_permanent_sport_competition_directory_v2 plus MotoGP permanent competition metadata.
 
 insert into public.sports(slug,name,public_slug,event_model,participant_page_policy,is_enabled)
 values
@@ -38,6 +38,7 @@ with rows(sport_slug,slug,name,display_name,season_label,competition_type,region
  ('baseball','npb','NPB','NPB',null,'league','Asia','JP',3),
  ('baseball','kbo','KBO League','KBO League',null,'league','Asia','KR',4),
  ('american-football','ncaa-football','NCAA Football','NCAA Football','2026','league','North America','US',2),
+ ('motogp','motogp','MotoGP','MotoGP',null,'championship','Global',null,1),
  ('cycling','tour-de-france','Tour de France','Tour de France',null,'tour','Europe','FR',1),
  ('cycling','giro-ditalia','Giro d''Italia','Giro d''Italia',null,'tour','Europe','IT',2),
  ('cycling','vuelta-a-espana','Vuelta a España','Vuelta a España',null,'tour','Europe','ES',3)
