@@ -19,7 +19,18 @@ for insert
 to anon, authenticated
 with check (status = 'pending');
 
-revoke all on public.listing_corrections from public;
-grant insert (page_url, message, reporter_email, status) on public.listing_corrections to anon, authenticated;
+-- Supabase grants broad table privileges to API roles by default. Remove them
+-- explicitly, then expose only the four columns accepted by the correction API.
+revoke all privileges on table public.listing_corrections from public, anon, authenticated;
+revoke select (id, page_url, message, reporter_email, status, created_at),
+       insert (id, page_url, message, reporter_email, status, created_at),
+       update (id, page_url, message, reporter_email, status, created_at),
+       references (id, page_url, message, reporter_email, status, created_at)
+on table public.listing_corrections
+from anon, authenticated;
+
+grant insert (page_url, message, reporter_email, status)
+on public.listing_corrections
+to anon, authenticated;
 
 commit;
