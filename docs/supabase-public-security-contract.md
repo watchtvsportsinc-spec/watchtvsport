@@ -73,6 +73,7 @@ The following RPCs are intentionally executable by anonymous/public website traf
 
 - `get_event_venue_media_v2`
 - `get_primary_media_asset_v2`
+- `get_public_access_contract_hash_v1`
 - `get_public_competition_fixtures_v1`
 - `get_public_events_filtered_v1`
 - `get_public_events_v2`
@@ -88,6 +89,8 @@ The following RPCs are intentionally executable by anonymous/public website traf
 - `get_public_ufc_card_v3`
 - `participant_visual_defaults`
 
+`get_public_access_contract_hash_v1` returns only a non-sensitive MD5 fingerprint of the reviewed `anon` + `authenticated` privilege surface, applicable RLS policies, and executable public RPC security settings. It does not return relation, policy, or function names.
+
 The review RPCs (`wts_review_*`) require an authenticated role. Trigger functions are internal implementation details and must have no `EXECUTE` privilege for `anon` or `authenticated`.
 
 ## Storage
@@ -98,9 +101,7 @@ At the time of this review there are no Supabase Storage buckets. Adding the fir
 
 `npm run test:security` performs live requests using the public Supabase publishable key and verifies:
 
-- the anonymous OpenAPI table/view allowlist;
-- the anonymous RPC allowlist;
-- no public table mutation methods except the correction-report `POST`;
+- the combined `anon` + `authenticated` permission/RLS/RPC fingerprint matches the reviewed contract;
 - public event reads still work;
 - the bounded public events RPC still works;
 - internal tables/views remain inaccessible;
@@ -110,8 +111,8 @@ At the time of this review there are no Supabase Storage buckets. Adding the fir
 - review RPCs require authentication;
 - trigger helpers are not callable publicly.
 
-The main V2 GitHub Actions workflow runs this live security contract after the offline test suite and before `next build`.
+The main V2 GitHub Actions workflow runs this live security contract after the offline test suite and before `next build`. When the security contract fails, the workflow uploads `security-contract-log` as a diagnostic artifact.
 
 ## Rule for future agents and migrations
 
-Do not grant public access merely to make an API request succeed. New public tables, views, RPCs, buckets, or write operations must be intentional, RLS-protected, added to this contract, and covered by the security test before merge.
+Do not grant public access merely to make an API request succeed. New public tables, views, RPCs, buckets, write operations, or RLS changes must be intentional, reviewed, documented here, and reflected in a new approved fingerprint before merge.
