@@ -6,7 +6,7 @@ import { parseMultisportPublicEventsPayload } from "./public-events-multisport";
 import type { PublicEventsPayload } from "./public-events-schema";
 
 const MAX_RESPONSE_BYTES = 8 * 1024 * 1024;
-const REQUEST_TIMEOUT_MS = 4_000;
+const REQUEST_TIMEOUT_MS = 8_000;
 
 // Supabase project URL and publishable key are public identifiers, not secrets.
 // Environment variables still take precedence so rotation/migration remains easy.
@@ -115,7 +115,10 @@ async function fetchSupabaseEvents(): Promise<PublicEventsPayload> {
       },
       body: "{}",
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      next: { revalidate: 300, tags: ["public-events-v3"] },
+      // The current public payload is larger than Next.js' 2 MB data-cache
+      // item limit. React cache() still deduplicates this loader during one
+      // server render, while no-store avoids noisy cache write failures.
+      cache: "no-store",
     });
 
     if (response.ok) return parseEventResponse(response);
