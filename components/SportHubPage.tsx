@@ -21,7 +21,7 @@ cycling:{title:"Cycling",eyebrow:"Sport",description:"Choose a stage race or cyc
 };
 
 const CATEGORY_ORDER:CompetitionCategory[]=["continental","domestic-league","domestic-cup","international","grand-slam","tour","league","championship","organization","other"];
-const CATEGORY_LABELS:Record<CompetitionCategory,string>={continental:"European & continental competitions","domestic-league":"Domestic leagues","domestic-cup":"Domestic cups","international":"International competitions","grand-slam":"Grand Slams","tour":"Tours & stage races","league":"Leagues","championship":"Championships","organization":"Organizations","other":"Other competitions"};
+const CATEGORY_LABELS:Record<CompetitionCategory,string>={continental:"European & continental competitions","domestic-league":"Domestic leagues","domestic-cup":"Domestic cups",international:"International competitions","grand-slam":"Grand Slams",tour:"Tours & stage races",league:"Leagues",championship:"Championships",organization:"Organizations",other:"Other competitions"};
 function competitionHref(sport:string,slug:string){return sport==="football"?`/football/competition/${slug}`:`/sports/${sport}/competition/${slug}`;}
 function dayKey(value:string|number|Date){return new Date(value).toISOString().slice(0,10);}
 
@@ -29,8 +29,8 @@ export async function buildSportHubMetadata(sport:string,canonical?:string):Prom
 
 export default async function SportHubPage({sport,canonical}:{sport:string;canonical?:string}){
  const cfg=SPORT_COPY[sport];if(!cfg)return null;
- const [snapshot,permanent]=await Promise.all([getPublicEventsSnapshot(),getPublicSportCompetitions(sport)]);
- const events=snapshot.events.filter(e=>e.sport===sport);const now=Date.now();const today=dayKey(now);
+ const [snapshot,permanent]=await Promise.all([getPublicEventsSnapshot({sport,limit:500}),getPublicSportCompetitions(sport)]);
+ const events=snapshot.events;const now=Date.now();const today=dayKey(now);
  const map=new Map<string,SportCompetitionCard & {category:CompetitionCategory}>();
  for(const c of permanent)map.set(c.slug,{sport,slug:c.slug,name:c.displayName||c.name,href:competitionHref(sport,c.slug),category:(c.competitionType as CompetitionCategory)||classifyCompetition(sport,c.slug),eventCount:0,next:null,nextTitle:null,season:c.seasonLabel,liveCount:0,todayCount:0,confirmedListings:0,freeCountries:0,paidCountries:0});
  const freeByCompetition=new Map<string,Set<string>>();const paidByCompetition=new Map<string,Set<string>>();
