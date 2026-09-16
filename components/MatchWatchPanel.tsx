@@ -16,13 +16,14 @@ export default function MatchWatchPanel({
   showMethodologyLink = false,
   verificationText,
 }: Props) {
-  const countries = new Map<string, BroadcastInfo[]>();
-  for (const broadcast of broadcasts) {
-    countries.set(broadcast.countryCode, [...(countries.get(broadcast.countryCode) ?? []), broadcast]);
-  }
+  const countryCount = new Set(broadcasts.map((broadcast) => broadcast.countryCode)).size;
+  const sortedBroadcasts = [...broadcasts].sort((a, b) => {
+    const countryOrder = a.countryName.localeCompare(b.countryName);
+    return countryOrder || a.broadcaster.localeCompare(b.broadcaster);
+  });
 
   const broadcasterLabel = `${broadcasts.length} broadcaster${broadcasts.length === 1 ? "" : "s"}`;
-  const countryLabel = `${countries.size} countr${countries.size === 1 ? "y" : "ies"}`;
+  const countryLabel = `${countryCount} countr${countryCount === 1 ? "y" : "ies"}`;
 
   return (
     <details className="v2-match-watch">
@@ -48,26 +49,26 @@ export default function MatchWatchPanel({
             {showMethodologyLink ? <Link href="/methodology">How listings are verified →</Link> : null}
           </div>
         ) : (
-          <div className="v2-broadcaster-country-list">
-            {Array.from(countries.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([code, list]) => (
-              <section key={code}>
-                <h3>{list[0].countryName}</h3>
-                <div>
-                  {list.map((broadcast) => (
-                    <a
-                      key={`${code}-${broadcast.broadcaster}-${broadcast.access}`}
-                      href={broadcast.affiliateUrl || broadcast.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <span className={broadcast.access === "Free" ? "v2-chip is-free" : "v2-chip is-paid"}>{broadcast.access}</span>
-                      <strong>{broadcast.broadcaster}</strong>
-                      <small>{broadcast.broadcastType ?? "live"}{broadcast.commentaryLanguages?.length ? ` · ${broadcast.commentaryLanguages.join(", ")}` : ""}</small>
-                      <b>Official service →</b>
-                    </a>
-                  ))}
-                </div>
-              </section>
+          <div className="v2-match-broadcaster-list">
+            {sortedBroadcasts.map((broadcast, index) => (
+              <a
+                className="v2-match-broadcaster-row"
+                key={`${broadcast.countryCode}-${broadcast.broadcaster}-${broadcast.access}-${index}`}
+                href={broadcast.affiliateUrl || broadcast.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span className="v2-match-broadcaster-country">{broadcast.countryName}</span>
+                <span className="v2-match-broadcaster-service">
+                  <strong>{broadcast.broadcaster}</strong>
+                  <small>
+                    {broadcast.broadcastType ?? "live"}
+                    {broadcast.commentaryLanguages?.length ? ` · ${broadcast.commentaryLanguages.join(", ")}` : ""}
+                  </small>
+                </span>
+                <span className={broadcast.access === "Free" ? "v2-chip is-free" : "v2-chip is-paid"}>{broadcast.access}</span>
+                <span className="v2-match-broadcaster-arrow" aria-hidden="true">›</span>
+              </a>
             ))}
           </div>
         )}
