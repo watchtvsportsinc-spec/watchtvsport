@@ -6,9 +6,7 @@ import { createJiti } from "jiti";
 const root = resolve(new URL("..", import.meta.url).pathname);
 const jiti = createJiti(import.meta.url, { interopDefault: true });
 
-async function catalog() {
-  return jiti.import(resolve(root, "lib/competition-catalog.ts"));
-}
+async function catalog() { return jiti.import(resolve(root, "lib/competition-catalog.ts")); }
 
 test("competition taxonomy preserves key product hierarchy", async () => {
   const { getCompetitionCatalogEntry, allCompetitionCatalogEntries } = await catalog();
@@ -25,7 +23,14 @@ test("competition taxonomy preserves key product hierarchy", async () => {
 test("permanent competition catalog covers launch navigation", async () => {
   const { allCompetitionCatalogEntries } = await catalog();
   const sports = new Set(allCompetitionCatalogEntries().map((entry) => entry.sport));
-  for (const sport of ["football", "basketball", "hockey", "tennis", "rugby", "baseball", "american-football", "cycling"]) {
-    assert.ok(sports.has(sport), `missing permanent competition catalog for ${sport}`);
-  }
+  for (const sport of ["football", "basketball", "hockey", "tennis", "rugby", "baseball", "american-football", "cycling"]) assert.ok(sports.has(sport), `missing permanent competition catalog for ${sport}`);
+});
+
+test("major competitions expose useful search aliases", async () => {
+  const { getCompetitionCatalogEntry } = await catalog();
+  assert.ok(getCompetitionCatalogEntry("football", "champions-league")?.aliases?.includes("UCL"));
+  assert.ok(getCompetitionCatalogEntry("football", "champions-league")?.aliases?.includes("C1"));
+  assert.ok(getCompetitionCatalogEntry("hockey", "nhl")?.aliases?.includes("LNH"));
+  assert.ok(getCompetitionCatalogEntry("tennis", "roland-garros")?.aliases?.includes("French Open"));
+  assert.ok(getCompetitionCatalogEntry("baseball", "world-baseball-classic")?.aliases?.includes("WBC"));
 });
