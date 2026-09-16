@@ -1,4 +1,11 @@
-const CLUB_ALIASES: Record<string, readonly string[]> = {
+import {
+  getPriorityFootballClubIdentityBySlug,
+  getPriorityFootballClubSearchNames,
+  priorityFootballClubIdentities,
+  resolvePriorityFootballClubIdentity,
+} from "./football-club-identities";
+
+const LEGACY_CLUB_ALIASES: Record<string, readonly string[]> = {
   "AEK Athens": ["AEK", "AEK FC", "AEK Athens FC"],
   LASK: ["LASK Linz", "LASK Linz FC"],
   "Club Brugge": ["Brugge", "Club Brugge KV", "Bruges"],
@@ -57,8 +64,11 @@ function normalizedClubKey(name: string): string {
 }
 
 export function resolveClubName(name: string): string {
+  const priorityIdentity = resolvePriorityFootballClubIdentity(name);
+  if (priorityIdentity) return priorityIdentity.name;
+
   const key = normalizedClubKey(name);
-  for (const [canonical, aliases] of Object.entries(CLUB_ALIASES)) {
+  for (const [canonical, aliases] of Object.entries(LEGACY_CLUB_ALIASES)) {
     if (normalizedClubKey(canonical) === key) return canonical;
     if (aliases.some((alias) => normalizedClubKey(alias) === key)) return canonical;
   }
@@ -66,23 +76,43 @@ export function resolveClubName(name: string): string {
 }
 
 export function resolveClubSlug(name: string): string {
+  const priorityIdentity = resolvePriorityFootballClubIdentity(name);
+  if (priorityIdentity) return priorityIdentity.slug;
   return clubSlug(resolveClubName(name));
 }
 
 export function getAllClubNames(): string[] {
-  return Object.keys(CLUB_ALIASES);
+  const priorityNames = priorityFootballClubIdentities.map((identity) => identity.name);
+  const legacyNames = Object.keys(LEGACY_CLUB_ALIASES).filter(
+    (name) => !resolvePriorityFootballClubIdentity(name),
+  );
+  return unique([...priorityNames, ...legacyNames]);
 }
 
 export function getClubNameBySlug(slug: string): string | null {
+  const priorityIdentity = getPriorityFootballClubIdentityBySlug(slug);
+  if (priorityIdentity) return priorityIdentity.name;
   return getAllClubNames().find((name) => clubSlug(name) === slug) ?? null;
 }
 
 export function getClubAliases(name: string): string[] {
-  return unique(CLUB_ALIASES[name] ?? []);
+  const priorityIdentity = resolvePriorityFootballClubIdentity(name);
+  if (priorityIdentity) {
+    return getPriorityFootballClubSearchNames(priorityIdentity).filter(
+      (value) => normalizedClubKey(value) !== normalizedClubKey(priorityIdentity.name),
+    );
+  }
+
+  const canonical = resolveClubName(name);
+  return unique(LEGACY_CLUB_ALIASES[canonical] ?? []);
 }
 
 export function getClubSearchNames(name: string): string[] {
-  return unique([name, ...getClubAliases(name)]);
+  const priorityIdentity = resolvePriorityFootballClubIdentity(name);
+  if (priorityIdentity) return getPriorityFootballClubSearchNames(priorityIdentity);
+
+  const canonical = resolveClubName(name);
+  return unique([canonical, ...getClubAliases(canonical)]);
 }
 
 export function getFixtureSeoAliases(homeName?: string, awayName?: string): string[] {
