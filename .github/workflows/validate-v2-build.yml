@@ -10,6 +10,7 @@ on:
       - fix/permanent-competition-pages
       - ux/home-premium-schedule
       - ux/home-premium-visual-pass
+      - fix/club-profile-supabase-fallback
     paths:
       - '.github/workflows/validate-v2-build.yml'
       - 'app/**'
