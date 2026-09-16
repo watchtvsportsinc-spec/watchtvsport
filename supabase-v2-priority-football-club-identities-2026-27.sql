@@ -1,8 +1,7 @@
 -- WatchTVSport V2 priority football club identity seed for 2026/27.
--- Prepared from the official 2026/27 Premier League and Ligue 1 club lists.
--- This file is intentionally not applied automatically.
 -- Premier League source: https://www.premierleague.com/en/news/4675097/all-380-fixtures-for-202627-premier-league-season/
 -- Ligue 1 source: https://ligue1.com/fr/articles/l1_article_5293-les-dates-de-reprise-des-clubs-de-l1-2627
+-- Note: public.participants has no updated_at column in the current V2 schema.
 
 begin;
 
@@ -50,8 +49,7 @@ with identities(slug,short_name,country_code,aliases) as (values
 )
 update public.participants p
 set short_name=i.short_name,
-    country_code=i.country_code,
-    updated_at=now()
+    country_code=i.country_code
 from identities i, football f
 where p.sport_id=f.id and p.slug=i.slug;
 
