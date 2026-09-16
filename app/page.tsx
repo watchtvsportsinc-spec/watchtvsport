@@ -21,21 +21,20 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const SHORTCUTS = [
-  { href: "/events", label: "All sports", icon: "▦", sport: "all" },
+  { href: "/sports", label: "All sports", icon: "▦", sport: "all" },
   { href: "/football", label: "Football", icon: "⚽", sport: "football" },
-  { href: "/sports/basketball/competition/nba", label: "NBA", icon: "🏀", sport: "basketball" },
-  { href: "/sports/hockey/competition/nhl", label: "NHL", icon: "🏒", sport: "hockey" },
-  { href: "/formula-1", label: "Formula 1", icon: "🏁", sport: "formula-1" },
+  { href: "/sports/basketball", label: "Basketball", icon: "🏀", sport: "basketball" },
+  { href: "/sports/hockey", label: "Hockey", icon: "🏒", sport: "hockey" },
   { href: "/sports/tennis", label: "Tennis", icon: "🎾", sport: "tennis" },
-  { href: "/ufc", label: "UFC", icon: "🥊", sport: "ufc" },
-  { href: "/sports/motogp", label: "MotoGP", icon: "🏍", sport: "motogp" },
+  { href: "/motorsports", label: "Motorsports", icon: "◉", sport: "formula-1" },
+  { href: "/combat-sports", label: "Combat sports", icon: "🥊", sport: "ufc" },
 ] as const;
 
 const MAJOR_COMPETITIONS = [
   { href: "/football/competition/champions-league", title: "Champions League", subtitle: "Football", sport: "football" },
-  { href: "/events?view=all&sport=tennis&q=US%20Open", title: "US Open", subtitle: "Tennis", sport: "tennis" },
-  { href: "/events?view=all&sport=formula-1&q=Australian%20Grand%20Prix", title: "Australian Grand Prix", subtitle: "Formula 1", sport: "formula-1" },
-  { href: "/sports/hockey/competition/nhl", title: "NHL", subtitle: "Ice hockey", sport: "hockey" },
+  { href: "/sports/tennis/competition/us-open", title: "US Open", subtitle: "Tennis", sport: "tennis" },
+  { href: "/formula-1", title: "Formula 1", subtitle: "Motorsports", sport: "formula-1" },
+  { href: "/sports/hockey/competition/nhl", title: "NHL", subtitle: "Hockey", sport: "hockey" },
 ] as const;
 
 function firstValue(value: string | string[] | undefined): string {
@@ -74,6 +73,8 @@ function sportGlyph(sport: string): string {
   if (sport === "tennis") return "🎾";
   if (sport === "ufc" || sport === "mma") return "🥊";
   if (sport === "motogp") return "🏍";
+  if (sport === "baseball") return "⚾";
+  if (sport === "american-football") return "🏈";
   return "●";
 }
 
@@ -152,7 +153,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <SearchAutocomplete searchPath="/events" timeZone={filters.timeZone} suggestions={suggestions} />
         <nav className="wts-home-shortcuts" aria-label="Sports and competitions">
           {SHORTCUTS.map((item) => <Link href={item.href} key={item.label}><span aria-hidden="true">{item.icon}</span><strong>{item.label}</strong></Link>)}
-          <Link href="/events"><span aria-hidden="true">•••</span><strong>More</strong></Link>
+          <Link href="/sports"><span aria-hidden="true">•••</span><strong>More</strong></Link>
         </nav>
       </section>
 
@@ -196,7 +197,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       </section>
 
       <section className="wts-home-section wts-major-section" aria-labelledby="major-title">
-        <div className="wts-home-section-heading"><div><span className="wts-section-icon" aria-hidden="true">🏆</span><h2 id="major-title">Major competitions</h2></div><Link href="/events">View all →</Link></div>
+        <div className="wts-home-section-heading"><div><span className="wts-section-icon" aria-hidden="true">🏆</span><h2 id="major-title">Major competitions</h2></div><Link href="/sports">View sports →</Link></div>
         <div className="wts-major-grid">
           {MAJOR_COMPETITIONS.map((item) => <Link className={`wts-major-card wts-sport-bg wts-bg-${sportClass(item.sport)}`} href={item.href} key={item.title}><span><strong>{item.title}</strong><small>{item.subtitle}</small></span><b aria-hidden="true">→</b></Link>)}
         </div>
