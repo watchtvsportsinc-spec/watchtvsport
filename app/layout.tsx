@@ -15,8 +15,6 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://watchtvsport.com"),
   title: {
     default: "WatchTVSport | Where to Watch Sports Worldwide",
-    // Child routes already own their search title. Do not append the brand a
-    // second time to legacy pages that already include it.
     template: "%s",
   },
   description:
@@ -26,14 +24,6 @@ export const metadata: Metadata = {
   authors: [{ name: "WatchTVSport" }],
   creator: "WatchTVSport",
   publisher: "WatchTVSport",
-  keywords: [
-    "sports TV guide",
-    "where to watch sports",
-    "official sports broadcasters",
-    "football TV schedule",
-    "Formula 1 TV schedule",
-    "UFC TV schedule",
-  ],
   openGraph: {
     type: "website",
     siteName: "WatchTVSport",
@@ -51,27 +41,6 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const organizationSchema = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    name: "WatchTVSport",
-    url: "https://watchtvsport.com",
-    logo: "https://watchtvsport.com/logo-watchtvsport-v3.png",
-    description:
-      "Independent guide to official sports broadcasters and streaming platforms worldwide.",
-  };
-  const websiteSchema = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "WatchTVSport",
-    url: "https://watchtvsport.com",
-    potentialAction: {
-      "@type": "SearchAction",
-      target: "https://watchtvsport.com/events?view=all&q={search_term_string}",
-      "query-input": "required name=search_term_string",
-    },
-  };
-
   return (
     <html lang="en">
       <body
@@ -82,14 +51,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           fontFamily: "Inter,system-ui,Arial,sans-serif",
         }}
       >
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
-        />
         <div
           style={{
             minHeight: "100vh",
@@ -165,6 +126,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <p><Link href="/formula-1" style={{ color: "#60a5fa" }}>Formula 1</Link></p>
                 <p><Link href="/ufc" style={{ color: "#60a5fa" }}>UFC</Link></p>
                 <p><Link href="/events" style={{ color: "#60a5fa" }}>All events</Link></p>
+                <p><Link href="/country" style={{ color: "#60a5fa" }}>Countries</Link></p>
                 <p><Link href="/archive/world-cup-2026" style={{ color: "#60a5fa" }}>World Cup 2026 archive</Link></p>
               </div>
               <div>
