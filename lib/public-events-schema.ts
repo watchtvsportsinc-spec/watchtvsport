@@ -1,5 +1,11 @@
 import type { EventData, Participant, SessionType } from "./events";
 import type { BroadcastInfo } from "./matches";
+import {
+  isParticipantPatternStyle,
+  isParticipantRenderFamily,
+  safeVisualColor,
+  type ParticipantVisualProfile,
+} from "./participant-visuals";
 
 export const PUBLIC_EVENTS_SCHEMA_VERSION = 1;
 export const MAX_PUBLIC_EVENTS = 2_500;
@@ -82,6 +88,30 @@ function optionalSlug(value: unknown, field: string): string | undefined {
   return slug(value, field);
 }
 
+function parseParticipantVisual(value: unknown, field: string): ParticipantVisualProfile | undefined {
+  if (value === null || value === undefined) return undefined;
+  if (!isRecord(value)) throw new PublicEventsPayloadError(`${field} must be an object`);
+  if (!isParticipantRenderFamily(value.renderFamily) || !isParticipantPatternStyle(value.patternStyle)) {
+    throw new PublicEventsPayloadError(`${field} has an unsupported visual family or pattern`);
+  }
+  const visualStatus = requiredString(value.visualStatus, `${field}.visualStatus`, 30);
+  if (!["generated", "reviewed", "verified", "needs_review"].includes(visualStatus)) {
+    throw new PublicEventsPayloadError(`${field}.visualStatus is unsupported`);
+  }
+  return {
+    renderFamily: value.renderFamily,
+    primaryColor: safeVisualColor(value.primaryColor, "#123A63"),
+    secondaryColor: safeVisualColor(value.secondaryColor, "#F8FAFC"),
+    accentColor: safeVisualColor(value.accentColor, "#2F9CFF"),
+    patternStyle: value.patternStyle,
+    visualStatus: visualStatus as ParticipantVisualProfile["visualStatus"],
+    seasonLabel: optionalString(value.seasonLabel, `${field}.seasonLabel`, 40),
+    sourceName: optionalString(value.sourceName, `${field}.sourceName`, 240),
+    sourceUrl: value.sourceUrl == null ? undefined : httpsUrl(value.sourceUrl, `${field}.sourceUrl`),
+    observedAt: optionalString(value.observedAt, `${field}.observedAt`, 40),
+  };
+}
+
 function parseParticipant(value: unknown, field: string): Participant | undefined {
   if (value === null || value === undefined) return undefined;
   if (!isRecord(value)) throw new PublicEventsPayloadError(`${field} must be an object`);
@@ -97,6 +127,8 @@ function parseParticipant(value: unknown, field: string): Participant | undefine
     type: type as Participant["type"],
     visualType: visualType as Participant["visualType"],
     visual: optionalString(value.visual, `${field}.visual`, 120) ?? "",
+    countryCode: optionalString(value.countryCode, `${field}.countryCode`, 12),
+    visualProfile: parseParticipantVisual(value.visualProfile, `${field}.visualProfile`),
   };
 }
 
