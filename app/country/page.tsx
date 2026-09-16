@@ -1,411 +1,153 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { matches } from "@/lib/matches";
+import { getCurrentCountrySummaries } from "@/lib/country-tv";
+import { getAllMatches } from "@/lib/matches";
 
 export const metadata: Metadata = {
-  title: "Browse Countries | WatchTVSport",
+  title: "Sports TV by country – official channels & streaming | WatchTVSport",
   description:
-    "Browse countries on WatchTVSport and find official broadcasters for upcoming football matches by country.",
-  alternates: {
-    canonical: "/country",
-  },
+    "Browse current sports TV coverage by country and find verified official broadcasters, free viewing options and paid streaming services.",
+  alternates: { canonical: "/country" },
   openGraph: {
-    title: "Browse Countries | WatchTVSport",
-    description:
-      "Browse countries and compare official broadcasters for upcoming football matches worldwide.",
+    title: "Sports TV by country | WatchTVSport",
+    description: "Current verified official sports broadcasters by territory, with the FIFA World Cup 2026 archive preserved separately.",
     url: "/country",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Browse Countries | WatchTVSport",
-    description:
-      "Browse countries and compare official broadcasters for upcoming football matches worldwide.",
+    title: "Sports TV by country | WatchTVSport",
+    description: "Current verified official sports broadcasters by territory.",
   },
+  robots: { index: true, follow: true },
 };
 
-type CountrySummary = {
+type ArchiveCountry = {
   countryCode: string;
   countryName: string;
   matchCount: number;
-  freeCount: number;
-  paidCount: number;
   broadcasters: string[];
 };
 
-function getCountrySummaries(): CountrySummary[] {
-  const countries = new Map<
-    string,
-    {
-      countryCode: string;
-      countryName: string;
-      matchSlugs: Set<string>;
-      freeCount: number;
-      paidCount: number;
-      broadcasters: Set<string>;
+function archiveCountries(): ArchiveCountry[] {
+  const rows = new Map<string, { countryName: string; matches: Set<string>; broadcasters: Set<string> }>();
+  for (const match of getAllMatches()) {
+    for (const broadcast of match.broadcasts) {
+      if (broadcast.coverageStatus !== "confirmed" || !broadcast.countryCode || !broadcast.countryName || !broadcast.broadcaster || !broadcast.url) continue;
+      const code = broadcast.countryCode.toLowerCase();
+      const row = rows.get(code) ?? { countryName: broadcast.countryName, matches: new Set<string>(), broadcasters: new Set<string>() };
+      row.matches.add(match.slug);
+      row.broadcasters.add(broadcast.broadcaster);
+      rows.set(code, row);
     }
-  >();
-
-  matches.forEach((match) => {
-    match.broadcasts?.forEach((broadcast) => {
-      const countryCode = broadcast.countryCode?.toLowerCase();
-
-      if (!countryCode || !broadcast.countryName) {
-        return;
-      }
-
-      const existing = countries.get(countryCode) || {
-        countryCode,
-        countryName: broadcast.countryName,
-        matchSlugs: new Set<string>(),
-        freeCount: 0,
-        paidCount: 0,
-        broadcasters: new Set<string>(),
-      };
-
-      existing.matchSlugs.add(match.slug);
-
-      if (broadcast.access === "Free") {
-        existing.freeCount += 1;
-      }
-
-      if (broadcast.access === "Paid") {
-        existing.paidCount += 1;
-      }
-
-      if (broadcast.broadcaster) {
-        existing.broadcasters.add(broadcast.broadcaster);
-      }
-
-      countries.set(countryCode, existing);
-    });
-  });
-
-  return Array.from(countries.values())
-    .map((country) => ({
-      countryCode: country.countryCode,
-      countryName: country.countryName,
-      matchCount: country.matchSlugs.size,
-      freeCount: country.freeCount,
-      paidCount: country.paidCount,
-      broadcasters: Array.from(country.broadcasters).slice(0, 3),
+  }
+  return Array.from(rows.entries())
+    .map(([countryCode, row]) => ({
+      countryCode,
+      countryName: row.countryName,
+      matchCount: row.matches.size,
+      broadcasters: Array.from(row.broadcasters).sort().slice(0, 4),
     }))
     .sort((a, b) => a.countryName.localeCompare(b.countryName));
 }
 
-export default function CountriesPage() {
-  const countries = getCountrySummaries();
+function cardStyle() {
+  return {
+    position: "relative" as const,
+    overflow: "hidden" as const,
+    minHeight: 150,
+    display: "grid",
+    alignContent: "center",
+    gap: ".45rem",
+    padding: "1rem",
+    borderRadius: 18,
+    textDecoration: "none",
+    color: "#fff",
+    background: "linear-gradient(145deg,rgba(13,39,65,.96),rgba(5,19,34,.98))",
+    border: "1px solid rgba(96,165,250,.28)",
+  };
+}
+
+export default async function CountriesPage() {
+  const current = await getCurrentCountrySummaries();
+  const archived = archiveCountries();
+  const currentCodes = new Set(current.countries.map((country) => country.countryCode));
+  const archiveOnly = archived.filter((country) => !currentCodes.has(country.countryCode));
+  const currentEventTerritoryPairs = current.countries.reduce((sum, country) => sum + country.eventCount, 0);
+
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "Sports TV by country",
+    url: "https://watchtvsport.com/country",
+    description: "Current verified official sports broadcaster information organized by territory.",
+  };
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        background:
-          "radial-gradient(circle at top left, rgba(59,130,246,0.16), transparent 34%), radial-gradient(circle at top right, rgba(34,197,94,0.10), transparent 30%), #0B1220",
-        color: "#FFFFFF",
-padding: "0.9rem 1.2rem",
-      }}
-    >
-      <style>{`
-        .countriesGrid {
-          display: grid;
-          grid-template-columns: repeat(6, minmax(0, 1fr));
-          gap: 0.85rem;
-        }
+    <main style={{ maxWidth: 1160, margin: "0 auto", padding: "1.5rem 1rem 4rem" }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
 
-   @media (max-width: 768px) {
-  .countriesGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.65rem;
-  }
-}
-      `}</style>
-
-      <section
-        style={{
-          maxWidth: "1160px",
-          margin: "0 auto",
-        }}
-      >
-       <div
-  style={{
-    position: "relative",
-    overflow: "hidden",
-    marginBottom: "1rem",
-    border: "1px solid rgba(96,165,250,0.20)",
-    borderRadius: "22px",
-    minHeight: "150px",
-    padding: "0.7rem 1.2rem",
-backgroundImage:
-  "linear-gradient(rgba(11,18,32,0.38), rgba(11,18,32,0.58)), url('/world-map-hero.png')",
-backgroundSize: "100% auto",
-backgroundPosition: "center center",
-backgroundRepeat: "no-repeat",
-backgroundColor: "#0B1220",
-    boxShadow:
-      "0 24px 70px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.06)",
-  }}
->
-  <div
-    style={{
-      position: "relative",
-      zIndex: 1,
-      minHeight: "180px",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      textAlign: "center",
-    }}
-  >
-    <div
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: "0.42rem",
-        marginBottom: "0.7rem",
-        borderRadius: "999px",
-        padding: "0.34rem 0.62rem",
-        background: "rgba(59,130,246,0.13)",
-        border: "1px solid rgba(96,165,250,0.22)",
-        color: "#BFDBFE",
-        fontSize: "0.76rem",
-        fontWeight: 900,
-        lineHeight: 1,
-      }}
-    >
-      Official broadcasters by country
-    </div>
-
-    <h1
-      style={{
-        margin: 0,
-fontSize: "clamp(1.5rem, 2.4vw, 2.3rem)",
-        lineHeight: 0.92,
-        letterSpacing: "-0.06em",
-        fontWeight: 1000,
-      }}
-    >
-      Browse countries
-    </h1>
-
-    <p
-      style={{
-        maxWidth: "700px",
-        margin: "0.55rem auto 0",
-        color: "#CBD5E1",
-        fontSize: "1rem",
-        lineHeight: 1.6,
-        fontWeight: 650,
-      }}
-    >
-      Find official football broadcasters, free and paid viewing options,
-      and available matches by country.
-    </p>
-
-    <div
-      style={{
-        position: "relative",
-        zIndex: 1,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "0.85rem",
-        flexWrap: "wrap",
-        maxWidth: "620px",
-        margin: "0.9rem auto 0",
-        padding: "0.65rem 0.9rem",
-        borderRadius: "999px",
-        background: "rgba(15,23,42,0.68)",
-        border: "1px solid rgba(255,255,255,0.08)",
-        color: "#CBD5E1",
-        fontSize: "0.78rem",
-        fontWeight: 800,
-        lineHeight: 1,
-        backdropFilter: "blur(10px)",
-      }}
-    >
-      <div style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
-        <span style={{ color: "#93C5FD", fontSize: "0.88rem" }}>⊚</span>
-        <span>104 Matches</span>
-      </div>
-
-      <div style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
-        <span style={{ color: "#22C55E", fontSize: "0.88rem" }}>▣</span>
-        <span>12 Countries</span>
-      </div>
-
-      <div style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
-        <span style={{ color: "#F59E0B", fontSize: "0.88rem" }}>▣</span>
-        <span>15 Broadcasters</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-        <div className="countriesGrid">
-          {countries.map((country) => {
-            const hasFree = country.freeCount > 0;
-            const accessLabel =
-              hasFree && country.paidCount > 0
-                ? "Free + Paid"
-                : hasFree
-                  ? "Free"
-                  : "Paid";
-            const visibleBroadcasters = country.broadcasters.join(" / ");
-
-            return (
-              <Link
-                key={country.countryCode}
-                href={`/country/${country.countryCode}`}
-                style={{
-                  position: "relative",
-                  overflow: "hidden",
-                  minHeight: "146px",
-                  display: "grid",
-                  alignContent: "center",
-                  justifyItems: "center",
-                  gap: "0.45rem",
-                  padding: "0.78rem 0.72rem",
-                  borderRadius: "18px",
-                  textDecoration: "none",
-                  color: "#FFFFFF",
-                  background:
-                    "radial-gradient(circle at 50% 0%, rgba(59,130,246,0.26), transparent 44%), linear-gradient(180deg, #10203A 0%, #0B1628 100%)",
-                  border: "1px solid rgba(96,165,250,0.36)",
-                  boxShadow:
-                    "0 18px 42px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.06)",
-                }}
-              >
-                <img
-                  aria-hidden="true"
-                  src={`/flags/${country.countryCode}.png`}
-                  alt=""
-                  draggable={false}
-                  style={{
-                    position: "absolute",
-                    right: "-52px",
-                    top: "-52px",
-                    width: "290px",
-                    height: "220px",
-                    borderRadius: "999px",
-                    objectFit: "cover",
-                    opacity: 0.08,
-                    filter: "saturate(1.15)",
-                    transform: "rotate(10deg)",
-                    pointerEvents: "none",
-                  }}
-                />
-
-                <div
-                  aria-hidden="true"
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    background:
-                      "linear-gradient(135deg, rgba(59,130,246,0.12), transparent 40%, rgba(34,197,94,0.05))",
-                    pointerEvents: "none",
-                  }}
-                />
-
-                <img
-                  src={`/flags/${country.countryCode}.png`}
-                  alt=""
-                  draggable={false}
-                  style={{
-                    position: "relative",
-                    width: "46px",
-                    height: "46px",
-                    borderRadius: "999px",
-                    objectFit: "cover",
-                    boxShadow:
-                      "0 0 0 2px rgba(255,255,255,0.72), 0 0 0 4px rgba(59,130,246,0.16), 0 12px 24px rgba(0,0,0,0.26)",
-                  }}
-                />
-
-                <div
-                  style={{
-                    position: "relative",
-                    minWidth: 0,
-                    width: "100%",
-                    textAlign: "center",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: "0.94rem",
-                      fontWeight: 950,
-                      lineHeight: 1.08,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {country.countryName}
-                  </div>
-
-                  <div
-                    style={{
-                      color: "#93C5FD",
-                      fontSize: "0.76rem",
-                      fontWeight: 850,
-                      lineHeight: 1.1,
-                      marginTop: "0.28rem",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {country.matchCount} match{country.matchCount > 1 ? "es" : ""}
-                  </div>
-
-                  <div
-                    style={{
-                      color: "#CBD5E1",
-                      fontSize: "0.7rem",
-                      fontWeight: 800,
-                      lineHeight: 1.15,
-                      marginTop: "0.26rem",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {visibleBroadcasters || "Official broadcasters"}
-                  </div>
-
-                  <div
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      borderRadius: "999px",
-                      padding: "0.32rem 0.68rem",
-                      marginTop: "0.46rem",
-                      lineHeight: 1,
-                      background: hasFree
-                        ? "linear-gradient(180deg, rgba(34,197,94,0.24), rgba(21,128,61,0.15))"
-                        : "linear-gradient(180deg, rgba(245,158,11,0.24), rgba(146,64,14,0.15))",
-                      border: hasFree
-                        ? "1px solid rgba(34,197,94,0.36)"
-                        : "1px solid rgba(245,158,11,0.36)",
-                      color: hasFree ? "#4ADE80" : "#FBBF24",
-                      fontSize: "0.74rem",
-                      fontWeight: 1000,
-                      whiteSpace: "nowrap",
-                      boxShadow: hasFree
-                        ? "0 0 18px rgba(34,197,94,0.14)"
-                        : "0 0 18px rgba(245,158,11,0.12)",
-                    }}
-                  >
-                    {accessLabel}
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
+      <header style={{ padding: "1.5rem 0 2rem", maxWidth: 900 }}>
+        <p style={{ color: "#60a5fa", textTransform: "uppercase", letterSpacing: ".12em", fontWeight: 800 }}>Official broadcasters by territory</p>
+        <h1 style={{ margin: ".5rem 0", fontSize: "clamp(2.2rem,6vw,4rem)", lineHeight: 1.02 }}>Sports TV by country</h1>
+        <p style={{ color: "#b8c5d3", lineHeight: 1.75, maxWidth: 780 }}>
+          Choose a country to see current and upcoming sports events with confirmed official TV or streaming listings. Historical FIFA World Cup 2026 broadcaster records remain available separately below.
+        </p>
+        <div style={{ display: "flex", gap: ".75rem", flexWrap: "wrap", color: "#9fb0c3" }}>
+          <span>{current.countries.length} territories with current verified listings</span>
+          <span>·</span>
+          <span>{currentEventTerritoryPairs} current event/territory listings</span>
         </div>
+      </header>
+
+      {current.warning ? <p className="v2-data-warning" role="status">{current.warning}</p> : null}
+
+      <section aria-labelledby="current-country-tv">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "end", gap: "1rem", marginBottom: "1rem" }}>
+          <div><p style={{ color: "#60a5fa", margin: 0, fontWeight: 800 }}>Current data</p><h2 id="current-country-tv" style={{ margin: ".3rem 0 0" }}>Live & upcoming sports by country</h2></div>
+          <Link href="/methodology" style={{ color: "#60a5fa" }}>Verification methodology →</Link>
+        </div>
+
+        {current.countries.length === 0 ? (
+          <div style={{ padding: "1.2rem", border: "1px solid rgba(255,255,255,.1)", borderRadius: 14, color: "#9fb0c3" }}>
+            No current territory listings are published yet. Historical verified coverage remains available below.
+          </div>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: ".8rem" }}>
+            {current.countries.map((country) => (
+              <Link key={country.countryCode} href={`/country/${country.countryCode}`} style={cardStyle()}>
+                <div style={{ display: "flex", alignItems: "center", gap: ".7rem" }}>
+                  <img src={`/flags/${country.countryCode}.png`} alt="" width="38" height="38" style={{ width: 38, height: 38, borderRadius: "50%", objectFit: "cover" }} />
+                  <div><strong style={{ display: "block", fontSize: "1rem" }}>{country.countryName}</strong><span style={{ color: "#93c5fd", fontSize: 12 }}>{country.eventCount} current event{country.eventCount === 1 ? "" : "s"}</span></div>
+                </div>
+                <span style={{ color: "#b8c5d3", fontSize: 12, lineHeight: 1.45 }}>{country.broadcasters.join(" · ") || `${country.broadcasterCount} verified broadcasters`}</span>
+                <span style={{ color: country.freeListings > 0 ? "#4ade80" : "#fbbf24", fontSize: 12, fontWeight: 800 }}>
+                  {country.freeListings > 0 ? `${country.freeListings} free listing${country.freeListings === 1 ? "" : "s"}` : "Paid official coverage"}
+                </span>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
+
+      {archiveOnly.length > 0 ? (
+        <section aria-labelledby="archive-country-tv" style={{ marginTop: "2.5rem" }}>
+          <p style={{ color: "#60a5fa", fontWeight: 800, margin: 0 }}>Historical archive</p>
+          <h2 id="archive-country-tv" style={{ margin: ".3rem 0 .7rem" }}>FIFA World Cup 2026 broadcaster records</h2>
+          <p style={{ color: "#9fb0c3", lineHeight: 1.65, maxWidth: 760 }}>
+            These territories currently have no V2 event listing in the selected window, but their verified World Cup 2026 broadcaster records remain searchable as historical data.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: ".8rem" }}>
+            {archiveOnly.map((country) => (
+              <Link key={country.countryCode} href={`/country/${country.countryCode}`} style={cardStyle()}>
+                <strong>{country.countryName}</strong>
+                <span style={{ color: "#9fb0c3", fontSize: 12 }}>{country.matchCount} archived match{country.matchCount === 1 ? "" : "es"}</span>
+                <span style={{ color: "#b8c5d3", fontSize: 12 }}>{country.broadcasters.join(" · ")}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </main>
   );
 }
