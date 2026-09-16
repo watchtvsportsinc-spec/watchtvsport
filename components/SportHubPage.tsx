@@ -13,6 +13,7 @@ const SPORT_COPY: Record<string,{title:string;description:string;eyebrow:string;
   rugby:{title:"Rugby",eyebrow:"Sport",description:"Choose a rugby competition to browse its fixtures and viewing information.",backdrop:"/sports/all-sports.webp"},
   baseball:{title:"Baseball",eyebrow:"Sport",description:"Choose a baseball league or tournament to browse its schedule and match pages.",backdrop:"/sports/all-sports.webp"},
   "american-football":{title:"American football",eyebrow:"Sport",description:"Choose a league or competition to browse its schedule and game pages.",backdrop:"/sports/all-sports.webp"},
+  motogp:{title:"MotoGP",eyebrow:"Motorsport championship",description:"Choose a MotoGP event or race weekend to open its sessions and official viewing pages.",backdrop:"/sports/motogp.webp"},
 };
 
 function competitionHref(sport:string,slug:string){return sport==="football"?`/football/competition/${slug}`:`/sports/${sport}/competition/${slug}`;}
