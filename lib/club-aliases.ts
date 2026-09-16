@@ -52,6 +52,23 @@ export function clubSlug(name: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+function normalizedClubKey(name: string): string {
+  return clubSlug(name);
+}
+
+export function resolveClubName(name: string): string {
+  const key = normalizedClubKey(name);
+  for (const [canonical, aliases] of Object.entries(CLUB_ALIASES)) {
+    if (normalizedClubKey(canonical) === key) return canonical;
+    if (aliases.some((alias) => normalizedClubKey(alias) === key)) return canonical;
+  }
+  return name;
+}
+
+export function resolveClubSlug(name: string): string {
+  return clubSlug(resolveClubName(name));
+}
+
 export function getAllClubNames(): string[] {
   return Object.keys(CLUB_ALIASES);
 }
