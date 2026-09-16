@@ -11,8 +11,15 @@ export const metadata: Metadata = {
 };
 
 export default async function UfcPage() {
-  const snapshot = await getPublicEventsSnapshot();
-  const events = snapshot.events.filter((event) => event.sport === "ufc");
+  const now = Date.now();
+  const snapshot = await getPublicEventsSnapshot({
+    sport: "ufc",
+    from: new Date(now - 24 * 60 * 60 * 1000).toISOString(),
+    limit: 500,
+  });
+  const events = snapshot.events.filter(
+    (event) => event.status === "live" || (event.status !== "finished" && Date.parse(event.eventDate) >= now),
+  );
   const cards = new Map<string, typeof events>();
 
   for (const event of events) {
@@ -37,6 +44,7 @@ export default async function UfcPage() {
 
   return (
     <main id="main-content" className="v2-calendar">
+      {snapshot.warning ? <p className="v2-data-warning" role="status">{snapshot.warning}</p> : null}
       <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "UFC" }]} />
 
       <section className="v2-calendar-hero" aria-labelledby="ufc-title">
@@ -57,7 +65,7 @@ export default async function UfcPage() {
           <p>{ordered.length}</p>
         </div>
 
-        <div className="v2-event-list">
+        {ordered.length === 0 ? <div className="v2-empty-state"><h3>No upcoming UFC event currently published</h3><p>Verified cards will appear automatically when imported.</p></div> : <div className="v2-event-list">
           {ordered.map(({ slug, events: cardEvents }) => {
             const first = cardEvents[0];
             const main = cardEvents.find((event) => event.sessionType === "main_card") ?? first;
@@ -88,7 +96,7 @@ export default async function UfcPage() {
               </article>
             );
           })}
-        </div>
+        </div>}
       </section>
     </main>
   );
