@@ -17,12 +17,13 @@ export default function sitemap():MetadataRoute.Sitemap{
  const activeSports=Array.from(new Set(events.map(event=>event.sport)));
  const staticPages=[sitemapEntry("/",1,"daily"),...activeSports.map(sport=>sitemapEntry(sportHubPath(sport),.95,"daily"))];
  const competitionPages=Array.from(new Set(events.filter(e=>e.sport==="football").map(e=>e.competitionSlug))).map(slug=>sitemapEntry(`/football/competition/${slug}`,.9,"daily"));
- const clubPages=Array.from(new Map(events.flatMap(event=>{
+ const clubMap=new Map(events.flatMap(event=>{
    if(!sportAllowsParticipantPages(event.sport))return[];
    return[event.participant1,event.participant2]
      .filter((participant):participant is Participant=>Boolean(participant&&participant.type==="club"))
      .map(participant=>[`${event.sport}:${participant.id}`,{sport:event.sport,participant}] as const);
- }).values()).map(({sport,participant})=>sitemapEntry(`/sports/${sport}/club/${participantSlug(participant)}`,.88,"daily"));
+ }));
+ const clubPages=Array.from(clubMap.values()).map(({sport,participant})=>sitemapEntry(`/sports/${sport}/club/${participantSlug(participant)}`,.88,"daily"));
  const nationPages=getFootballNations(events).map(n=>sitemapEntry(`/football/nation/${entitySlug(n.name)}`,.85,"daily"));
  const permanentEventPages=Array.from(new Map(events.filter(e=>e.detailPath.startsWith("/football/")).map(e=>[e.detailPath,e] as const)).values()).map(e=>sitemapEntry(e.detailPath,.9,"daily",new Date(e.eventDate)));
  const f1Pages=Array.from(new Map(events.filter(e=>e.sport==="formula-1"&&e.eventGroupId&&e.eventGroupSlug).map(e=>[e.eventGroupId!,e] as const)).values()).map(e=>sitemapEntry(`/formula-1/grand-prix/${e.eventGroupSlug}`,.9,"daily",new Date(e.eventDate)));
