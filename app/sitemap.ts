@@ -75,6 +75,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     sitemapEntry("/motorsports"),
     sitemapEntry("/combat-sports"),
     sitemapEntry("/combat-sports/mma"),
+    sitemapEntry("/archive/world-cup-2026"),
     sitemapEntry("/methodology"),
     sitemapEntry("/report-error"),
   ];
@@ -155,6 +156,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ).values(),
   ).map((event) => sitemapEntry(`/formula-1/grand-prix/${event.eventGroupSlug}`));
 
+  const f1EditionPages = Array.from(
+    new Map(
+      events
+        .filter((event) => event.sport === "formula-1" && event.eventGroupSlug)
+        .map((event) => {
+          const year = new Date(event.eventDate).getUTCFullYear();
+          return [`${event.eventGroupSlug}:${year}`, { event, year }] as const;
+        }),
+    ).values(),
+  ).map(({ event, year }) =>
+    sitemapEntry(`/formula-1/grand-prix/${event.eventGroupSlug}/${year}`, new Date(event.eventDate)),
+  );
+
   const ufcPages = Array.from(
     new Map(
       events
@@ -186,6 +200,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...permanentEventPages,
     ...leagueFixturePages,
     ...f1Pages,
+    ...f1EditionPages,
     ...ufcPages,
     ...archiveMatchPages,
     ...watchPages,
