@@ -2,6 +2,7 @@
 
 Reviewed: 2026-09-16
 Project: `jywqhiiwsmudthaujhmi`
+Approved fingerprint: `2a9d163c83abd0a03cbef70d8cca6c1d`
 
 This document defines the anonymous/public API surface that WatchTVSport intentionally exposes. Any change to this contract must be reviewed together with `scripts/public-security-contract.test.mjs`.
 
@@ -14,6 +15,7 @@ The anonymous role may read only rows allowed by RLS from these relations:
 - `competition_aliases`
 - `competition_memberships`
 - `competitions`
+- `entity_media_assets`
 - `event_broadcasts`
 - `event_editions`
 - `event_page_urls`
@@ -36,7 +38,7 @@ The anonymous role may read only rows allowed by RLS from these relations:
 - `ufc_fight_bouts`
 - `venues`
 
-All of these relations are read-only to `anon` and `authenticated` at the SQL grant level. RLS further restricts rows such as unpublished events, unconfirmed rights, unapproved media, and unconfirmed venues/bouts.
+All of these relations are read-only to `anon` and `authenticated` at the SQL grant level. RLS further restricts rows such as unpublished events, unconfirmed rights, unapproved media, and unconfirmed venues/bouts. `entity_media_assets` is public only for rows with `usage_status = 'approved'`.
 
 ## Public write exception
 
@@ -74,14 +76,18 @@ The following RPCs are intentionally executable by anonymous/public website traf
 - `get_event_venue_media_v2`
 - `get_primary_media_asset_v2`
 - `get_public_access_contract_hash_v1`
+- `get_public_competition_directory_v1`
 - `get_public_competition_fixtures_v1`
+- `get_public_event_directory_v1`
 - `get_public_events_filtered_v1`
 - `get_public_events_v2`
 - `get_public_events_v3`
 - `get_public_fixture_page_v1`
 - `get_public_media_assets_v2`
+- `get_public_participant_directory_v1`
 - `get_public_participant_events_v1`
 - `get_public_participant_fixtures_v1`
+- `get_public_participant_media_v1`
 - `get_public_participant_profile_v2`
 - `get_public_participant_profile_v3`
 - `get_public_participant_profile_v4`
@@ -90,6 +96,8 @@ The following RPCs are intentionally executable by anonymous/public website traf
 - `participant_visual_defaults`
 
 `get_public_access_contract_hash_v1` returns only a non-sensitive MD5 fingerprint of the reviewed `anon` + `authenticated` privilege surface, applicable RLS policies, and executable public RPC security settings. It does not return relation, policy, or function names.
+
+`get_public_competition_directory_v1` and `get_public_event_directory_v1` are reviewed `SECURITY DEFINER` exceptions. Both have a fixed `search_path` and return bounded public directory metadata only. The competition directory exposes aggregate participant/event counts rather than private rows; the event directory exposes published event routing metadata only.
 
 The review RPCs (`wts_review_*`) require an authenticated role. Trigger functions are internal implementation details and must have no `EXECUTE` privilege for `anon` or `authenticated`.
 
@@ -104,8 +112,9 @@ At the time of this review there are no Supabase Storage buckets. Adding the fir
 - the combined `anon` + `authenticated` permission/RLS/RPC fingerprint matches the reviewed contract;
 - public event reads still work;
 - the bounded public events RPC still works;
+- reviewed participant, competition, and event directory RPCs remain callable;
 - internal tables/views remain inaccessible;
-- public event/profile mutation is rejected;
+- public event/profile/entity-media mutation is rejected;
 - correction reports cannot be read or updated;
 - correction inserts are restricted to `pending`;
 - review RPCs require authentication;

@@ -3,7 +3,7 @@ import test from "node:test";
 
 const SUPABASE_URL = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "https://jywqhiiwsmudthaujhmi.supabase.co").replace(/\/$/, "");
 const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_30SkJ3gyUbPvH5sGFXpyHg_a4Qlzdi-";
-const EXPECTED_ACCESS_CONTRACT_HASH = "37d22d0969afbc2a12ed78b443bc8f64";
+const EXPECTED_ACCESS_CONTRACT_HASH = "2a9d163c83abd0a03cbef70d8cca6c1d";
 
 async function request(path, { method = "GET", body, accept = "application/json" } = {}) {
   const response = await fetch(`${SUPABASE_URL}${path}`, {
@@ -55,6 +55,26 @@ test("anon can call the bounded public events RPC", async () => {
   assert.equal(result.status, 200, result.text);
 });
 
+test("anon can call reviewed public directory RPCs", async () => {
+  const participantDirectory = await request("/rest/v1/rpc/get_public_participant_directory_v1", {
+    method: "POST",
+    body: {},
+  });
+  assert.equal(participantDirectory.status, 200, participantDirectory.text);
+
+  const competitionDirectory = await request("/rest/v1/rpc/get_public_competition_directory_v1", {
+    method: "POST",
+    body: {},
+  });
+  assert.equal(competitionDirectory.status, 200, competitionDirectory.text);
+
+  const eventDirectory = await request("/rest/v1/rpc/get_public_event_directory_v1", {
+    method: "POST",
+    body: { p_offset: 0, p_limit: 1 },
+  });
+  assert.equal(eventDirectory.status, 200, eventDirectory.text);
+});
+
 test("anon cannot read internal data sources", async () => {
   assertDenied(await request("/rest/v1/data_sources?select=*&limit=1"), "data_sources read");
 });
@@ -81,6 +101,14 @@ test("anon cannot mutate participant profiles", async () => {
     body: { profile_status: "verified" },
   });
   assertDenied(result, "participant_profiles update");
+});
+
+test("anon cannot mutate entity media assets", async () => {
+  const result = await request("/rest/v1/entity_media_assets?id=eq.00000000-0000-0000-0000-000000000000", {
+    method: "PATCH",
+    body: { usage_status: "approved" },
+  });
+  assertDenied(result, "entity_media_assets update");
 });
 
 test("anon cannot read correction reports", async () => {
