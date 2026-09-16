@@ -1,4 +1,5 @@
 -- WatchTVSport V2 priority football club identity seed for 2026/27.
+-- This file was intentionally not applied automatically by the application runtime.
 -- Premier League source: https://www.premierleague.com/en/news/4675097/all-380-fixtures-for-202627-premier-league-season/
 -- Ligue 1 source: https://ligue1.com/fr/articles/l1_article_5293-les-dates-de-reprise-des-clubs-de-l1-2627
 -- Note: public.participants has no updated_at column in the current V2 schema.
@@ -82,7 +83,7 @@ with identities(slug,aliases) as (values
   ('lens',array['Lens','Racing Club de Lens','RCL']::text[]),
   ('fc-lorient',array['Lorient','FCL']::text[]),
   ('lille',array['Lille','LOSC Lille','Lille OSC']::text[]),
-  ('olympique-lyonnais',array['Lyon','OL']::text[]),
+  ('olympique-lyonnais','Lyon','FR',array['Lyon','OL']::text[]),
   ('olympique-de-marseille',array['Marseille','OM']::text[]),
   ('as-monaco',array['Monaco','ASM']::text[]),
   ('ogc-nice',array['Nice','OGCN']::text[]),
