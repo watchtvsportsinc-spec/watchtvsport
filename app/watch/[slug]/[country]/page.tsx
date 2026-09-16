@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const countryName = getCountryDisplayName(broadcasts, countryCode);
   const home = getTeamName(safeMatch.homeTeam);
   const away = getTeamName(safeMatch.awayTeam);
-  const local = broadcasts.filter((item) => item.countryCode.toLowerCase() === countryCode && item.coverageStatus === "confirmed");
+  const local = broadcasts.filter((item) => item.countryCode.toLowerCase() === countryCode);
   if (!local.length) return { title: `${home} vs ${away} broadcaster archive`, robots: { index: false, follow: true } };
   const title = `${home} vs ${away} in ${countryName} – World Cup 2026 TV archive`;
   const description = `Historical FIFA World Cup 2026 broadcaster record for ${home} vs ${away} in ${countryName}, including official TV and streaming options verified for the match.`;
@@ -54,17 +54,12 @@ export default async function ArchivedCountryBroadcastPage({ params }: PageProps
   const safeMatch = ensureMatch(match);
   const broadcasts = getSafeBroadcasts(safeMatch);
   const countryCode = normalizeCountryCode(country);
-  const local = broadcasts.filter((item) => item.countryCode.toLowerCase() === countryCode && item.coverageStatus === "confirmed");
+  const local = broadcasts.filter((item) => item.countryCode.toLowerCase() === countryCode);
   if (!local.length) notFound();
 
   const home = getTeamName(safeMatch.homeTeam);
   const away = getTeamName(safeMatch.awayTeam);
   const countryName = getCountryDisplayName(broadcasts, countryCode);
-  const lastChecked = local
-    .map((item) => item.lastChecked)
-    .filter((value): value is string => Boolean(value))
-    .sort()
-    .at(-1);
 
   const schema = {
     "@context": "https://schema.org",
@@ -95,7 +90,7 @@ export default async function ArchivedCountryBroadcastPage({ params }: PageProps
         <p style={{ color: "#b8c5d3", lineHeight: 1.75 }}>
           This FIFA World Cup 2026 match has finished. The services below are preserved as the official viewing options WatchTVSport had verified for {countryName} at the time of the match.
         </p>
-        <p style={{ color: "#9fb0c3" }}><LocalTime date={safeMatch.matchDate} />{lastChecked ? ` · Broadcaster data last checked ${lastChecked}` : ""}</p>
+        <p style={{ color: "#9fb0c3" }}><LocalTime date={safeMatch.matchDate} /></p>
       </header>
 
       <section aria-labelledby="country-archive-listings">
@@ -106,11 +101,10 @@ export default async function ArchivedCountryBroadcastPage({ params }: PageProps
               <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: ".75rem" }}>
                 <div>
                   <strong style={{ fontSize: "1.05rem" }}>{item.broadcaster}</strong>
-                  <div style={{ color: "#9fb0c3", marginTop: ".3rem" }}>{item.access}{item.broadcastType ? ` · ${item.broadcastType}` : ""}{item.commentaryLanguages?.length ? ` · ${item.commentaryLanguages.join(", ")}` : ""}</div>
+                  <div style={{ color: "#9fb0c3", marginTop: ".3rem" }}>{item.access}{item.commentaryLanguages?.length ? ` · ${item.commentaryLanguages.join(", ")}` : ""}</div>
                 </div>
                 <a href={item.url} target="_blank" rel="nofollow noopener noreferrer" style={{ color: "#60a5fa" }}>Official service ↗</a>
               </div>
-              {item.sourceUrl ? <p style={{ marginBottom: 0, fontSize: ".85rem" }}><a href={item.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#8fb8ff" }}>Verification source ↗</a></p> : null}
             </article>
           ))}
         </div>
