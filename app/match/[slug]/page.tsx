@@ -22,15 +22,6 @@ function eventStatus(matchDate: string, status?: string) {
   return "https://schema.org/EventScheduled";
 }
 
-function latestVerification(values: Array<string | undefined>) {
-  const dates = values
-    .filter((value): value is string => Boolean(value))
-    .map((value) => Date.parse(`${value}T00:00:00Z`))
-    .filter(Number.isFinite);
-  if (!dates.length) return null;
-  return new Date(Math.max(...dates)).toISOString().slice(0, 10);
-}
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const match = getMatchBySlug(normalizeSlug(slug));
@@ -57,10 +48,9 @@ export default async function ArchivedWorldCupMatchPage({ params }: PageProps) {
   if (!match) notFound();
 
   const safeMatch = ensureMatch(match);
-  const broadcasts = getSafeBroadcasts(safeMatch).filter((item) => item.coverageStatus === "confirmed");
+  const broadcasts = getSafeBroadcasts(safeMatch);
   const home = getTeamName(safeMatch.homeTeam);
   const away = getTeamName(safeMatch.awayTeam);
-  const verificationDate = latestVerification(broadcasts.map((item) => item.lastChecked));
   const countries = new Map<string, typeof broadcasts>();
   for (const broadcast of broadcasts) {
     countries.set(broadcast.countryCode, [...(countries.get(broadcast.countryCode) ?? []), broadcast]);
@@ -106,7 +96,6 @@ export default async function ArchivedWorldCupMatchPage({ params }: PageProps) {
           <LocalTime date={safeMatch.matchDate} />
           {safeMatch.hostCity ? <><span>·</span><span>{safeMatch.hostCity}</span></> : null}
         </div>
-        {verificationDate ? <p style={{ color: "#7f93aa", fontSize: ".9rem" }}>Broadcaster data last verified: {verificationDate}</p> : null}
       </header>
 
       <section aria-labelledby="archived-broadcasters">
