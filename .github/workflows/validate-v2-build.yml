@@ -12,7 +12,6 @@ on:
       - ux/home-premium-visual-pass
       - fix/club-profile-supabase-fallback
       - feature/participant-sport-visuals
-      - feature/full-sport-competition-architecture
     paths:
       - '.github/workflows/validate-v2-build.yml'
       - 'app/**'
