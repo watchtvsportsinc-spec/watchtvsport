@@ -3,6 +3,8 @@ import { clubSlug } from "@/lib/club-aliases";
 import { entitySlug, getFootballNations } from "@/lib/entity-pages";
 import { getAllEvents, type Participant } from "@/lib/events";
 import { getAllMatches, type MatchData } from "@/lib/matches";
+import { getPublicCompetitionDirectory } from "@/lib/public-competition-directory";
+import { getPublicEventDirectory } from "@/lib/public-event-directory";
 import { getPublicCompetitionFixtures } from "@/lib/public-fixtures";
 import { getPublicParticipantDirectory } from "@/lib/public-participants";
 import { isSeoIndexable } from "@/lib/seo-indexability";
@@ -17,6 +19,12 @@ function sitemapEntry(path: string, lastModified?: Date): SitemapEntry {
     url: `${BASE_URL}${path}`,
     ...(lastModified && !Number.isNaN(lastModified.getTime()) ? { lastModified } : {}),
   };
+}
+
+function safeDate(value?: string): Date | undefined {
+  if (!value) return undefined;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date;
 }
 
 function confirmedCountryCodes(match: MatchData): string[] {
@@ -59,14 +67,25 @@ function participantSlug(participant: Participant): string {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const events = getAllEvents();
   const worldCupMatches = getAllMatches();
-  const [ligue1Fixtures, premierLeagueFixtures, participantDirectory] = await Promise.all([
+  const [
+    ligue1Fixtures,
+    premierLeagueFixtures,
+    participantDirectory,
+    competitionDirectory,
+    eventDirectory,
+  ] = await Promise.all([
     getPublicCompetitionFixtures("football", "ligue-1"),
     getPublicCompetitionFixtures("football", "premier-league"),
     getPublicParticipantDirectory(),
+    getPublicCompetitionDirectory(),
+    getPublicEventDirectory(),
   ]);
 
   const eventCountBySport = new Map<string, number>();
   for (const event of events) {
+    eventCountBySport.set(event.sport, (eventCountBySport.get(event.sport) ?? 0) + 1);
+  }
+  for (const event of eventDirectory) {
     eventCountBySport.set(event.sport, (eventCountBySport.get(event.sport) ?? 0) + 1);
   }
 
@@ -92,6 +111,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     )
     .map((sport) => sitemapEntry(sportHubPath(sport.slug)));
 
+  // Primary competition discovery comes from Supabase. Formula 1 and UFC use
+  // dedicated canonical hubs rather than duplicate generic competition URLs.
+  const databaseCompetitionPages = competitionDirectory
+    .filter((competition) => competition.sport !== "formula-1" && competition.sport !== "ufc")
+    .filter((competition) =>
+      isSeoIndexable({
+        canonicalPath: competitionPath(competition.sport, competition.slug),
+        usefulContentCount: competition.participantCount + competition.publishedEventCount,
+      }),
+    )
+    .map((competition) =>
+      sitemapEntry(
+        competitionPath(competition.sport, competition.slug),
+        safeDate(competition.lastModified),
+      ),
+    );
+
+  // Compatibility fallback while the competition directory RPC is not yet
+  // available or during a partial migration.
   const eventCompetitionPages = events
     .filter((event) => event.sport !== "formula-1" && event.sport !== "ufc")
     .map((event) => competitionPath(event.sport, event.competitionSlug));
@@ -99,18 +137,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...(ligue1Fixtures.length ? [competitionPath("football", "ligue-1")] : []),
     ...(premierLeagueFixtures.length ? [competitionPath("football", "premier-league")] : []),
   ];
-  const competitionPages = Array.from(
+  const fallbackCompetitionPages = Array.from(
     new Set([...eventCompetitionPages, ...fixtureCompetitionPages]),
   ).map((path) => sitemapEntry(path));
+  const competitionPages = [...databaseCompetitionPages, ...fallbackCompetitionPages];
 
-  // Primary source: Supabase participant directory. This makes every active
-  // club/team/franchise discoverable even before its first event is imported.
+  // Primary participant source: Supabase directory. Every active club/team is
+  // discoverable even before its first event is imported.
   const databaseClubPages = participantDirectory
     .filter((participant) => sportAllowsParticipantPages(participant.sport))
     .map((participant) => `/sports/${participant.sport}/club/${participant.slug}`);
 
-  // Compatibility fallback while the directory RPC is unavailable or during a
-  // partial migration: participants present in runtime events stay discoverable.
+  // Compatibility fallback for participants bundled in runtime events.
   const eventClubMap = new Map(
     events.flatMap((event) => {
       if (!sportAllowsParticipantPages(event.sport)) return [];
@@ -137,6 +175,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     sitemapEntry(`/football/nation/${entitySlug(nation.name)}`),
   );
 
+  // Every published Supabase event becomes discoverable automatically. The
+  // directory selects a stable permanent fixture path whenever one exists.
+  const databaseEventPages = eventDirectory
+    .filter((event) =>
+      isSeoIndexable({
+        canonicalPath: event.detailPath,
+        usefulContentCount: event.eventDate ? 1 : 0,
+      }),
+    )
+    .map((event) =>
+      sitemapEntry(event.detailPath, safeDate(event.lastModified ?? event.eventDate)),
+    );
+
+  // Legacy/permanent bundled paths stay discoverable while migration completes.
   const permanentEventPages = Array.from(
     new Map(
       events
@@ -208,6 +260,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...competitionPages,
     ...clubPages,
     ...nationPages,
+    ...databaseEventPages,
     ...permanentEventPages,
     ...leagueFixturePages,
     ...f1Pages,
