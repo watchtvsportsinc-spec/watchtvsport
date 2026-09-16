@@ -9,6 +9,7 @@ import type { EventData, Participant } from "@/lib/events";
 import type { FavoriteCandidate } from "@/lib/favorites";
 import { getPublicParticipantEvents } from "@/lib/public-participant-events";
 import { getPublicParticipantProfile } from "@/lib/participant-profiles";
+import { evaluateSeoEligibility, indexableRobots } from "@/lib/seo-indexability";
 import { getSportBySlug, getSportLabel, sportAllowsParticipantPages } from "@/lib/sports-registry";
 import styles from "@/app/football/club/[club]/club-page.module.css";
 
@@ -96,12 +97,32 @@ export async function buildUniversalClubMetadata(sport: string, club: string): P
   const image = verified.profile?.heroImageUrl || sportBackdrop(sport);
   const nextMatchText = nextOpponent ? ` Next match: ${verified.name} vs ${nextOpponent.name}.` : "";
   const description = `See ${verified.name}'s upcoming ${sportLabel} schedule and official TV and streaming broadcasters by country.${nextMatchText} Team information and competitions.`;
+  const verifiedBroadcastCount = events.reduce(
+    (sum, event) => sum + event.broadcasts.filter((broadcast) => broadcast.coverageStatus === "confirmed").length,
+    0,
+  );
+  const usefulContentCount = [
+    verified.profile?.summary,
+    verified.profile?.city,
+    verified.profile?.foundedYear,
+    verified.profile?.venueName,
+    verified.profile?.officialWebsiteUrl,
+    verified.competitions.length > 0 ? verified.competitions.length : undefined,
+  ].filter(Boolean).length;
+  const eligibility = evaluateSeoEligibility({
+    kind: "participant",
+    canonicalPath,
+    eventCount: events.length,
+    verifiedBroadcastCount,
+    usefulContentCount,
+    hasVerifiedProfile: Boolean(verified.profile),
+  });
 
   return {
     title: `${verified.name} TV Schedule & Next Match | WatchTVSport`,
     description,
     alternates: { canonical: canonicalPath },
-    robots: { index: true, follow: true },
+    robots: indexableRobots(eligibility.indexable),
     openGraph: {
       title: `${verified.name} TV Schedule, Next Match & Where to Watch`,
       description,
@@ -173,20 +194,9 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
     sameAs: links.map(([, url]) => url),
   };
 
-  const breadcrumbJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
-      { "@type": "ListItem", position: 2, name: sportLabel, item: absoluteUrl(sportHubHref(sport)) },
-      { "@type": "ListItem", position: 3, name: clubName, item: canonicalUrl },
-    ],
-  };
-
   return (
     <main id="main-content" className={`v2-calendar ${styles.page}`}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(teamJsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: sportLabel, href: sportHubHref(sport) }, { label: clubName }]} />
 
       <section
