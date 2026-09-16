@@ -12,6 +12,7 @@ on:
       - ux/home-premium-visual-pass
       - fix/club-profile-supabase-fallback
       - feature/participant-sport-visuals
+      - feature/club-page-layout-seo
     paths:
       - '.github/workflows/validate-v2-build.yml'
       - 'app/**'
