@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - refonte/watchtvsport-v2
+      - feat/football-schedule-quality-audit-current
       - audit/universal-club-media
       - ux/friendly-navigation-cards
       - feature/entity-navigation-v2
