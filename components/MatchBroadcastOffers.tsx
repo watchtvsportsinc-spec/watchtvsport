@@ -74,6 +74,52 @@ function coverageLabel(broadcast: BroadcastInfo): string {
   }
 }
 
+function compactCoverageLabel(broadcast: BroadcastInfo): string {
+  switch (broadcast.broadcastType) {
+    case "delayed":
+      return "Delayed";
+    case "replay":
+      return "Replay";
+    case "highlights":
+      return "Highlights";
+    default:
+      return "Live";
+  }
+}
+
+function compactLanguages(languages?: string[]): string {
+  if (!languages?.length) return "";
+  const codes: Record<string, string> = {
+    English: "EN",
+    French: "FR",
+    Spanish: "ES",
+    Portuguese: "PT",
+    Arabic: "AR",
+    German: "DE",
+    Italian: "IT",
+  };
+  return languages.map((language) => codes[language] ?? language.slice(0, 2).toUpperCase()).join("/");
+}
+
+function latestVerification(offers: BroadcastInfo[]): string | null {
+  const valid = offers
+    .map((offer) => offer.lastChecked)
+    .filter((value): value is string => Boolean(value))
+    .map((value) => ({ value, time: new Date(value).getTime() }))
+    .filter((item) => !Number.isNaN(item.time))
+    .sort((a, b) => b.time - a.time);
+  return valid[0]?.value ?? null;
+}
+
+function formatVerificationDate(value: string): string {
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(value));
+}
+
 export default function MatchBroadcastOffers({ event, selectedCountry, selectedAccess, returnTo }: Props) {
   const allOffers = event.broadcasts.filter((broadcast) => broadcast.coverageStatus === "confirmed");
   const countries = Array.from(
@@ -103,15 +149,16 @@ export default function MatchBroadcastOffers({ event, selectedCountry, selectedA
 
   const freeCount = allOffers.filter((broadcast) => broadcast.access === "Free").length;
   const paidCount = allOffers.filter((broadcast) => broadcast.access === "Paid").length;
+  const verifiedAt = latestVerification(allOffers);
 
   return (
     <section id="where-to-watch" className={styles.section} aria-labelledby="match-broadcast-options-title">
       <div className={styles.heading}>
         <div>
-          <p className={styles.eyebrow}>Official viewing options</p>
+          <p className={styles.eyebrow}>Official TV & streaming</p>
           <h2 id="match-broadcast-options-title">Where to watch</h2>
           <p className={styles.intro}>
-            Confirmed official TV and streaming services for {event.title}, grouped by country.
+            Confirmed official services for {event.title}, grouped by country.
           </p>
         </div>
         <span className={styles.countryCount}>{countries.length} {countries.length === 1 ? "country" : "countries"}</span>
@@ -122,7 +169,7 @@ export default function MatchBroadcastOffers({ event, selectedCountry, selectedA
         <label htmlFor="country-broadcast-filter">
           <span>Country</span>
           <select id="country-broadcast-filter" name="country" defaultValue={country}>
-            <option value="">All available countries</option>
+            <option value="">All countries</option>
             {countries.map((item) => (
               <option key={item.code} value={item.code}>{item.name}</option>
             ))}
@@ -162,29 +209,35 @@ export default function MatchBroadcastOffers({ event, selectedCountry, selectedA
                 {offers.map((broadcast) => {
                   const href = broadcast.affiliateUrl ?? broadcast.url;
                   const key = [broadcast.countryCode, broadcast.broadcaster, href, broadcast.access].join("|");
+                  const language = compactLanguages(broadcast.commentaryLanguages);
                   return (
                     <article className={styles.offer} key={key}>
                       <BroadcasterLogo name={broadcast.broadcaster} />
                       <div className={styles.offerMain}>
-                        <div className={styles.offerTitleRow}>
-                          <h4>{broadcast.broadcaster}</h4>
-                          <span className={`${styles.accessBadge} ${broadcast.access === "Free" ? styles.free : styles.paid}`}>
-                            {broadcast.access}
-                          </span>
-                        </div>
-                        <p>{coverageLabel(broadcast)}</p>
+                        <h4>{broadcast.broadcaster}</h4>
+                        <p className={styles.coverageFull}>{coverageLabel(broadcast)}</p>
                         {broadcast.commentaryLanguages?.length ? (
                           <p className={styles.detail}>Commentary: {broadcast.commentaryLanguages.join(", ")}</p>
                         ) : null}
                         {broadcast.accessConditions ? <p className={styles.detail}>{broadcast.accessConditions}</p> : null}
+                      </div>
+                      <div className={styles.offerMeta}>
+                        <span className={`${styles.accessBadge} ${broadcast.access === "Free" ? styles.free : styles.paid}`}>
+                          {broadcast.access}
+                        </span>
+                        <span className={styles.compactMeta}>
+                          {compactCoverageLabel(broadcast)}{language ? ` · ${language}` : ""}
+                        </span>
                       </div>
                       <a
                         className={styles.officialLink}
                         href={href}
                         rel="noopener noreferrer sponsored"
                         target="_blank"
+                        aria-label={`Open ${broadcast.broadcaster} official service`}
                       >
-                        Official service <span aria-hidden="true">↗</span>
+                        <span className={styles.linkText}>Official service</span>
+                        <span className={styles.linkArrow} aria-hidden="true">↗</span>
                       </a>
                     </article>
                   );
@@ -195,8 +248,11 @@ export default function MatchBroadcastOffers({ event, selectedCountry, selectedA
         </div>
       )}
 
+      {verifiedAt ? (
+        <p className={styles.verification}>✓ Broadcast data verified {formatVerificationDate(verifiedAt)}</p>
+      ) : null}
       <p className={styles.disclaimer}>
-        Broadcaster availability can depend on territory, subscription and account conditions. WatchTVSport links only to official services.
+        Availability can depend on territory, subscription and account conditions. WatchTVSport links only to official services.
       </p>
     </section>
   );
