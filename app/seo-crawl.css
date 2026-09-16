@@ -1,0 +1,4 @@
+.wts-filter-pills button{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid rgba(111,179,246,.17);border-radius:999px;color:#b8cada;background:rgba(4,15,27,.58);font:inherit;font-size:10px;font-weight:850;cursor:pointer}
+.wts-filter-pills button:hover{border-color:rgba(73,174,255,.55);background:rgba(19,79,132,.28)}
+.wts-filter-pills button.is-active{background:#0a84f7;border-color:#0a84f7;color:#fff}
+.wts-filter-pills button:focus-visible{outline:2px solid #6ac7ff;outline-offset:2px}
