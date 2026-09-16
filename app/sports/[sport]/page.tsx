@@ -3,8 +3,8 @@ import { notFound, redirect } from "next/navigation";
 import SportHubPage, { buildSportHubMetadata } from "@/components/SportHubPage";
 
 type PageProps={params:Promise<{sport:string}>};
-const SUPPORTED=new Set(["basketball","hockey","tennis","rugby","baseball","american-football"]);
-const REDIRECTS:Record<string,string>={football:"/football","formula-1":"/formula-1",motogp:"/sports/motogp",ufc:"/ufc"};
+const SUPPORTED=new Set(["basketball","hockey","tennis","rugby","baseball","american-football","motogp"]);
+const REDIRECTS:Record<string,string>={football:"/football","formula-1":"/formula-1",ufc:"/ufc"};
 
 export async function generateStaticParams(){return [...SUPPORTED,...Object.keys(REDIRECTS)].map(sport=>({sport}));}
 
@@ -17,7 +17,6 @@ export async function generateMetadata({params}:PageProps):Promise<Metadata>{
 
 export default async function SportPage({params}:PageProps){
  const {sport}=await params;
- if(sport==="motogp")return <SportHubPage sport="motogp"/>;
  if(REDIRECTS[sport])redirect(REDIRECTS[sport]);
  if(!SUPPORTED.has(sport))notFound();
  return <SportHubPage sport={sport}/>;
