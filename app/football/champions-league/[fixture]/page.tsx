@@ -64,6 +64,13 @@ function statusLabel(status?: "scheduled" | "live" | "finished") {
   return "Scheduled";
 }
 
+function compactStageLabel(stage?: string) {
+  if (!stage) return "";
+  const matchday = stage.match(/matchday\s+(\d+)/i);
+  if (matchday) return `MD${matchday[1]}`;
+  return stage;
+}
+
 export async function generateStaticParams() {
   return Array.from(
     new Set(
@@ -160,14 +167,18 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
   return (
     <main id="main-content" className={`v2-calendar ${styles.page}`}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <Breadcrumbs
-        items={[
-          { label: "Home", href: "/" },
-          { label: "Football", href: "/football" },
-          { label: event.competition, href: competitionHref },
-          { label: event.title },
-        ]}
-      />
+
+      <div className={styles.desktopBreadcrumb}>
+        <Breadcrumbs
+          items={[
+            { label: "Home", href: "/" },
+            { label: "Football", href: "/football" },
+            { label: event.competition, href: competitionHref },
+            { label: event.title },
+          ]}
+        />
+      </div>
+      <Link className={styles.mobileBack} href={competitionHref}>← {event.competition}</Link>
 
       <section id="match-overview" className={styles.hero} aria-labelledby="event-title">
         <div className={styles.heroTop}>
@@ -179,22 +190,20 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
             <div className={styles.meta}>
               <span className={statusClass}>{statusLabel(event.status)}</span>
               <LocalTime date={event.eventDate} />
-              {event.stage ? <span>{event.stage}</span> : null}
+              {event.stage ? <span className={styles.stageFull}>{event.stage}</span> : null}
+              {event.stage ? <span className={styles.stageCompact}>{compactStageLabel(event.stage)}</span> : null}
             </div>
           </div>
           <div className={styles.heroAction}>
-            <FavoriteButton favorite={matchFavorite} />
+            <FavoriteButton favorite={matchFavorite} compact />
           </div>
         </div>
 
         <div id="teams" className={styles.matchup}>
           {event.participant1 ? (
             <Link className={styles.teamCard} href={`/football/club/${clubSlug(event.participant1.name)}`}>
-              <EntityVisual entityId={participantEntityId(event.participant1, "football")} label={event.participant1.name} size="lg" />
-              <span className={styles.teamText}>
-                <span className={styles.teamName}>{event.participant1.name}</span>
-                <span className={styles.teamLink}>Team profile →</span>
-              </span>
+              <EntityVisual entityId={participantEntityId(event.participant1, "football")} label={event.participant1.name} size="md" />
+              <span className={styles.teamName}>{event.participant1.name}</span>
             </Link>
           ) : <span />}
 
@@ -202,11 +211,8 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
 
           {event.participant2 ? (
             <Link className={`${styles.teamCard} ${styles.teamCardAway}`} href={`/football/club/${clubSlug(event.participant2.name)}`}>
-              <EntityVisual entityId={participantEntityId(event.participant2, "football")} label={event.participant2.name} size="lg" />
-              <span className={styles.teamText}>
-                <span className={styles.teamName}>{event.participant2.name}</span>
-                <span className={styles.teamLink}>Team profile →</span>
-              </span>
+              <EntityVisual entityId={participantEntityId(event.participant2, "football")} label={event.participant2.name} size="md" />
+              <span className={styles.teamName}>{event.participant2.name}</span>
             </Link>
           ) : <span />}
         </div>
@@ -214,19 +220,15 @@ export default async function ChampionsLeagueEventPage({ params, searchParams }:
         <div className={styles.stats} aria-label="Match viewing summary">
           <div className={styles.stat}>
             <strong>{confirmedOffers.length}</strong>
-            <span>Confirmed listings</span>
+            <span>Listings</span>
           </div>
           <div className={styles.stat}>
             <strong>{freeOffers}</strong>
-            <span>Free options</span>
+            <span>Free</span>
           </div>
           <div className={styles.stat}>
             <strong>{countryCount}</strong>
             <span>Countries</span>
-          </div>
-          <div className={`${styles.stat} ${styles.statStage}`}>
-            <strong>{event.stage || "Match"}</strong>
-            <span>Stage</span>
           </div>
         </div>
 
