@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 const links = [
   { href: "/events", label: "Events" },
   { href: "/sports", label: "Sports" },
-  { href: "/events?when=week", label: "Calendar" },
+  { href: "/events#sports-filters", label: "Calendar" },
 ];
 
 function sportsIsActive(pathname: string): boolean {
@@ -23,7 +23,7 @@ export default function HeaderNav() {
       <div className="wts-nav-links">
         <Link className={homeIsActive ? "is-active" : undefined} href="/">Home</Link>
         {links.map((link) => {
-          const active = (pathname === "/events" && link.label === "Events") || (link.label === "Sports" && sportsIsActive(pathname));
+          const active = (pathname === "/events" && (link.label === "Events" || link.label === "Calendar")) || (link.label === "Sports" && sportsIsActive(pathname));
           return <Link className={active ? "is-active" : undefined} key={link.label} href={link.href}>{link.label}</Link>;
         })}
       </div>
