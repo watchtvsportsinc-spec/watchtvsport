@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 
@@ -13,12 +13,24 @@ const SPORT_CONFIG: Record<string,{name:string;label:string;description:string;f
   hockey:{name:"Ice hockey",label:"Ice hockey",description:"Browse hockey competitions, teams and upcoming games with official broadcast information by country.",filter:"hockey"},
 };
 
+const DEDICATED_SPORT_ROUTES: Record<string,string> = {
+  football:"/football",
+  "formula-1":"/formula-1",
+  ufc:"/ufc",
+};
+
 function slugify(value:string){return value.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/&/g," and ").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");}
 
-export async function generateStaticParams(){return Object.keys(SPORT_CONFIG).map(sport=>({sport}));}
+export async function generateStaticParams(){return [...Object.keys(SPORT_CONFIG),...Object.keys(DEDICATED_SPORT_ROUTES)].map(sport=>({sport}));}
 
 export async function generateMetadata({params}:PageProps):Promise<Metadata>{
-  const {sport}=await params; const cfg=SPORT_CONFIG[sport];
+  const {sport}=await params;
+  const dedicated=DEDICATED_SPORT_ROUTES[sport];
+  if(dedicated){
+    const label=sport==="football"?"Football":sport==="formula-1"?"Formula 1":"UFC";
+    return{title:`${label} | WatchTVSport`,alternates:{canonical:dedicated},robots:{index:false,follow:true}};
+  }
+  const cfg=SPORT_CONFIG[sport];
   if(!cfg)return{title:"Sport not found",robots:{index:false,follow:false}};
   const snapshot=await getPublicEventsSnapshot();
   const hasEvents=snapshot.events.some(e=>e.sport===cfg.filter);
@@ -26,7 +38,11 @@ export async function generateMetadata({params}:PageProps):Promise<Metadata>{
 }
 
 export default async function SportLandingPage({params}:PageProps){
-  const {sport}=await params; const cfg=SPORT_CONFIG[sport]; if(!cfg)notFound();
+  const {sport}=await params;
+  const dedicated=DEDICATED_SPORT_ROUTES[sport];
+  if(dedicated)redirect(dedicated);
+
+  const cfg=SPORT_CONFIG[sport]; if(!cfg)notFound();
   const snapshot=await getPublicEventsSnapshot();
   const events=snapshot.events.filter(e=>e.sport===cfg.filter).sort((a,b)=>Date.parse(a.eventDate)-Date.parse(b.eventDate));
   const now=Date.now();
