@@ -1,17 +1,20 @@
 import { getEntityVisual } from "@/lib/entity-visuals";
+import type { EntityMediaAsset } from "@/lib/entity-media";
 import type { ParticipantVisualProfile } from "@/lib/participant-visuals";
 
 type EntityVisualProps = {
   entityId: string;
   label: string;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "hero";
   participantVisual?: ParticipantVisualProfile | null;
+  approvedMedia?: EntityMediaAsset | null;
 };
 
 const sizes = {
   sm: 32,
   md: 42,
   lg: 58,
+  hero: 118,
 } as const;
 
 export default function EntityVisual({
@@ -19,8 +22,9 @@ export default function EntityVisual({
   label,
   size = "md",
   participantVisual,
+  approvedMedia,
 }: EntityVisualProps) {
-  const visual = getEntityVisual(entityId, label, { participantVisual });
+  const visual = getEntityVisual(entityId, label, { participantVisual, approvedMedia });
   const px = sizes[size];
 
   if (visual.kind === "flag") {
@@ -51,7 +55,7 @@ export default function EntityVisual({
         style={{
           width: px,
           height: px,
-          borderRadius: 12,
+          borderRadius: size === "hero" ? 22 : 12,
           background: "rgba(248, 250, 252, 0.96)",
           border: "1px solid rgba(148, 163, 184, 0.22)",
           display: "inline-flex",
@@ -67,7 +71,7 @@ export default function EntityVisual({
           alt={visual.alt}
           width={px}
           height={px}
-          loading="lazy"
+          loading={size === "hero" ? "eager" : "lazy"}
           decoding="async"
           referrerPolicy="no-referrer"
           style={{ width: "100%", height: "100%", objectFit: "contain" }}
@@ -90,7 +94,7 @@ export default function EntityVisual({
       style={{
         width: px,
         height: px,
-        borderRadius: 12,
+        borderRadius: size === "hero" ? 22 : 12,
         border: `1px solid ${palette.accentColor}66`,
         background: `linear-gradient(135deg, ${palette.primaryColor} 0 54%, ${palette.secondaryColor} 54% 100%)`,
         color: palette.accentColor,
