@@ -19,8 +19,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!SUPPORTED.has(sport)) {
     return { title: "Sport not found", robots: { index: false, follow: false } };
   }
-  if (sport === "motogp") return buildRaceSeriesMetadata("motogp");
-  return buildSportHubMetadata(sport);
+  if (sport === "motogp") return await buildRaceSeriesMetadata("motogp");
+  return await buildSportHubMetadata(sport);
 }
 
 export default async function SportPage({ params }: PageProps) {
