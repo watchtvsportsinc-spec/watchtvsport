@@ -11,6 +11,7 @@ on:
       - ux/home-premium-schedule
       - ux/home-premium-visual-pass
       - fix/club-profile-supabase-fallback
+      - feature/participant-sport-visuals
     paths:
       - '.github/workflows/validate-v2-build.yml'
       - 'app/**'
