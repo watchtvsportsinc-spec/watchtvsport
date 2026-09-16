@@ -9,6 +9,10 @@ const links = [
   { href: "/events?when=week", label: "Calendar" },
 ];
 
+function sportsIsActive(pathname: string): boolean {
+  return pathname.startsWith("/sports") || pathname.startsWith("/football") || pathname.startsWith("/formula-1") || pathname.startsWith("/motorsports") || pathname.startsWith("/combat-sports") || pathname.startsWith("/ufc");
+}
+
 export default function HeaderNav() {
   const pathname = usePathname();
   const homeIsActive = pathname === "/";
@@ -18,7 +22,10 @@ export default function HeaderNav() {
     <nav className="wts-primary-nav" aria-label="Primary navigation">
       <div className="wts-nav-links">
         <Link className={homeIsActive ? "is-active" : undefined} href="/">Home</Link>
-        {links.map((link) => <Link className={(pathname === "/events" && link.label === "Events") || (pathname.startsWith("/sports") && link.label === "Sports") ? "is-active" : undefined} key={link.label} href={link.href}>{link.label}</Link>)}
+        {links.map((link) => {
+          const active = (pathname === "/events" && link.label === "Events") || (link.label === "Sports" && sportsIsActive(pathname));
+          return <Link className={active ? "is-active" : undefined} key={link.label} href={link.href}>{link.label}</Link>;
+        })}
       </div>
       <div className="wts-nav-actions">
         <Link className="wts-nav-search-link" aria-label="Search teams, competitions and events" href={searchHref}>⌕ <span>Search</span></Link>
