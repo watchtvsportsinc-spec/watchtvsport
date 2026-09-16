@@ -56,3 +56,11 @@ on conflict (sport_id,slug) do update set
 
 update public.competitions c set season_label='2026/27'
 from public.sports s where c.sport_id=s.id and s.slug='football' and c.slug='champions-league' and c.season_label is null;
+
+-- Verified against the official 2026/27 competition sources.
+update public.competitions c
+set metadata_status='verified'
+from public.sports s
+where c.sport_id=s.id
+  and s.slug='football'
+  and c.slug in ('premier-league','ligue-1');
