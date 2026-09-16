@@ -68,10 +68,11 @@ function Garment({ family, primary, secondary, accent, pattern, clipId }: { fami
 export default function ParticipantSportVisual({ sport, label, countryCode, visual, size="md" }: Props) {
   const resolved = visual ?? defaultParticipantVisual(sport,countryCode);
   const px = SIZES[size];
+  const fluidHero = size === "hero";
   const clipId = `pv-${label.toLowerCase().replace(/[^a-z0-9]+/g,"-").slice(0,28)}-${resolved.renderFamily}`;
   return (
-    <span role="img" aria-label={`${label} visual`} title={resolved.visualStatus === "verified" ? `${label} verified visual palette` : `${label} WatchTVSport visual`} style={{display:"inline-grid",placeItems:"center",width:px,height:px,flex:"0 0 auto"}}>
-      <svg viewBox="0 0 120 120" width={px} height={px} aria-hidden="true" focusable="false" style={{filter:"drop-shadow(0 8px 12px rgba(0,0,0,.28))"}}>
+    <span role="img" aria-label={`${label} visual`} title={resolved.visualStatus === "verified" ? `${label} verified visual palette` : `${label} WatchTVSport visual`} style={{display:"inline-grid",placeItems:"center",width:fluidHero?"100%":px,height:fluidHero?"100%":px,flex:"0 0 auto"}}>
+      <svg viewBox="0 0 120 120" width={fluidHero?"84%":px} height={fluidHero?"84%":px} aria-hidden="true" focusable="false" style={{maxWidth:"100%",maxHeight:"100%",filter:"drop-shadow(0 8px 12px rgba(0,0,0,.28))"}}>
         <Garment family={resolved.renderFamily} primary={resolved.primaryColor} secondary={resolved.secondaryColor} accent={resolved.accentColor} pattern={resolved.patternStyle} clipId={clipId}/>
       </svg>
     </span>
