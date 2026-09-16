@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import EventsFilterNav from "@/components/EventsFilterNav";
 import SearchAutocomplete from "@/components/SearchAutocomplete";
 import TimezoneSync from "@/components/TimezoneSync";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
@@ -11,11 +12,20 @@ import type { EventData } from "@/lib/events";
 type EventsPageProps = { searchParams?: Promise<Record<string, string | string[] | undefined>> };
 type WindowFilter = "all" | "live" | "today" | "tonight" | "tomorrow" | "week";
 
-export const metadata: Metadata = {
+const BASE_METADATA = {
   title: "All live & upcoming sports events",
   description: "Browse live and upcoming sports events and filter quickly by sport or competition before opening each event's broadcaster guide.",
-  alternates: { canonical: "/events" },
 };
+
+export async function generateMetadata({ searchParams }: EventsPageProps): Promise<Metadata> {
+  const params = (await searchParams) ?? {};
+  const hasFacet = Object.values(params).some((value) => Array.isArray(value) ? value.some(Boolean) : Boolean(value));
+  return {
+    ...BASE_METADATA,
+    alternates: { canonical: "/events" },
+    robots: hasFacet ? { index: false, follow: true } : { index: true, follow: true },
+  };
+}
 
 const SPORT_FILTERS = [
   ["", "All", "▦"],
@@ -78,24 +88,14 @@ function inWindow(event: EventData, window: WindowFilter, now: Date, timeZone: s
   return date.getTime() <= now.getTime() + 7 * 24 * 60 * 60 * 1000;
 }
 
-function hrefWith(current: { when: WindowFilter; sport: string; competition: string; query: string; timeZone: string }, patch: Partial<{ when: WindowFilter; sport: string; competition: string; query: string }>): string {
-  const next = { ...current, ...patch };
-  const params = new URLSearchParams({ view: "all" });
-  if (next.when !== "all") params.set("when", next.when);
-  if (next.sport) params.set("sport", next.sport);
-  if (next.competition) params.set("competition", next.competition);
-  if (next.query) params.set("q", next.query);
-  if (next.timeZone !== "UTC") params.set("tz", next.timeZone);
-  return `/events?${params.toString()}`;
-}
-
 export default async function EventsPage({ searchParams }: EventsPageProps) {
   const params = (await searchParams) ?? {};
   const filters = parseCalendarFilters(params);
   const rawWhen = firstValue(params.when) as WindowFilter;
   const when: WindowFilter = ["all", "live", "today", "tonight", "tomorrow", "week"].includes(rawWhen) ? rawWhen : "all";
-  const snapshot = await getPublicEventsSnapshot();
   const now = new Date();
+  const from = new Date(now.getTime() - 12 * 60 * 60 * 1000).toISOString();
+  const snapshot = await getPublicEventsSnapshot({ from, limit: 500 });
   const options = getCalendarFilterOptions(snapshot.events);
   const suggestions = buildSearchSuggestions(snapshot.events);
   const query = normalize(filters.query);
@@ -117,6 +117,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   return (
     <main id="main-content" className="wts-events-page">
       <TimezoneSync />
+      {snapshot.warning ? <p className="v2-data-warning" role="status">{snapshot.warning}</p> : null}
       <header className="wts-events-hero">
         <p>All events</p>
         <h1>What's on now and next</h1>
@@ -125,13 +126,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
       </header>
 
       <section id="sports-filters" className="wts-events-filters" aria-label="Event filters">
-        <nav className="wts-filter-pills" aria-label="Time filters">
-          {([["all", "All current"], ["live", "Live"], ["today", "Today"], ["tonight", "Tonight"], ["tomorrow", "Tomorrow"], ["week", "This week"]] as const).map(([value, label]) => <Link className={when === value ? "is-active" : undefined} href={hrefWith(state, { when: value })} key={value}>{label}</Link>)}
-        </nav>
-
-        <nav className="wts-filter-pills wts-sport-filter-pills" aria-label="Sports filters">
-          {SPORT_FILTERS.map(([value, label, icon]) => <Link className={filters.sport === value ? "is-active" : undefined} href={hrefWith(state, { sport: value, competition: "" })} key={label}><span aria-hidden="true">{icon}</span>{label}</Link>)}
-        </nav>
+        <EventsFilterNav state={state} />
 
         <form className="wts-competition-filter" action="/events" method="get">
           <input type="hidden" name="view" value="all" />
@@ -145,7 +140,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
             {options.competitions.map((option) => <option value={option.value} key={option.value}>{option.label}</option>)}
           </select>
           <button type="submit">Apply</button>
-          {(filters.sport || filters.competition || filters.query || when !== "all") ? <Link href={hrefWith(state, { when: "all", sport: "", competition: "", query: "" })}>Clear</Link> : null}
+          {(filters.sport || filters.competition || filters.query || when !== "all") ? <Link href="/events">Clear</Link> : null}
         </form>
       </section>
 
