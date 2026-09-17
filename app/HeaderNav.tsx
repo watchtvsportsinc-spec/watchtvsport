@@ -16,7 +16,6 @@ function sportsIsActive(pathname: string): boolean {
 export default function HeaderNav() {
   const pathname = usePathname();
   const homeIsActive = pathname === "/";
-  const searchHref = pathname === "/" ? "/#global-sports-search" : "/events#global-sports-search";
 
   return (
     <nav className="wts-primary-nav" aria-label="Primary navigation">
@@ -27,9 +26,31 @@ export default function HeaderNav() {
           return <Link className={active ? "is-active" : undefined} key={link.label} href={link.href}>{link.label}</Link>;
         })}
       </div>
+
       <div className="wts-nav-actions">
-        <Link className="wts-nav-search-link" aria-label="Search teams, competitions and events" href={searchHref}>⌕ <span>Search</span></Link>
-        <Link aria-label="Open favorites" className={pathname === "/favorites" ? "is-active" : undefined} href="/favorites">♡ <span>Favorites</span></Link>
+        <form className="wts-header-search" action="/events" method="get" role="search">
+          <label className="sr-only" htmlFor="wts-header-search-input">Search teams, competitions and events</label>
+          <svg className="wts-header-search-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.8" />
+            <path d="m16 16 4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
+          <input
+            id="wts-header-search-input"
+            name="q"
+            type="search"
+            placeholder="Search for teams, competitions..."
+            autoComplete="off"
+          />
+        </form>
+
+        <Link
+          aria-label="Open favorites"
+          className={`wts-nav-favorites${pathname === "/favorites" ? " is-active" : ""}`}
+          href="/favorites"
+        >
+          <span aria-hidden="true">♡</span>
+          <span>Favorites</span>
+        </Link>
       </div>
     </nav>
   );
