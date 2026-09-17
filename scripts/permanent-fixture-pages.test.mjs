@@ -16,6 +16,23 @@ test("league fixtures use permanent URLs and two scheduling states",async()=>{
   assert.doesNotMatch(eventRoute,/matchweek.*canonical/i);
 });
 
+test("one permanent matchup URL can select an exact dated occurrence",async()=>{
+  const loader=await read("lib/public-fixtures.ts");
+  const eventRoute=await read("app/event/[slug]/page.tsx");
+  const nextGames=await read("components/MatchNextGames.tsx");
+  const legacyUcl=await read("app/football/champions-league/[fixture]/page.tsx");
+
+  assert.match(loader,/get_public_matchup_page_v1/);
+  assert.match(loader,/getPublicMatchupPage/);
+  assert.match(eventRoute,/searchParams/);
+  assert.match(eventRoute,/event: eventId/);
+  assert.match(eventRoute,/alternates: \{ canonical: fixture\.detailPath \}/);
+  assert.match(nextGames,/\?event=\$\{encodeURIComponent\(event\.id\)\}/);
+  assert.doesNotMatch(nextGames,/competition: competitionSlug/);
+  assert.doesNotMatch(nextGames,/event\.slug !== currentEventSlug/);
+  assert.match(legacyUcl,/permanentRedirect\(`\/event\/\$\{fixture\}`\)/);
+});
+
 test("priority leagues use matchweek-oriented permanent fixture hubs",async()=>{
   const route=await read("app/football/competition/[competition]/page.tsx");
   const leaguePage=await read("components/LeagueCompetitionPage.tsx");
