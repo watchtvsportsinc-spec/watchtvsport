@@ -9,18 +9,14 @@
 
 .compactResults :global(.wts-schedule-columns) {
   min-height: 28px;
+  grid-template-columns: 180px minmax(260px, 1fr) 125px 105px 96px !important;
 }
 
 .compactResults :global(.wts-schedule-row) {
   min-height: 48px;
   padding-top: 4px;
   padding-bottom: 4px;
-}
-
-.compactResults :global(.wts-schedule-status span) {
-  min-height: 22px;
-  padding: 3px 7px;
-  font-size: 8px;
+  grid-template-columns: 180px minmax(260px, 1fr) 125px 105px 96px !important;
 }
 
 .compactResults :global(.wts-access-pill) {
@@ -31,6 +27,28 @@
 .compactResults :global(.wts-open-event) {
   min-height: 28px;
   padding: 4px 7px;
+}
+
+.liveDot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: 7px;
+  border-radius: 999px;
+  vertical-align: middle;
+  background: #ff3947;
+  box-shadow: 0 0 0 0 rgba(255,57,71,.55);
+  animation: livePulse 1.35s ease-out infinite;
+}
+
+@keyframes livePulse {
+  0% { box-shadow: 0 0 0 0 rgba(255,57,71,.5); opacity: 1; }
+  70% { box-shadow: 0 0 0 6px rgba(255,57,71,0); opacity: .72; }
+  100% { box-shadow: 0 0 0 0 rgba(255,57,71,0); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .liveDot { animation: none; }
 }
 
 .actions {
@@ -64,6 +82,13 @@
   display: none;
 }
 
+@media (max-width: 1050px) and (min-width: 761px) {
+  .compactResults :global(.wts-schedule-columns),
+  .compactResults :global(.wts-schedule-row) {
+    grid-template-columns: 150px minmax(220px, 1fr) 112px 90px 84px !important;
+  }
+}
+
 @media (max-width: 760px) {
   .compactResults :global(.wts-schedule-columns) {
     display: none !important;
@@ -80,10 +105,6 @@
     row-gap: 3px !important;
     min-height: 72px;
     padding: 8px 10px !important;
-  }
-
-  .compactResults :global(.wts-schedule-status) {
-    display: none !important;
   }
 
   .compactResults :global(.wts-schedule-event) {
