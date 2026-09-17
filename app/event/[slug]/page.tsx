@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import PermanentFixturePage from "@/components/PermanentFixturePage";
 import UniversalEventPage from "@/components/UniversalEventPage";
+import type { EventData } from "@/lib/events";
 import { getPublicFixturePage, getPublicMatchupPage, fixtureWindowLabel, type PublicFixture } from "@/lib/public-fixtures";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 import { evaluateSeoEligibility, indexableRobots } from "@/lib/seo-indexability";
@@ -45,23 +46,9 @@ function fixtureMetadata(fixture: PublicFixture): Metadata {
   };
 }
 
-export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const { event: eventId } = (await searchParams) ?? {};
-
-  const matchup = await getPublicMatchupPage(slug, eventId);
-  if (matchup) return fixtureMetadata(matchup);
-  if (eventId) return { title: "Event not found", robots: { index: false, follow: false } };
-
-  const fixture = await getPublicFixturePage(slug);
-  if (fixture) return fixtureMetadata(fixture);
-
-  const snapshot = await getPublicEventsSnapshot({ slug, limit: 1 });
-  const event = snapshot.events.find((item) => item.slug === slug);
-  if (!event) return { title: "Event not found", robots: { index: false, follow: false } };
+function eventMetadata(event: EventData, canonicalPath: string): Metadata {
   const verifiedBroadcastCount = event.broadcasts.filter((broadcast) => broadcast.coverageStatus === "confirmed").length;
   const usefulContentCount = [event.eventDate, event.competition, event.participant1?.name, event.participant2?.name, event.stage].filter(Boolean).length;
-  const canonicalPath = `/event/${slug}`;
   const eligibility = evaluateSeoEligibility({
     kind: "event",
     canonicalPath,
@@ -76,13 +63,45 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   };
 }
 
+async function findEventById(eventId: string): Promise<EventData | null> {
+  const snapshot = await getPublicEventsSnapshot({ limit: 500 });
+  return snapshot.events.find((item) => item.id === eventId) ?? null;
+}
+
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const { event: eventId } = (await searchParams) ?? {};
+
+  const matchup = await getPublicMatchupPage(slug, eventId);
+  if (matchup) return fixtureMetadata(matchup);
+
+  if (eventId) {
+    const exactEvent = await findEventById(eventId);
+    if (exactEvent) return eventMetadata(exactEvent, `/event/${slug}?event=${encodeURIComponent(eventId)}`);
+    return { title: "Event not found", robots: { index: false, follow: false } };
+  }
+
+  const fixture = await getPublicFixturePage(slug);
+  if (fixture) return fixtureMetadata(fixture);
+
+  const snapshot = await getPublicEventsSnapshot({ slug, limit: 1 });
+  const event = snapshot.events.find((item) => item.slug === slug);
+  if (!event) return { title: "Event not found", robots: { index: false, follow: false } };
+  return eventMetadata(event, `/event/${slug}`);
+}
+
 export default async function EventPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const { event: eventId } = (await searchParams) ?? {};
 
   const matchup = await getPublicMatchupPage(slug, eventId);
   if (matchup) return <PermanentFixturePage fixture={matchup} />;
-  if (eventId) notFound();
+
+  if (eventId) {
+    const exactEvent = await findEventById(eventId);
+    if (exactEvent) return <UniversalEventPage slug={exactEvent.slug} />;
+    notFound();
+  }
 
   const fixture = await getPublicFixturePage(slug);
   if (fixture) return <PermanentFixturePage fixture={fixture} />;
