@@ -15,6 +15,12 @@
   box-shadow:none !important;
 }
 
+.wts-home-search-zone:before{
+  content:none !important;
+  display:none !important;
+  background-image:none !important;
+}
+
 .wts-home-search-zone:after{
   content:"";
   position:absolute;
