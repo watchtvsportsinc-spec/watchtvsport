@@ -150,11 +150,16 @@
 }
 
 .wts-home-favorites .wts-section-icon{
-  width:auto;
-  height:auto;
+  box-sizing:border-box;
+  display:grid;
+  place-items:center;
+  width:24px;
+  height:24px;
+  border:0;
   border-radius:0;
   background:transparent;
-  font-size:22px;
+  font-size:20px;
+  line-height:1;
 }
 
 .wts-home-v3 .wts-home-favorites .wts-favorites-rail{
@@ -163,7 +168,7 @@
   align-items:stretch;
   gap:8px !important;
   overflow-x:auto;
-  padding:0 0 12px !important;
+  padding:0 0 10px !important;
   scrollbar-width:none;
 }
 
@@ -172,9 +177,10 @@
 }
 
 .wts-home-favorites .wts-favorite-tile{
-  flex:1 1 140px;
-  min-width:132px;
-  max-width:190px;
+  box-sizing:border-box !important;
+  flex:1 1 150px;
+  min-width:138px;
+  max-width:200px;
   align-items:center;
   background:#071a2b !important;
   border:1px solid rgba(98,178,255,.34) !important;
@@ -188,20 +194,22 @@
 }
 
 .wts-home-favorites .wts-favorite-name-only{
+  box-sizing:border-box !important;
   display:grid !important;
   grid-template-columns:22px minmax(0,1fr) !important;
   align-items:center !important;
   justify-content:start !important;
-  min-height:42px !important;
-  height:42px !important;
-  max-height:42px !important;
-  padding:6px 10px !important;
+  min-height:44px !important;
+  height:44px !important;
+  max-height:44px !important;
+  padding:5px 10px !important;
   text-align:left;
   gap:7px;
   border-radius:11px !important;
 }
 
 .wts-home-favorites .wts-favorite-mini-glyph{
+  box-sizing:border-box;
   display:grid;
   place-items:center;
   width:22px;
@@ -214,11 +222,14 @@
 }
 
 .wts-home-favorites .wts-favorite-name-only strong{
-  display:block;
+  display:-webkit-box;
   min-width:0;
   overflow:hidden;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  white-space:normal;
+  overflow-wrap:anywhere;
   text-overflow:ellipsis;
-  white-space:nowrap;
   font-size:10px;
   line-height:1.15;
 }
@@ -241,9 +252,9 @@
   }
 
   .wts-home-favorites .wts-favorite-tile{
-    flex:0 0 150px;
-    min-width:150px;
-    max-width:150px;
+    flex:0 0 158px;
+    min-width:158px;
+    max-width:158px;
   }
 }
 
@@ -318,19 +329,19 @@
 
   .wts-home-v3 .wts-home-favorites .wts-favorites-rail{
     display:flex !important;
-    padding:0 0 10px !important;
+    padding:0 0 9px !important;
   }
 
   .wts-home-favorites .wts-favorite-tile{
-    flex:0 0 145px;
-    min-width:145px;
-    max-width:145px;
+    flex:0 0 155px;
+    min-width:155px;
+    max-width:155px;
   }
 
   .wts-home-favorites .wts-favorite-name-only{
-    min-height:40px !important;
-    height:40px !important;
-    max-height:40px !important;
+    min-height:42px !important;
+    height:42px !important;
+    max-height:42px !important;
   }
 }
 
