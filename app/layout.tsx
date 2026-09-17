@@ -16,6 +16,7 @@ import "./home-favorites-compact.css";
 import "./header-v2.css";
 import "./home-v3-tweaks.css";
 import "./home-mobile-final.css";
+import "./home-schedule-cleanup.css";
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
 import HeaderNav from "./HeaderNav";
