@@ -3,7 +3,7 @@ import test from "node:test";
 
 const SUPABASE_URL = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "https://jywqhiiwsmudthaujhmi.supabase.co").replace(/\/$/, "");
 const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_30SkJ3gyUbPvH5sGFXpyHg_a4Qlzdi-";
-const EXPECTED_ACCESS_CONTRACT_HASH = "2a9d163c83abd0a03cbef70d8cca6c1d";
+const EXPECTED_ACCESS_CONTRACT_HASH = "f447273869d0ecbd493320b9aeebb5a3";
 
 async function request(path, { method = "GET", body, accept = "application/json" } = {}) {
   const response = await fetch(`${SUPABASE_URL}${path}`, {
@@ -53,6 +53,16 @@ test("anon can call the bounded public events RPC", async () => {
     body: { p_limit: 1 },
   });
   assert.equal(result.status, 200, result.text);
+});
+
+test("anon can resolve a permanent matchup and optional occurrence selector", async () => {
+  const result = await request("/rest/v1/rpc/get_public_matchup_page_v1", {
+    method: "POST",
+    body: { p_slug: "manchester-city-paris-saint-germain", p_event_id: null },
+  });
+  assert.equal(result.status, 200, result.text);
+  const matchup = JSON.parse(result.text);
+  assert.equal(matchup?.detailPath, "/event/manchester-city-paris-saint-germain");
 });
 
 test("anon can call reviewed public directory RPCs", async () => {
