@@ -99,7 +99,7 @@ export default function HeaderNav() {
 
       <div className="wts-nav-actions">
         <form
-          className="wts-header-search"
+          className={`wts-header-search${pathname === "/events" ? " is-page-search-duplicate" : ""}`}
           action="/events"
           method="get"
           role="search"
