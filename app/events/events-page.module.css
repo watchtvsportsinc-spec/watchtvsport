@@ -74,11 +74,11 @@
     grid-template-columns: minmax(0, 1fr) auto 72px !important;
     grid-template-areas:
       "event time actions"
-      "competition competition actions" !important;
+      "competition time actions" !important;
     align-items: center !important;
     column-gap: 8px !important;
     row-gap: 3px !important;
-    min-height: 68px;
+    min-height: 72px;
     padding: 8px 10px !important;
   }
 
@@ -129,10 +129,14 @@
 
   .compactResults :global(.wts-schedule-time) {
     grid-area: time;
-    align-self: end;
+    align-self: center;
     justify-self: end;
     min-width: 0 !important;
     text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
   }
 
   .compactResults :global(.wts-schedule-time strong) {
@@ -141,7 +145,11 @@
   }
 
   .compactResults :global(.wts-schedule-time small) {
-    display: none !important;
+    display: block !important;
+    color: #7f97ab;
+    font-size: 8px !important;
+    line-height: 1.1;
+    white-space: nowrap;
   }
 
   .compactResults :global(.wts-access-pill) {
