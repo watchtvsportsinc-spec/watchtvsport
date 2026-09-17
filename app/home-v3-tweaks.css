@@ -9,9 +9,9 @@
   border-radius:0 !important;
   background-color:#030914;
   background:
-    linear-gradient(90deg,#030914 0%,rgba(3,9,20,.88) 4%,rgba(3,9,20,.56) 9%,rgba(3,9,20,.22) 15%,rgba(3,9,20,.04) 21%,rgba(3,9,20,0) 28%,rgba(3,9,20,0) 80%,rgba(3,9,20,.08) 87%,rgba(3,9,20,.34) 94%,#030914 100%),
-    linear-gradient(180deg,rgba(3,9,20,.02) 0%,rgba(3,9,20,0) 66%,rgba(3,9,20,.48) 86%,#030914 100%),
-    url('/api/home-hero?v=full-scene-4') 18% bottom / 70% auto no-repeat;
+    linear-gradient(90deg,#030914 0%,rgba(3,9,20,.96) 14%,rgba(3,9,20,.78) 28%,rgba(3,9,20,.42) 40%,rgba(3,9,20,.12) 52%,rgba(3,9,20,0) 63%,rgba(3,9,20,0) 92%,rgba(3,9,20,.18) 97%,#030914 100%),
+    linear-gradient(180deg,rgba(3,9,20,.01) 0%,rgba(3,9,20,0) 66%,rgba(3,9,20,.48) 86%,#030914 100%),
+    url('/api/home-hero?v=full-scene-5') right bottom / 70% auto no-repeat;
   box-shadow:none !important;
 }
 
@@ -158,20 +158,32 @@
   display:none !important;
 }
 
-.wts-home-favorites .wts-favorite-glyph{
-  align-self:center !important;
-  background:#0b2237 !important;
+.wts-home-favorites .wts-favorite-name-only{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-height:46px !important;
+  height:46px !important;
+  max-height:46px !important;
+  padding:8px 12px !important;
+  text-align:center;
 }
 
-.wts-home-favorites .wts-favorite-copy{
-  align-content:center;
+.wts-home-favorites .wts-favorite-name-only strong{
+  display:block;
+  width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:12px;
+  line-height:1.1;
 }
 
 @media(max-width:900px){
   .wts-home-search-zone{
     min-height:300px;
     padding-top:12px;
-    background-position:20% bottom;
+    background-position:right bottom;
     background-size:78% auto;
   }
 
@@ -200,9 +212,9 @@
     min-height:286px;
     padding:16px 18px 72px;
     background:
-      linear-gradient(90deg,#030914 0%,rgba(3,9,20,.58) 16%,rgba(3,9,20,.14) 46%,rgba(3,9,20,.03) 76%,#030914 100%),
+      linear-gradient(90deg,#030914 0%,rgba(3,9,20,.82) 24%,rgba(3,9,20,.4) 46%,rgba(3,9,20,.08) 64%,rgba(3,9,20,0) 78%,#030914 100%),
       linear-gradient(180deg,rgba(3,9,20,0),rgba(3,9,20,.08) 62%,rgba(3,9,20,.9) 100%),
-      url('/api/home-hero?v=full-scene-4') 48% bottom / auto 80% no-repeat;
+      url('/api/home-hero?v=full-scene-5') right bottom / auto 80% no-repeat;
   }
 
   .wts-home-search-copy{
@@ -266,7 +278,7 @@
     min-height:270px;
     padding-top:12px;
     padding-bottom:64px;
-    background-position:50% bottom;
+    background-position:right bottom;
     background-size:auto 84%;
   }
 }
