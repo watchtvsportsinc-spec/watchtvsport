@@ -271,6 +271,52 @@
   padding:4px 9px;
 }
 
+/* Home window controls are buttons in V3; keep the same pill treatment as the legacy links. */
+.wts-home-v3 .wts-home-window-tabs button{
+  min-width:0;
+  min-height:38px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:8px 12px;
+  border:1px solid rgba(91,175,250,.24);
+  border-radius:999px;
+  background:linear-gradient(180deg,rgba(8,29,49,.88),rgba(3,16,28,.86));
+  box-shadow:inset 0 1px rgba(255,255,255,.04);
+  color:#bfd0e0;
+  font:inherit;
+  font-size:11px;
+  font-weight:850;
+  cursor:pointer;
+}
+
+.wts-home-v3 .wts-home-window-tabs button span{
+  color:#7e9ab4;
+}
+
+.wts-home-v3 .wts-home-window-tabs button i{
+  width:7px;
+  height:7px;
+  flex:0 0 7px;
+  border-radius:50%;
+  background:#ff3947;
+  box-shadow:0 0 11px rgba(255,57,71,.5);
+}
+
+.wts-home-v3 .wts-home-window-tabs button.is-active,
+.wts-home-v3 .wts-home-window-tabs button[aria-pressed="true"]{
+  border-color:rgba(69,176,255,.62);
+  background:linear-gradient(135deg,#0b8cff,#096fd8);
+  box-shadow:0 10px 30px rgba(0,124,255,.18),inset 0 1px rgba(255,255,255,.12);
+  color:#fff;
+}
+
+.wts-home-v3 .wts-home-window-tabs button.is-active span,
+.wts-home-v3 .wts-home-window-tabs button[aria-pressed="true"] span{
+  color:#d9eeff;
+}
+
 @media(max-width:900px){
   .wts-home-search-zone{
     padding-top:12px;
@@ -296,6 +342,10 @@
 }
 
 @media(max-width:760px){
+  .wts-home-v3{
+    overflow-x:clip;
+  }
+
   .wts-home-search-zone{
     padding:12px 0 10px;
     background:#030914;
@@ -338,6 +388,9 @@
     justify-content:flex-start;
     gap:5px;
     overflow-x:auto;
+    overscroll-behavior-inline:contain;
+    scroll-snap-type:x proximity;
+    -webkit-overflow-scrolling:touch;
     padding:2px 0 4px;
     scrollbar-width:none;
   }
@@ -347,9 +400,10 @@
     width:104px;
     min-width:104px;
     max-width:104px;
-    min-height:30px;
+    min-height:34px !important;
     padding:5px 7px;
-    font-size:9px;
+    font-size:9.5px !important;
+    scroll-snap-align:start;
   }
 
   .wts-home-shortcuts a span{
@@ -364,8 +418,19 @@
     padding:0 0 7px !important;
   }
 
+  .wts-home-search-zone + .wts-home-favorites .wts-home-section-heading>a{
+    display:inline-flex;
+    min-height:30px;
+    align-items:center;
+    padding:0 2px;
+  }
+
   .wts-home-v3 .wts-home-favorites .wts-favorites-rail{
     display:flex !important;
+    overflow-x:auto !important;
+    overscroll-behavior-inline:contain;
+    scroll-snap-type:x proximity;
+    -webkit-overflow-scrolling:touch;
     padding:0 0 9px !important;
   }
 
@@ -373,12 +438,70 @@
     flex:0 0 155px;
     min-width:155px;
     max-width:155px;
+    scroll-snap-align:start;
   }
 
   .wts-home-favorites .wts-favorite-name-only{
-    min-height:42px !important;
-    height:42px !important;
-    max-height:42px !important;
+    min-height:44px !important;
+    height:44px !important;
+    max-height:44px !important;
+  }
+
+  .wts-home-favorites .wts-home-favorite-remove{
+    width:32px !important;
+    height:32px !important;
+    min-width:32px;
+    min-height:32px;
+  }
+
+  .wts-home-v3 .wts-home-window-tabs{
+    gap:5px !important;
+    padding:3px 8px 8px !important;
+  }
+
+  .wts-home-v3 .wts-home-window-tabs button{
+    min-height:36px !important;
+    padding:5px 4px !important;
+    font-size:9.5px !important;
+    line-height:1.1;
+  }
+
+  .wts-home-v3 .wts-home-window-tabs button span{
+    font-size:8.5px;
+  }
+
+  .wts-home-v3 .wts-schedule-row{
+    grid-template-columns:auto minmax(0,1fr) auto 34px !important;
+    gap:2px 6px !important;
+  }
+
+  .wts-home-v3 .wts-schedule-status span,
+  .wts-home-v3 .wts-access-pill{
+    font-size:8px !important;
+  }
+
+  .wts-home-v3 .wts-schedule-competition strong{
+    font-size:9.5px !important;
+  }
+
+  .wts-home-v3 .wts-schedule-competition small{
+    font-size:8.5px !important;
+  }
+
+  .wts-home-v3 .wts-schedule-event strong{
+    font-size:11.5px !important;
+  }
+
+  .wts-home-v3 .wts-schedule-time strong{
+    font-size:9.5px !important;
+  }
+
+  .wts-home-v3 .wts-open-event{
+    width:34px !important;
+    min-width:34px !important;
+    min-height:36px !important;
+    padding:0 !important;
+    border-radius:9px !important;
   }
 }
 
