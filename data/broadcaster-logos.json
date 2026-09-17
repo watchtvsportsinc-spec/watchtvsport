@@ -7,11 +7,11 @@
     "darkStyle": "invert"
   },
   "canal-plus": {
-    "src": "https://upload.wikimedia.org/wikipedia/commons/a/a1/Canal_plus_france_logo.svg",
-    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Canal_plus_france_logo.svg",
+    "src": "https://upload.wikimedia.org/wikipedia/commons/5/5d/Logo_Canal%2B_1995.svg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Logo_Canal%2B_1995.svg",
     "aliases": ["CANAL+", "Canal Plus", "CanalPlus"],
     "compact": true,
-    "darkStyle": "invert"
+    "darkStyle": "knockout"
   },
   "paramount-plus": {
     "src": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Paramount%2B_logo.svg",
