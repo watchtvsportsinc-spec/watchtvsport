@@ -12,6 +12,7 @@ import "./seo-crawl.css";
 import "./mobile-density.css";
 import "./match-ux-compact.css";
 import "./broadcaster-logos.css";
+import "./home-favorites-compact.css";
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
 import HeaderNav from "./HeaderNav";
