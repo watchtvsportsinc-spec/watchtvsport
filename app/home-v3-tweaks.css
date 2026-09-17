@@ -7,11 +7,7 @@
   padding:14px 38px 80px;
   border:0 !important;
   border-radius:0 !important;
-  background-color:#030914;
-  background-image:url('/api/home-hero?v=full-scene-6');
-  background-position:right bottom;
-  background-size:70% auto;
-  background-repeat:no-repeat;
+  background:#030914;
   box-shadow:none !important;
 }
 
@@ -205,8 +201,6 @@
   .wts-home-search-zone{
     min-height:300px;
     padding-top:12px;
-    background-position:right bottom;
-    background-size:78% auto;
   }
 
   .wts-home-search-copy h1{
@@ -237,10 +231,7 @@
   .wts-home-search-zone{
     min-height:286px;
     padding:16px 18px 72px;
-    background-image:url('/api/home-hero?v=full-scene-6');
-    background-position:right bottom;
-    background-size:auto 80%;
-    background-repeat:no-repeat;
+    background:#030914;
   }
 
   .wts-home-search-zone:after{
@@ -323,8 +314,6 @@
     min-height:270px;
     padding-top:12px;
     padding-bottom:64px;
-    background-position:right bottom;
-    background-size:auto 84%;
   }
 }
 
