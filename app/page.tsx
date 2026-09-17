@@ -2,10 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import HomeFavoritesStrip from "@/components/HomeFavoritesStrip";
 import HomeWindowTabs from "@/components/HomeWindowTabs";
-import SearchAutocomplete from "@/components/SearchAutocomplete";
 import TimezoneSync from "@/components/TimezoneSync";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
-import { buildSearchSuggestions } from "@/lib/search-suggestions";
 import { formatCalendarTime, getDateKey, parseCalendarFilters } from "@/lib/calendar";
 import { getSportLabel } from "@/lib/sports-registry";
 import type { EventData } from "@/lib/events";
@@ -124,7 +122,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     from: new Date(now.getTime() - 12 * 60 * 60 * 1000).toISOString(),
     limit: 500,
   });
-  const suggestions = buildSearchSuggestions(snapshot.events);
   const live = selectedEvents(snapshot.events, "live", now, filters.timeZone);
   const tonight = selectedEvents(snapshot.events, "tonight", now, filters.timeZone);
   const tomorrow = selectedEvents(snapshot.events, "tomorrow", now, filters.timeZone);
@@ -161,7 +158,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
       <section className="wts-home-search-zone" aria-label="Find sports">
         <div className="wts-home-search-copy"><p>Official sports TV guide</p><h1>Find your <span style={{ color: "#2aa7ff" }}>event.</span> Find where it is <span style={{ color: "#2aa7ff" }}>shown.</span></h1></div>
-        <SearchAutocomplete searchPath="/events" timeZone={filters.timeZone} suggestions={suggestions} />
         <nav className="wts-home-shortcuts" aria-label="Sports and competitions">
           {SHORTCUTS.map((item) => <Link href={item.href} key={item.label}><span aria-hidden="true">{item.icon}</span><strong>{item.label}</strong></Link>)}
           <Link href="/sports"><span aria-hidden="true">•••</span><strong>More</strong></Link>
