@@ -1,4 +1,5 @@
 import type { EventData, SessionType } from "./events";
+import { withBroadcastLanguageDefaults } from "./broadcast-language-defaults";
 import {
   parsePublicEventsPayload,
   type PublicEventsPayload,
@@ -54,6 +55,13 @@ function deriveGroupName(event: EventData, raw: Record<string, unknown>): string
   return optionalString(raw.eventGroupName, 240) ?? (event.sport === "ufc" ? event.title : undefined);
 }
 
+function withPayloadBroadcastDefaults(payload: PublicEventsPayload): PublicEventsPayload {
+  return {
+    ...payload,
+    events: payload.events.map(withBroadcastLanguageDefaults),
+  };
+}
+
 /**
  * Keep the strict public payload validation already used by WatchTVSport, then
  * preserve optional multi-sport fields added by the V2 Supabase read contract.
@@ -65,9 +73,9 @@ export function parseMultisportPublicEventsPayload(
   value: unknown
 ): PublicEventsPayload {
   const base = parsePublicEventsPayload(value);
-  if (!isRecord(value)) return base;
+  if (!isRecord(value)) return withPayloadBroadcastDefaults(base);
   const rawEvents = value.events;
-  if (!Array.isArray(rawEvents)) return base;
+  if (!Array.isArray(rawEvents)) return withPayloadBroadcastDefaults(base);
 
   const events: EventData[] = base.events.map((event, index) => {
     const raw = rawEvents[index];
@@ -90,5 +98,5 @@ export function parseMultisportPublicEventsPayload(
     };
   });
 
-  return { ...base, events };
+  return withPayloadBroadcastDefaults({ ...base, events });
 }
