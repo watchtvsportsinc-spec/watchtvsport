@@ -262,8 +262,13 @@
     margin-bottom: 0 !important;
   }
 
-  .wts-home-v3 + footer,
-  body > div > footer {
+  /* The layout content wrapper used flex:1, which was creating the large blank area
+     below the short mobile home page. Disable that stretching only for the home page. */
+  .wts-app-shell:has(.wts-home-v3) .wts-page-shell {
+    flex: 0 0 auto !important;
+  }
+
+  .wts-app-shell:has(.wts-home-v3) .wts-site-footer {
     margin-top: 10px !important;
   }
 }
