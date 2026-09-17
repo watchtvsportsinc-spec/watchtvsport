@@ -1,0 +1,80 @@
+.compactResults :global(.wts-home-section-heading) {
+  padding-top: 12px;
+  padding-bottom: 7px;
+}
+
+.compactResults :global(.wts-events-timezone) {
+  margin-bottom: 5px;
+}
+
+.compactResults :global(.wts-schedule-columns) {
+  min-height: 28px;
+}
+
+.compactResults :global(.wts-schedule-row) {
+  min-height: 48px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.compactResults :global(.wts-schedule-status span) {
+  min-height: 22px;
+  padding: 3px 7px;
+  font-size: 8px;
+}
+
+.compactResults :global(.wts-access-pill) {
+  min-height: 23px;
+  padding: 3px 8px;
+}
+
+.compactResults :global(.wts-open-event) {
+  min-height: 28px;
+  padding: 4px 7px;
+}
+
+.actions {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.favoriteAction {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.favoriteAction :global(.v2-favorite-button) {
+  width: 30px;
+  min-width: 30px;
+  min-height: 30px;
+  height: 30px;
+  gap: 0;
+  padding: 0;
+  border-radius: 999px;
+}
+
+.favoriteAction :global(.v2-favorite-button) > span:first-child {
+  font-size: 16px;
+}
+
+.favoriteAction :global(.v2-favorite-button) > span:last-child {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .compactResults :global(.wts-schedule-row) {
+    min-height: 46px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+
+  .favoriteAction :global(.v2-favorite-button) {
+    width: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    height: 32px;
+  }
+}
