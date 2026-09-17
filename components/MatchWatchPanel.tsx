@@ -24,19 +24,14 @@ export default function MatchWatchPanel({
 
   const broadcasterLabel = `${broadcasts.length} broadcaster${broadcasts.length === 1 ? "" : "s"}`;
   const countryLabel = `${countryCount} countr${countryCount === 1 ? "y" : "ies"}`;
+  const summaryLabel = broadcasts.length ? `${broadcasterLabel} · ${countryLabel}` : "Pending";
 
   return (
     <details className="v2-match-watch">
       <summary>
-        <span className="v2-match-watch-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" focusable="false">
-            <rect x="3" y="5" width="18" height="13" rx="2" />
-            <path d="M8 21h8M12 18v3" />
-          </svg>
-        </span>
         <span className="v2-match-watch-copy">
-          <strong>Where to watch</strong>
-          <small>{broadcasts.length ? `${broadcasterLabel} · ${countryLabel}` : "Official listings will appear here"}</small>
+          <strong>TV guide</strong>
+          <small>{summaryLabel}</small>
         </span>
         <span className="v2-match-watch-chevron" aria-hidden="true">›</span>
       </summary>
