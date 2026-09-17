@@ -1,5 +1,5 @@
 import type { ParticipantPatternStyle, ParticipantVisualProfile } from "@/lib/participant-visuals";
-import { defaultParticipantVisual } from "@/lib/participant-visuals";
+import { defaultParticipantVisual, knownParticipantVisual } from "@/lib/participant-visuals";
 
 type Props = {
   sport: string;
@@ -66,7 +66,7 @@ function Garment({ family, primary, secondary, accent, pattern, clipId }: { fami
 }
 
 export default function ParticipantSportVisual({ sport, label, countryCode, visual, size="md" }: Props) {
-  const resolved = visual ?? defaultParticipantVisual(sport,countryCode);
+  const resolved = visual ?? knownParticipantVisual(sport,label) ?? defaultParticipantVisual(sport,countryCode);
   const px = SIZES[size];
   const fluidHero = size === "hero";
   const clipId = `pv-${label.toLowerCase().replace(/[^a-z0-9]+/g,"-").slice(0,28)}-${resolved.renderFamily}`;
