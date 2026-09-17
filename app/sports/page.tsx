@@ -18,7 +18,7 @@ const SPORTS = [
   { href: "/sports/tennis", title: "Tennis", icon: "🎾", slugs: ["tennis"], description: "ATP, WTA and major tournaments" },
   { href: "/motorsports", title: "Motorsports", icon: "🏁", slugs: ["formula-1", "motogp"], description: "Formula 1, MotoGP and more" },
   { href: "/combat-sports", title: "Combat sports", icon: "🥊", slugs: ["ufc"], description: "UFC and combat sports events" },
-  { href: "/sports/rugby", title: "Rugby", icon: "◆", slugs: ["rugby"], description: "International rugby and competitions" },
+  { href: "/sports/rugby", title: "Rugby", icon: "🏉", slugs: ["rugby"], description: "International rugby and competitions" },
   { href: "/sports/baseball", title: "Baseball", icon: "⚾", slugs: ["baseball"], description: "Baseball leagues and tournaments" },
   { href: "/sports/american-football", title: "American football", icon: "🏈", slugs: ["american-football"], description: "American football schedules" },
   { href: "/sports/cycling", title: "Cycling", icon: "🚴", slugs: ["cycling"], description: "Grand Tours, classics and races" },
