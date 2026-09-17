@@ -1,0 +1,71 @@
+/* Broadcaster marks on dark match pages. Loaded last so logo presentation is independent of row-density styles. */
+
+.v2-match-broadcaster-logo {
+  display: flex;
+  width: 25px;
+  height: 18px;
+  flex: 0 0 25px;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  overflow: visible;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.v2-match-broadcaster-logo.is-wide {
+  width: 38px;
+  flex-basis: 38px;
+}
+
+.v2-match-broadcaster-logo img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 17px;
+  object-fit: contain;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+/* Dark monochrome artwork: black becomes white while transparent pixels stay transparent. */
+.v2-match-broadcaster-logo.is-inverted img {
+  filter: grayscale(1) invert(1);
+  mix-blend-mode: screen;
+}
+
+/* Knockout marks such as CANAL+: black artwork disappears into the dark UI and white lettering remains crisp. */
+.v2-match-broadcaster-logo.is-knockout img {
+  mix-blend-mode: screen;
+}
+
+/* Unknown broadcasters keep a quiet text fallback, never a fake or broken logo tile. */
+.v2-match-broadcaster-logo.is-fallback > span {
+  color: #b9cfe2;
+  font-size: 7px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: .02em;
+}
+
+@media (min-width: 560px) {
+  .v2-match-broadcaster-logo {
+    width: 28px;
+    height: 20px;
+    flex-basis: 28px;
+  }
+
+  .v2-match-broadcaster-logo.is-wide {
+    width: 44px;
+    flex-basis: 44px;
+  }
+
+  .v2-match-broadcaster-logo img {
+    max-height: 19px;
+  }
+}
