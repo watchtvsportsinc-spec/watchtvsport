@@ -167,8 +167,7 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
   const favorite = favoriteForParticipant(sport, verified.participantId, clubName);
   const links = socialLinks(profile);
   const flagSrc = profile?.countryCode ? `/flags/${profile.countryCode.toLowerCase()}.png` : null;
-  const fallbackBackdrop = sportBackdrop(sport);
-  const heroImage = profile?.heroImageUrl || fallbackBackdrop;
+  const heroImage = profile?.heroImageUrl || sportBackdrop(sport);
   const nextOpponent = nextMatch ? opponent(nextMatch, verified.participantId, club) : undefined;
   const teamIsHome = nextMatch ? isHome(nextMatch, verified.participantId, club) : false;
   const canonicalPath = canonicalClubPath(sport, club);
@@ -259,13 +258,6 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
             </aside>
           ) : null}
         </div>
-
-        <nav className={styles.tabs} aria-label={`${clubName} page sections`}>
-          <a href="#matches" className={styles.activeTab}>Matches</a>
-          <a href="#team-info">Team info</a>
-          <a href="#competitions">Competitions</a>
-          {recent.length > 0 ? <a href="#recent">Recent</a> : null}
-        </nav>
       </section>
 
       <section className={styles.quickFacts} aria-label={`${clubName} summary`}>
@@ -277,42 +269,39 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
 
       <div className={styles.topGrid}>
         {nextMatch ? (
-          <section className={`${styles.section} ${styles.featureSection}`} aria-labelledby="next-match-title">
+          <section className={`${styles.section} ${styles.featureSection}`} aria-labelledby="next-match-title" style={{ alignSelf: "start" }}>
             <div className={styles.sectionHeader}>
               <div><p className="v2-eyebrow">Next game</p><h2 id="next-match-title">{nextMatch.title}</h2></div>
               <Link href={nextMatch.detailPath}>Match page →</Link>
             </div>
-            <article className={styles.nextMatchCompact} style={{ backgroundImage: `linear-gradient(90deg,rgba(3,11,19,.94),rgba(3,11,19,.72)),url('${fallbackBackdrop}')` }}>
-              <div className={styles.compactTeam}>
-                {nextMatch.participant1 ? <ParticipantSportVisual sport={sport} label={nextMatch.participant1.name} countryCode={nextMatch.participant1.countryCode} visual={visualForParticipant(nextMatch.participant1)} size="md" /> : <span className={styles.tbcVisual}>TBC</span>}
+            <Link href={nextMatch.detailPath} className="v2-match-next-row" style={{ minHeight: "64px" }}>
+              <span className="v2-match-next-team is-left">
+                {nextMatch.participant1 ? <ParticipantSportVisual sport={sport} label={nextMatch.participant1.name} countryCode={nextMatch.participant1.countryCode} visual={visualForParticipant(nextMatch.participant1)} size="sm" /> : <span className="v2-match-next-tbc">?</span>}
                 <strong>{nextMatch.participant1?.name ?? "TBC"}</strong>
-              </div>
+              </span>
 
-              <div className={styles.compactKickoff}>
+              <span className="v2-match-next-meta">
                 <span>{nextMatch.competition}</span>
-                <strong><LocalTime date={nextMatch.eventDate} /></strong>
                 <small>{nextMatch.stage ?? "Scheduled"}</small>
-              </div>
+                <span className="v2-match-next-time"><LocalTime date={nextMatch.eventDate} /></span>
+              </span>
 
-              <div className={styles.compactTeam}>
-                {nextMatch.participant2 ? <ParticipantSportVisual sport={sport} label={nextMatch.participant2.name} countryCode={nextMatch.participant2.countryCode} visual={visualForParticipant(nextMatch.participant2)} size="md" /> : <span className={styles.tbcVisual}>TBC</span>}
+              <span className="v2-match-next-team is-right">
                 <strong>{nextMatch.participant2?.name ?? "TBC"}</strong>
-              </div>
+                {nextMatch.participant2 ? <ParticipantSportVisual sport={sport} label={nextMatch.participant2.name} countryCode={nextMatch.participant2.countryCode} visual={visualForParticipant(nextMatch.participant2)} size="sm" /> : <span className="v2-match-next-tbc">?</span>}
+              </span>
 
-              <div className={styles.compactAction}>
-                <span>{nextMatch.broadcasts.filter((b) => b.coverageStatus === "confirmed").length > 0 ? `${nextMatch.broadcasts.filter((b) => b.coverageStatus === "confirmed").length} confirmed listings` : "Broadcasters by country on match page"}</span>
-                <Link className={styles.primaryButton} href={nextMatch.detailPath}>Broadcasters & details →</Link>
-              </div>
-            </article>
+              <span className="v2-match-next-arrow" aria-hidden="true">›</span>
+            </Link>
           </section>
         ) : (
-          <section className={`${styles.section} ${styles.featureSection}`}>
+          <section className={`${styles.section} ${styles.featureSection}`} style={{ alignSelf: "start" }}>
             <div className={styles.sectionHeader}><div><p className="v2-eyebrow">Next game</p><h2>Schedule pending</h2></div></div>
-            <div className={styles.noNextMatch}>No upcoming game is currently confirmed. New fixtures will appear automatically when imported.</div>
+            <div className={styles.noNextMatch} style={{ minHeight: "72px" }}>No upcoming game is currently confirmed. New fixtures will appear automatically when imported.</div>
           </section>
         )}
 
-        <aside className={styles.infoStack} aria-label={`${clubName} team information`}>
+        <aside className={styles.infoStack} aria-label={`${clubName} team information`} style={{ gridTemplateRows: "repeat(2, auto)", height: "auto" }}>
           <section className={`${styles.sideCard} ${styles.teamInfoCard}`} id="team-info">
             <div className={styles.sideTitle}><h2>Team info</h2><span>{profile?.profileStatus === "verified" ? "Verified" : "Sourced"}</span></div>
             <dl className={styles.factList}>
@@ -332,12 +321,6 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
                 {competitions.map((competition) => <Link key={competition.slug} href={competitionHref(sport, competition.slug)}><span className={styles.flagMark}>◆</span><strong>{competition.name}</strong><span>Open →</span></Link>)}
               </div>
             ) : <p>No current competition has been imported yet.</p>}
-          </section>
-
-          <section className={`${styles.sideCard} ${styles.guideCard}`}>
-            <div className={styles.sideTitle}><h2>TV guide</h2><span>Official only</span></div>
-            <p>Official broadcasters are listed by country on each match page.</p>
-            {nextMatch ? <Link href={nextMatch.detailPath}>Open next match →</Link> : <Link href="/events">Browse events →</Link>}
           </section>
         </aside>
       </div>
