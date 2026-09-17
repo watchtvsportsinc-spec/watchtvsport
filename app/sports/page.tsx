@@ -49,23 +49,7 @@ export default async function SportsDirectory() {
       </div>
     </section>
 
-    <nav className={styles.quickNav} aria-label="Sports shortcuts">
-      {SPORTS.map((item) => <Link href={item.href} key={`quick-${item.href}`}>
-        <span aria-hidden="true">{item.icon}</span>
-        <b>{item.title}</b>
-      </Link>)}
-    </nav>
-
-    <section className={styles.section}>
-      <div className={styles.heading}>
-        <div>
-          <p className={styles.sectionLabel}>Browse</p>
-          <h2>All sports</h2>
-          <span className={styles.headingText}>Choose a sport to see its competitions, events and broadcast information.</span>
-        </div>
-        <span>{SPORTS.length} sports</span>
-      </div>
-
+    <section className={styles.section} aria-label="All sports">
       <div className={styles.grid}>{SPORTS.map((item) => {
         const events = snapshot.events.filter((event) => item.slugs.includes(event.sport as never));
         const current = events.filter((event) => event.status === "live" || (event.status !== "finished" && Date.parse(event.eventDate) >= now));
