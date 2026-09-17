@@ -327,29 +327,28 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
         {upcoming.length === 0 ? (
           <div className="v2-empty-state" role="status"><h3>No upcoming game currently confirmed</h3><p>New fixtures will appear here automatically as soon as a confirmed schedule is imported.</p></div>
         ) : (
-          <div className={styles.matchList}>
-            {upcoming.map((event) => {
-              const home = isHome(event, verified.participantId, club);
-              const other = opponent(event, verified.participantId, club);
-              const confirmed = event.broadcasts.filter((b) => b.coverageStatus === "confirmed").length;
-              return (
-                <article className={styles.matchRow} key={event.id}>
-                  <div className={styles.dateCell}><LocalTime date={event.eventDate} /></div>
-                  <div className={styles.opponentVisual}>
-                    {other ? <ParticipantSportVisual sport={sport} label={other.name} countryCode={other.countryCode} visual={other.visualProfile} size="sm" /> : <span>TBC</span>}
-                  </div>
-                  <div className={styles.fixtureCell}>
-                    <small>{home ? "HOME" : "AWAY"} · {event.competition}</small>
-                    <strong>{home ? `${clubName} vs ${other?.name ?? "TBC"}` : `${other?.name ?? "TBC"} vs ${clubName}`}</strong>
-                    <span>{event.stage ?? "Event"}</span>
-                  </div>
-                  <div className={styles.broadcastCell}>
-                    <span>{confirmed > 0 ? `${confirmed} confirmed` : "Listings pending"}</span>
-                    <Link href={event.detailPath}>Match page →</Link>
-                  </div>
-                </article>
-              );
-            })}
+          <div className="v2-match-next-list">
+            {upcoming.map((event) => (
+              <Link key={event.id} href={event.detailPath} className="v2-match-next-row">
+                <span className="v2-match-next-team is-left">
+                  {event.participant1 ? <ParticipantSportVisual sport={sport} label={event.participant1.name} countryCode={event.participant1.countryCode} visual={event.participant1.visualProfile} size="sm" /> : <span className="v2-match-next-tbc">?</span>}
+                  <strong>{event.participant1?.name ?? "TBC"}</strong>
+                </span>
+
+                <span className="v2-match-next-meta">
+                  <span>{event.competition}</span>
+                  <small>{event.stage ?? "Fixture"}</small>
+                  <span className="v2-match-next-time"><LocalTime date={event.eventDate} /></span>
+                </span>
+
+                <span className="v2-match-next-team is-right">
+                  <strong>{event.participant2?.name ?? "TBC"}</strong>
+                  {event.participant2 ? <ParticipantSportVisual sport={sport} label={event.participant2.name} countryCode={event.participant2.countryCode} visual={event.participant2.visualProfile} size="sm" /> : <span className="v2-match-next-tbc">?</span>}
+                </span>
+
+                <span className="v2-match-next-arrow" aria-hidden="true">›</span>
+              </Link>
+            ))}
           </div>
         )}
       </section>
