@@ -8,7 +8,6 @@ import { buildSearchSuggestions, type SearchSuggestion } from "@/lib/search-sugg
 const links = [
   { href: "/events", label: "Events" },
   { href: "/sports", label: "Sports" },
-  { href: "/events#sports-filters", label: "Calendar" },
 ];
 
 const headerSuggestions = buildSearchSuggestions([]);
