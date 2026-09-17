@@ -1,17 +1,8 @@
+import logoManifest from "@/data/broadcaster-logos.json";
+
 export type BroadcasterLogo = {
   src: string;
   compact?: boolean;
-};
-
-const LOGOS: Record<string, BroadcasterLogo> = {
-  dazn: { src: "/broadcasters/dazn.svg" },
-  "dazn canada": { src: "/broadcasters/dazn.svg" },
-  "canal+": { src: "/broadcasters/canal-plus.svg", compact: true },
-  "canal plus": { src: "/broadcasters/canal-plus.svg", compact: true },
-  canalplus: { src: "/broadcasters/canal-plus.svg", compact: true },
-  "paramount+": { src: "/broadcasters/paramount-plus.svg" },
-  "paramount plus": { src: "/broadcasters/paramount-plus.svg" },
-  paramountplus: { src: "/broadcasters/paramount-plus.svg" },
 };
 
 function normalizedBroadcasterName(value: string) {
@@ -21,6 +12,22 @@ function normalizedBroadcasterName(value: string) {
     .toLowerCase()
     .replace(/\s+/g, " ");
 }
+
+const LOGOS = Object.entries(logoManifest).reduce<Record<string, BroadcasterLogo>>(
+  (lookup, [slug, config]) => {
+    const logo: BroadcasterLogo = {
+      src: config.src,
+      ...(config.compact ? { compact: true } : {}),
+    };
+
+    for (const name of [slug, ...config.aliases]) {
+      lookup[normalizedBroadcasterName(name)] = logo;
+    }
+
+    return lookup;
+  },
+  {},
+);
 
 export function getBroadcasterLogo(name: string): BroadcasterLogo | null {
   return LOGOS[normalizedBroadcasterName(name)] ?? null;
