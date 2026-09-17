@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { broadcasterInitials, getBroadcasterLogo } from "@/lib/broadcaster-logos";
+import { getBroadcasterLogo } from "@/lib/broadcaster-logos";
 import type { BroadcastInfo } from "@/lib/matches";
 
 type Props = {
@@ -119,7 +119,6 @@ export default function MatchWatchPanel({
                   logo?.compact ? "is-wide" : "",
                   logo?.darkStyle === "invert" ? "is-inverted" : "",
                   logo?.darkStyle === "knockout" ? "is-knockout" : "",
-                  logo ? "" : "is-fallback",
                 ].filter(Boolean).join(" ");
 
                 return (
@@ -132,10 +131,13 @@ export default function MatchWatchPanel({
                   >
                     <span className="v2-match-broadcaster-country">{broadcast.countryName}</span>
                     <span className="v2-match-broadcaster-service">
-                      <span className={logoClassName} aria-hidden="true">
-                        {logo ? <img src={logo.src} alt="" /> : <span>{broadcasterInitials(broadcast.broadcaster)}</span>}
-                      </span>
-                      <strong>{broadcast.broadcaster}</strong>
+                      {logo ? (
+                        <span className={logoClassName}>
+                          <img src={logo.src} alt={broadcast.broadcaster} />
+                        </span>
+                      ) : (
+                        <strong>{broadcast.broadcaster}</strong>
+                      )}
                       <small className={meta === "Language pending" ? "is-pending" : ""}>{meta}</small>
                     </span>
                     <span className={broadcast.access === "Free" ? "v2-chip is-free" : "v2-chip is-paid"}>{broadcast.access}</span>
