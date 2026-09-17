@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { buildSearchSuggestions, type SearchSuggestion } from "@/lib/search-suggestions";
 
@@ -43,9 +43,11 @@ export default function HeaderNav() {
   const pathname = usePathname();
   const router = useRouter();
   const homeIsActive = pathname === "/";
+  const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [mobileSearchExpanded, setMobileSearchExpanded] = useState(false);
 
   const matches = useMemo(() => {
     if (!query.trim()) return [];
@@ -61,6 +63,7 @@ export default function HeaderNav() {
     setOpen(false);
     setActiveIndex(-1);
     setQuery(suggestion.value);
+    setMobileSearchExpanded(false);
     router.push(suggestion.href);
   }
 
@@ -84,22 +87,29 @@ export default function HeaderNav() {
     }
 
     setOpen(false);
+    setMobileSearchExpanded(false);
     router.push(`/events?q=${encodeURIComponent(trimmed)}`);
   }
 
+  function expandMobileSearch() {
+    setMobileSearchExpanded(true);
+    setOpen(true);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  }
+
   return (
-    <nav className="wts-primary-nav" aria-label="Primary navigation">
+    <nav className={`wts-primary-nav${mobileSearchExpanded ? " is-search-expanded" : ""}`} aria-label="Primary navigation">
       <div className="wts-nav-links">
-        <Link className={homeIsActive ? "is-active" : undefined} href="/">Home</Link>
+        <Link className={`wts-nav-home${homeIsActive ? " is-active" : ""}`} href="/">Home</Link>
         {links.map((link) => {
-          const active = (pathname === "/events" && (link.label === "Events" || link.label === "Calendar")) || (link.label === "Sports" && sportsIsActive(pathname));
+          const active = (pathname === "/events" && link.label === "Events") || (link.label === "Sports" && sportsIsActive(pathname));
           return <Link className={active ? "is-active" : undefined} key={link.label} href={link.href}>{link.label}</Link>;
         })}
       </div>
 
       <div className="wts-nav-actions">
         <form
-          className={`wts-header-search${pathname === "/events" ? " is-page-search-duplicate" : ""}`}
+          className={`wts-header-search${mobileSearchExpanded ? " is-expanded" : " is-collapsed"}`}
           action="/events"
           method="get"
           role="search"
@@ -108,28 +118,41 @@ export default function HeaderNav() {
             if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
               setOpen(false);
               setActiveIndex(-1);
+              if (!query.trim()) setMobileSearchExpanded(false);
             }
           }}
         >
           <label className="sr-only" htmlFor="wts-header-search-input">Search teams, competitions and events</label>
-          <button className="wts-header-search-submit" type="submit" aria-label="Search">
+          <button
+            className="wts-header-search-submit"
+            type={mobileSearchExpanded ? "submit" : "button"}
+            aria-label={mobileSearchExpanded ? "Search" : "Open search"}
+            aria-expanded={mobileSearchExpanded}
+            onClick={() => {
+              if (!mobileSearchExpanded) expandMobileSearch();
+            }}
+          >
             <svg className="wts-header-search-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none">
               <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.8" />
               <path d="m16 16 4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
             </svg>
           </button>
           <input
+            ref={inputRef}
             id="wts-header-search-input"
             name="q"
             type="search"
-            placeholder="Search for teams, competitions..."
+            placeholder="Search teams, competitions..."
             autoComplete="off"
             value={query}
             aria-autocomplete="list"
             aria-expanded={open && matches.length > 0}
             aria-controls="wts-header-search-results"
             aria-activedescendant={activeIndex >= 0 && matches[activeIndex] ? `wts-header-search-result-${activeIndex}` : undefined}
-            onFocus={() => setOpen(true)}
+            onFocus={() => {
+              setMobileSearchExpanded(true);
+              setOpen(true);
+            }}
             onChange={(event) => {
               setQuery(event.target.value);
               setOpen(true);
@@ -139,6 +162,10 @@ export default function HeaderNav() {
               if (event.key === "Escape") {
                 setOpen(false);
                 setActiveIndex(-1);
+                if (!query.trim()) {
+                  setMobileSearchExpanded(false);
+                  inputRef.current?.blur();
+                }
                 return;
               }
               if (!open || matches.length === 0) return;
