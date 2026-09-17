@@ -119,11 +119,11 @@ export default async function MatchNextGames({
       <div className="v2-match-next-list">
         {events.map((event) => (
           <Link key={event.id} href={occurrenceHref(event)} className="v2-match-next-row">
+            <span className="v2-match-next-date"><LocalTime date={event.eventDate} /></span>
             <Team participant={event.participant1} side="left" />
             <span className="v2-match-next-meta">
               <span>{event.competition}</span>
               <small>{event.stage ?? "Fixture"}</small>
-              <span className="v2-match-next-time"><LocalTime date={event.eventDate} /></span>
             </span>
             <Team participant={event.participant2} side="right" />
             <span className="v2-match-next-arrow" aria-hidden="true">›</span>
