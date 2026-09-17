@@ -213,11 +213,24 @@
 
 .v2-match-next-row {
   position: relative;
-  grid-template-columns: minmax(0, 1fr) 76px minmax(0, 1fr);
+  grid-template-columns: 76px minmax(0, 1fr) 92px minmax(0, 1fr);
   height: 40px;
   min-height: 40px;
   gap: 4px;
   padding: 1px 14px 1px 8px;
+}
+
+.v2-match-next-date {
+  min-width: 0;
+  align-self: center;
+  overflow: hidden;
+  color: #dce9f5;
+  font-size: 8.5px;
+  font-weight: 850;
+  line-height: 1.05;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .v2-match-next-team {
@@ -251,17 +264,31 @@
 }
 
 .v2-match-next-meta {
-  width: 76px;
+  width: 92px;
   justify-self: center;
+  align-self: center;
 }
 
 .v2-match-next-meta > span:first-child {
-  font-size: 6px;
+  overflow: hidden;
+  color: #56b6ff;
+  font-size: 7px;
+  font-weight: 900;
+  line-height: 1.05;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.v2-match-next-meta small,
-.v2-match-next-time {
-  font-size: 6.5px;
+.v2-match-next-meta small {
+  overflow: hidden;
+  color: #9db0c2;
+  font-size: 7px;
+  font-weight: 700;
+  line-height: 1.05;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .v2-match-next-arrow {
@@ -342,11 +369,15 @@
   }
 
   .v2-match-next-row {
-    grid-template-columns: minmax(0, 1fr) 112px minmax(0, 1fr);
+    grid-template-columns: 116px minmax(0, 1fr) 160px minmax(0, 1fr);
     height: 44px;
     min-height: 44px;
     gap: 7px;
     padding-inline: 12px 18px;
+  }
+
+  .v2-match-next-date {
+    font-size: 10px;
   }
 
   .v2-match-next-team {
@@ -370,15 +401,14 @@
   }
 
   .v2-match-next-meta {
-    width: 112px;
+    width: 160px;
   }
 
   .v2-match-next-meta > span:first-child {
-    font-size: 7px;
+    font-size: 9px;
   }
 
-  .v2-match-next-meta small,
-  .v2-match-next-time {
+  .v2-match-next-meta small {
     font-size: 8px;
   }
 }
