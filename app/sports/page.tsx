@@ -55,7 +55,6 @@ export default async function SportsDirectory() {
         const current = events.filter((event) => event.status === "live" || (event.status !== "finished" && Date.parse(event.eventDate) >= now));
         const thisWeek = current.filter((event) => Date.parse(event.eventDate) <= weekEnd);
         const live = current.filter((event) => event.status === "live").length;
-        const next = [...current].sort((a,b) => Date.parse(a.eventDate) - Date.parse(b.eventDate))[0];
         const sportCompetitionCount = new Set(current.map((event) => event.competitionSlug)).size;
 
         return <Link className={styles.card} data-active={current.length > 0} href={item.href} key={item.href}>
@@ -73,11 +72,6 @@ export default async function SportsDirectory() {
               <span><b>{current.length}</b> upcoming</span>
               <span><b>{sportCompetitionCount}</b> {sportCompetitionCount === 1 ? "competition" : "competitions"}</span>
             </> : null}
-          </div>
-
-          <div className={styles.next}>
-            <span className={styles.nextLabel}>{next ? "Next event" : "Explore"}</span>
-            <strong>{next ? next.title : "View schedules and competitions"}</strong>
           </div>
         </Link>;
       })}</div>
