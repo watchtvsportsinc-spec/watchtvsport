@@ -30,6 +30,7 @@ export default function HomeWindowTabs({
         ["week", "This week", counts.week],
       ] as const).map(([value, label, count]) => (
         <button
+          aria-pressed={activeWindow === value}
           className={activeWindow === value ? "is-active" : undefined}
           key={value}
           onClick={() => openWindow(value)}
