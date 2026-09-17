@@ -11,6 +11,7 @@ type Props = {
   emptyCopy: string;
   showMethodologyLink?: boolean;
   verificationText?: string | null;
+  defaultOpen?: boolean;
 };
 
 const LANGUAGE_LABELS: Record<string, string> = {
@@ -45,9 +46,11 @@ export default function MatchWatchPanel({
   emptyCopy,
   showMethodologyLink = false,
   verificationText,
+  defaultOpen = false,
 }: Props) {
   const [accessFilter, setAccessFilter] = useState<"All" | "Free" | "Paid">("All");
   const [languageFilter, setLanguageFilter] = useState("all");
+  const [isOpen, setIsOpen] = useState(defaultOpen);
 
   const countryCount = new Set(broadcasts.map((broadcast) => broadcast.countryCode)).size;
   const broadcasterLabel = `${broadcasts.length} broadcaster${broadcasts.length === 1 ? "" : "s"}`;
@@ -69,7 +72,7 @@ export default function MatchWatchPanel({
   }, [broadcasts, accessFilter, languageFilter]);
 
   return (
-    <details className="v2-match-watch">
+    <details className="v2-match-watch" open={isOpen} onToggle={(event) => setIsOpen(event.currentTarget.open)}>
       <summary>
         <span className="v2-match-watch-copy">
           <strong>TV guide</strong>
