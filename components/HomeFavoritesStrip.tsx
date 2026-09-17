@@ -122,7 +122,7 @@ export default function HomeFavoritesStrip() {
   }
 
   const events = feed?.key === key ? feed.data?.upcomingEvents ?? [] : [];
-  const visible = collection.items.slice(0, 6);
+  const visible = collection.items.slice(0, 15);
 
   return (
     <section className="wts-home-section wts-home-favorites" aria-labelledby="home-favorites-title">
