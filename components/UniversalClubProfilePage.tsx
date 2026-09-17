@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import FavoriteButton from "@/components/FavoriteButton";
 import LocalTime from "@/components/LocalTime";
+import MatchWatchPanel from "@/components/MatchWatchPanel";
 import ParticipantSportVisual from "@/components/ParticipantSportVisual";
 import { resolveClubSlug } from "@/lib/club-aliases";
 import type { EventData, Participant } from "@/lib/events";
@@ -286,27 +287,39 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
           <div className="v2-empty-state" role="status"><h3>No upcoming game currently confirmed</h3><p>New fixtures will appear here automatically as soon as a confirmed schedule is imported.</p></div>
         ) : (
           <div className="v2-match-next-list">
-            {upcoming.map((event) => (
-              <Link key={event.id} href={event.detailPath} className="v2-match-next-row">
-                <span className="v2-match-next-team is-left">
-                  {event.participant1 ? <ParticipantSportVisual sport={sport} label={event.participant1.name} countryCode={event.participant1.countryCode} visual={visualForParticipant(event.participant1)} size="sm" /> : <span className="v2-match-next-tbc">?</span>}
-                  <strong>{event.participant1?.name ?? "TBC"}</strong>
-                </span>
+            {upcoming.map((event) => {
+              const confirmedBroadcasts = event.broadcasts.filter((broadcast) => broadcast.coverageStatus === "confirmed");
+              return (
+                <article key={event.id}>
+                  <Link href={event.detailPath} className="v2-match-next-row">
+                    <span className="v2-match-next-team is-left">
+                      {event.participant1 ? <ParticipantSportVisual sport={sport} label={event.participant1.name} countryCode={event.participant1.countryCode} visual={visualForParticipant(event.participant1)} size="sm" /> : <span className="v2-match-next-tbc">?</span>}
+                      <strong>{event.participant1?.name ?? "TBC"}</strong>
+                    </span>
 
-                <span className="v2-match-next-meta">
-                  <span>{event.competition}</span>
-                  <small>{event.stage ?? "Fixture"}</small>
-                  <span className="v2-match-next-time"><LocalTime date={event.eventDate} /></span>
-                </span>
+                    <span className="v2-match-next-meta">
+                      <span>{event.competition}</span>
+                      <small>{event.stage ?? "Fixture"}</small>
+                      <span className="v2-match-next-time"><LocalTime date={event.eventDate} /></span>
+                    </span>
 
-                <span className="v2-match-next-team is-right">
-                  <strong>{event.participant2?.name ?? "TBC"}</strong>
-                  {event.participant2 ? <ParticipantSportVisual sport={sport} label={event.participant2.name} countryCode={event.participant2.countryCode} visual={visualForParticipant(event.participant2)} size="sm" /> : <span className="v2-match-next-tbc">?</span>}
-                </span>
+                    <span className="v2-match-next-team is-right">
+                      <strong>{event.participant2?.name ?? "TBC"}</strong>
+                      {event.participant2 ? <ParticipantSportVisual sport={sport} label={event.participant2.name} countryCode={event.participant2.countryCode} visual={visualForParticipant(event.participant2)} size="sm" /> : <span className="v2-match-next-tbc">?</span>}
+                    </span>
 
-                <span className="v2-match-next-arrow" aria-hidden="true">›</span>
-              </Link>
-            ))}
+                    <span className="v2-match-next-arrow" aria-hidden="true">›</span>
+                  </Link>
+                  <MatchWatchPanel
+                    broadcasts={confirmedBroadcasts}
+                    emptyTitle="Broadcasters not confirmed yet"
+                    emptyCopy="Confirmed official viewing options will appear here when verified."
+                    showMethodologyLink
+                    defaultOpen
+                  />
+                </article>
+              );
+            })}
           </div>
         )}
       </section>
