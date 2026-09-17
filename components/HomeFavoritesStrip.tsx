@@ -135,7 +135,10 @@ export default function HomeFavoritesStrip() {
           return (
             <Link className={`wts-favorite-tile wts-sport-bg wts-bg-${sportClass(sport)}`} href={href} key={`${item.kind}:${item.entityId}`}>
               <span className="wts-favorite-glyph" aria-hidden="true">{sportGlyph(sport)}</span>
-              <span className="wts-favorite-copy"><strong>{item.label}</strong><small>{event ? formatNext(event.eventDate) : "Saved"}</small><span>{event?.title ?? (item.kind === "competition" ? "Competition" : "Favorite")}</span></span>
+              <span className="wts-favorite-copy">
+                <strong>{item.label}</strong>
+                {event ? <><small>{formatNext(event.eventDate)}</small><span>{event.title}</span></> : null}
+              </span>
               <b aria-hidden="true">›</b>
             </Link>
           );
