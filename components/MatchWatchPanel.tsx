@@ -114,6 +114,14 @@ export default function MatchWatchPanel({
               {filteredBroadcasts.map((broadcast, index) => {
                 const meta = compactBroadcastMeta(broadcast);
                 const logo = getBroadcasterLogo(broadcast.broadcaster);
+                const logoClassName = [
+                  "v2-match-broadcaster-logo",
+                  logo?.compact ? "is-wide" : "",
+                  logo?.darkStyle === "invert" ? "is-inverted" : "",
+                  logo?.darkStyle === "knockout" ? "is-knockout" : "",
+                  logo ? "" : "is-fallback",
+                ].filter(Boolean).join(" ");
+
                 return (
                   <a
                     className="v2-match-broadcaster-row"
@@ -124,7 +132,7 @@ export default function MatchWatchPanel({
                   >
                     <span className="v2-match-broadcaster-country">{broadcast.countryName}</span>
                     <span className="v2-match-broadcaster-service">
-                      <span className={`v2-match-broadcaster-logo${logo?.compact ? " is-wide" : ""}`} aria-hidden="true">
+                      <span className={logoClassName} aria-hidden="true">
                         {logo ? <img src={logo.src} alt="" /> : <span>{broadcasterInitials(broadcast.broadcaster)}</span>}
                       </span>
                       <strong>{broadcast.broadcaster}</strong>
