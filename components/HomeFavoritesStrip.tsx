@@ -17,35 +17,99 @@ function fallbackHref(item: FavoriteItem): string {
   return "/favorites";
 }
 
+function normalizeSport(value: string): string {
+  const sport = value.trim().toLowerCase().replace(/_/g, "-").replace(/\s+/g, "-");
+  if (sport === "soccer") return "football";
+  if (sport === "ice-hockey") return "hockey";
+  if (sport === "f1" || sport === "formula1") return "formula-1";
+  if (sport === "mma") return "ufc";
+  if (sport === "motorcycle-racing" || sport === "motorcycling") return "motogp";
+  return sport;
+}
+
+function knownSport(value: string): string | null {
+  const sport = normalizeSport(value);
+  return [
+    "football",
+    "basketball",
+    "hockey",
+    "tennis",
+    "formula-1",
+    "ufc",
+    "motogp",
+    "rugby",
+    "baseball",
+    "american-football",
+    "cycling",
+  ].includes(sport) ? sport : null;
+}
+
+function sportFromHref(href?: string): string | null {
+  if (!href) return null;
+  const path = href.split(/[?#]/, 1)[0];
+  const sportsMatch = path.match(/^\/sports\/([^/]+)/);
+  if (sportsMatch) return knownSport(sportsMatch[1]);
+  if (path === "/football" || path.startsWith("/football/")) return "football";
+  if (path === "/formula-1" || path.startsWith("/formula-1/")) return "formula-1";
+  if (path === "/motorsports" || path.startsWith("/motorsports/")) return "formula-1";
+  if (path === "/combat-sports" || path.startsWith("/combat-sports/") || path === "/ufc" || path.startsWith("/ufc/")) return "ufc";
+  return null;
+}
+
+function sportFromLabel(label: string): string | null {
+  const match = label.match(/\((football|soccer|basketball|ice hockey|hockey|tennis|motorsports?|formula 1|f1|mma|ufc|motogp|motorcycle racing|rugby|baseball|american football|cycling)\)\s*$/i);
+  return match ? knownSport(match[1]) : null;
+}
+
 function favoriteSport(item: FavoriteItem): string {
-  if (item.event?.sport) return item.event.sport;
+  const eventSport = item.event?.sport ? knownSport(item.event.sport) : null;
+  if (eventSport) return eventSport;
+
   if (item.kind === "participant") {
     const match = item.entityId.match(/^club:([^:]+):/);
-    if (match) return match[1];
+    const participantSport = match ? knownSport(match[1]) : null;
+    if (participantSport) return participantSport;
   }
+
   if (item.kind === "competition") {
     const separator = item.entityId.indexOf(":");
-    if (separator > 0) return item.entityId.slice(0, separator);
+    const competitionSport = separator > 0 ? knownSport(item.entityId.slice(0, separator)) : null;
+    if (competitionSport) return competitionSport;
   }
+
+  const idParts = item.entityId.split(":");
+  for (const part of idParts) {
+    const sport = knownSport(part);
+    if (sport) return sport;
+  }
+
+  const hrefSport = sportFromHref(item.href ?? item.event?.detailPath);
+  if (hrefSport) return hrefSport;
+
+  const labelSport = sportFromLabel(item.label);
+  if (labelSport) return labelSport;
+
   return "all";
 }
 
 function sportGlyph(sport: string): string {
   if (sport === "football") return "⚽";
   if (sport === "basketball") return "🏀";
-  if (sport === "hockey" || sport === "ice-hockey") return "🏒";
-  if (sport === "formula-1" || sport === "f1") return "🏁";
+  if (sport === "hockey") return "🏒";
+  if (sport === "formula-1") return "🏁";
   if (sport === "tennis") return "🎾";
-  if (sport === "ufc" || sport === "mma") return "🥊";
-  if (sport === "motogp" || sport === "motorcycle-racing") return "🏍";
+  if (sport === "ufc") return "🥊";
+  if (sport === "motogp") return "🏍️";
+  if (sport === "rugby") return "🏉";
   if (sport === "american-football") return "🏈";
   if (sport === "baseball") return "⚾";
+  if (sport === "cycling") return "🚴";
   return "●";
 }
 
 function displayLabel(item: FavoriteItem): string {
   if (item.kind === "participant") {
-    return item.label.replace(/\s*\((?:football|soccer|basketball|ice hockey|hockey|tennis|motorsports?|formula 1|f1|mma|ufc|baseball|american football)\)\s*$/i, "").trim();
+    return item.label.replace(/\s*\((?:football|soccer|basketball|ice hockey|hockey|tennis|motorsports?|formula 1|f1|mma|ufc|motogp|motorcycle racing|rugby|baseball|american football|cycling)\)\s*$/i, "").trim();
   }
   return item.label;
 }
