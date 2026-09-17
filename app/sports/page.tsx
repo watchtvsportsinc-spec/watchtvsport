@@ -12,16 +12,16 @@ export const metadata: Metadata = {
 };
 
 const SPORTS = [
-  { href: "/football", title: "Football", icon: "⚽", slugs: ["football"], description: "Leagues, cups and international football" },
-  { href: "/sports/basketball", title: "Basketball", icon: "🏀", slugs: ["basketball"], description: "NBA and basketball competitions" },
-  { href: "/sports/hockey", title: "Hockey", icon: "🏒", slugs: ["hockey", "ice-hockey"], description: "NHL and international hockey" },
-  { href: "/sports/tennis", title: "Tennis", icon: "🎾", slugs: ["tennis"], description: "ATP, WTA and major tournaments" },
-  { href: "/motorsports", title: "Motorsports", icon: "🏁", slugs: ["formula-1", "motogp"], description: "Formula 1, MotoGP and more" },
-  { href: "/combat-sports", title: "Combat sports", icon: "🥊", slugs: ["ufc"], description: "UFC and combat sports events" },
-  { href: "/sports/rugby", title: "Rugby", icon: "🏉", slugs: ["rugby"], description: "International rugby and competitions" },
-  { href: "/sports/baseball", title: "Baseball", icon: "⚾", slugs: ["baseball"], description: "Baseball leagues and tournaments" },
-  { href: "/sports/american-football", title: "American football", icon: "🏈", slugs: ["american-football"], description: "American football schedules" },
-  { href: "/sports/cycling", title: "Cycling", icon: "🚴", slugs: ["cycling"], description: "Grand Tours, classics and races" },
+  { href: "/football", title: "Football", icon: "⚽", slugs: ["football"] },
+  { href: "/sports/basketball", title: "Basketball", icon: "🏀", slugs: ["basketball"] },
+  { href: "/sports/hockey", title: "Hockey", icon: "🏒", slugs: ["hockey", "ice-hockey"] },
+  { href: "/sports/tennis", title: "Tennis", icon: "🎾", slugs: ["tennis"] },
+  { href: "/motorsports", title: "Motorsports", icon: "🏁", slugs: ["formula-1", "motogp"] },
+  { href: "/combat-sports", title: "Combat sports", icon: "🥊", slugs: ["ufc"] },
+  { href: "/sports/rugby", title: "Rugby", icon: "🏉", slugs: ["rugby"] },
+  { href: "/sports/baseball", title: "Baseball", icon: "⚾", slugs: ["baseball"] },
+  { href: "/sports/american-football", title: "American football", icon: "🏈", slugs: ["american-football"] },
+  { href: "/sports/cycling", title: "Cycling", icon: "🚴", slugs: ["cycling"] },
 ] as const;
 
 export default async function SportsDirectory() {
@@ -62,7 +62,6 @@ export default async function SportsDirectory() {
             <span className={styles.icon} aria-hidden="true">{item.icon}</span>
             <div className={styles.cardTitle}>
               <h3>{item.title}</h3>
-              <p>{item.description}</p>
             </div>
           </div>
 
