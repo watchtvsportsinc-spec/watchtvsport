@@ -18,7 +18,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function ClubPage({ params }: PageProps) {
   const { sport, club } = await params;
   const canonicalClub = canonicalClubSlug(sport, club);
-  const pageClassName = sport === "football" ? `${styles.scope} ${styles.footballClub}` : styles.scope;
+  const pageClassName = sport === "football"
+    ? `${styles.scope} ${styles.footballClub}`
+    : sport === "american-football"
+      ? `${styles.scope} ${styles.americanFootballClub}`
+      : styles.scope;
 
   return (
     <div className={pageClassName}>
