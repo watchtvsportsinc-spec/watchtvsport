@@ -1,0 +1,17 @@
+{
+  "dazn": {
+    "src": "/broadcasters/dazn.svg",
+    "aliases": ["DAZN", "DAZN Canada"],
+    "compact": false
+  },
+  "canal-plus": {
+    "src": "/broadcasters/canal-plus.svg",
+    "aliases": ["CANAL+", "Canal Plus", "CanalPlus"],
+    "compact": true
+  },
+  "paramount-plus": {
+    "src": "/broadcasters/paramount-plus.svg",
+    "aliases": ["Paramount+", "Paramount Plus", "ParamountPlus"],
+    "compact": false
+  }
+}
