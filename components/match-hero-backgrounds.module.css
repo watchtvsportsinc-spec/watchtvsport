@@ -1,0 +1,11 @@
+.americanFootball {
+  background:
+    linear-gradient(90deg, rgba(2, 9, 17, .88) 0%, rgba(3, 12, 22, .68) 50%, rgba(3, 13, 23, .58) 100%),
+    url("/american-football-hero.webp") center / cover no-repeat !important;
+}
+
+@media (prefers-reduced-data: reduce) {
+  .americanFootball {
+    background: linear-gradient(135deg, #0b1a29, #06111c) !important;
+  }
+}

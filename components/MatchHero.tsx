@@ -3,6 +3,7 @@ import Link from "next/link";
 import LocalTime from "@/components/LocalTime";
 import ParticipantSportVisual from "@/components/ParticipantSportVisual";
 import type { ParticipantVisualProfile } from "@/lib/participant-visuals";
+import backgroundStyles from "./match-hero-backgrounds.module.css";
 
 type MatchHeroTeam = {
   name: string;
@@ -59,8 +60,10 @@ export default function MatchHero({
   team2,
   favorite,
 }: Props) {
+  const heroClassName = `v2-match-hero ${sport === "american-football" ? backgroundStyles.americanFootball : ""}`.trim();
+
   return (
-    <section className="v2-match-hero" aria-label={`${team1.name} vs ${team2.name}`}>
+    <section className={heroClassName} aria-label={`${team1.name} vs ${team2.name}`}>
       <div className="v2-match-hero-header">
         <div>
           <p className="v2-eyebrow"><Link href={competitionHref}>{competition}</Link></p>
