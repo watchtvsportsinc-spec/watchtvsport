@@ -1,0 +1,184 @@
+/* Compact match-page UX overrides. Loaded after the shared density styles. */
+
+.v2-match-watch {
+  margin-top: 6px;
+  border-radius: 9px;
+}
+
+.v2-match-watch > summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 14px;
+  height: 36px;
+  min-height: 36px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 9px;
+}
+
+.v2-match-watch-copy {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.v2-match-watch-copy strong {
+  flex: 0 0 auto;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.v2-match-watch-copy small {
+  min-width: 0;
+  overflow: hidden;
+  color: #8fa6bb;
+  font-size: 8px;
+  line-height: 1;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.v2-match-watch-chevron {
+  justify-self: end;
+  font-size: 18px;
+}
+
+.v2-match-watch-body {
+  padding: 5px 6px;
+}
+
+.v2-match-next {
+  margin-top: 10px;
+}
+
+.v2-match-next-heading {
+  margin-bottom: 5px;
+}
+
+.v2-match-next-heading h2 {
+  font-size: 17px;
+}
+
+.v2-match-next-row {
+  position: relative;
+  grid-template-columns: minmax(0, 1fr) 76px minmax(0, 1fr);
+  height: 40px;
+  min-height: 40px;
+  gap: 4px;
+  padding: 1px 14px 1px 8px;
+}
+
+.v2-match-next-team {
+  min-width: 0;
+  gap: 6px;
+}
+
+.v2-match-next-team.is-left {
+  justify-content: flex-end;
+}
+
+.v2-match-next-team.is-right {
+  justify-content: flex-start;
+}
+
+.v2-match-next-team strong {
+  max-width: 112px;
+  font-size: 8px;
+  line-height: 1.05;
+}
+
+.v2-match-next-team span[role="img"] {
+  width: 30px !important;
+  height: 30px !important;
+  flex: 0 0 30px;
+}
+
+.v2-match-next-team span[role="img"] svg {
+  width: 30px !important;
+  height: 30px !important;
+}
+
+.v2-match-next-meta {
+  width: 76px;
+  justify-self: center;
+}
+
+.v2-match-next-meta > span:first-child {
+  font-size: 6px;
+}
+
+.v2-match-next-meta small,
+.v2-match-next-time {
+  font-size: 6.5px;
+}
+
+.v2-match-next-arrow {
+  position: absolute;
+  top: 50%;
+  right: 5px;
+  transform: translateY(-50%);
+  font-size: 16px;
+}
+
+@media (min-width: 560px) {
+  .v2-match-watch > summary {
+    height: 40px;
+    min-height: 40px;
+    padding-inline: 11px;
+  }
+
+  .v2-match-watch-copy strong {
+    font-size: 12px;
+  }
+
+  .v2-match-watch-copy small {
+    font-size: 9px;
+  }
+
+  .v2-match-next-heading h2 {
+    font-size: 21px;
+  }
+
+  .v2-match-next-row {
+    grid-template-columns: minmax(0, 1fr) 112px minmax(0, 1fr);
+    height: 44px;
+    min-height: 44px;
+    gap: 7px;
+    padding-inline: 12px 18px;
+  }
+
+  .v2-match-next-team {
+    gap: 8px;
+  }
+
+  .v2-match-next-team strong {
+    max-width: 180px;
+    font-size: 10px;
+  }
+
+  .v2-match-next-team span[role="img"] {
+    width: 34px !important;
+    height: 34px !important;
+    flex-basis: 34px;
+  }
+
+  .v2-match-next-team span[role="img"] svg {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  .v2-match-next-meta {
+    width: 112px;
+  }
+
+  .v2-match-next-meta > span:first-child {
+    font-size: 7px;
+  }
+
+  .v2-match-next-meta small,
+  .v2-match-next-time {
+    font-size: 8px;
+  }
+}
