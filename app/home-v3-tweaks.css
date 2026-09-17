@@ -234,6 +234,43 @@
   line-height:1.15;
 }
 
+/* Home TV schedule: denser event rows only on the homepage. */
+.wts-home-v3 .wts-schedule-row{
+  min-height:46px;
+  padding-top:4px;
+  padding-bottom:4px;
+}
+
+.wts-home-v3 .wts-schedule-status span{
+  min-height:22px;
+  padding:3px 7px;
+}
+
+.wts-home-v3 .wts-schedule-competition>span,
+.wts-home-v3 .wts-schedule-event,
+.wts-home-v3 .wts-schedule-time{
+  gap:1px;
+}
+
+.wts-home-v3 .wts-schedule-competition strong,
+.wts-home-v3 .wts-schedule-event strong,
+.wts-home-v3 .wts-schedule-time strong,
+.wts-home-v3 .wts-schedule-competition small,
+.wts-home-v3 .wts-schedule-event small,
+.wts-home-v3 .wts-schedule-time small{
+  line-height:1.1;
+}
+
+.wts-home-v3 .wts-access-pill{
+  min-height:23px;
+  padding:3px 8px;
+}
+
+.wts-home-v3 .wts-open-event{
+  min-height:28px;
+  padding:4px 9px;
+}
+
 @media(max-width:900px){
   .wts-home-search-zone{
     padding-top:12px;
