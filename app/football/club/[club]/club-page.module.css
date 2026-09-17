@@ -59,3 +59,13 @@
 @media(min-width:1180px){.heroMain{padding-top:19px;padding-bottom:17px}.heroStats>div{min-height:40px}.heroNextBar{min-height:32px}}
 @media(max-width:480px){.heroMain{padding-top:10px;padding-bottom:9px}.heroStats{margin-top:6px}.heroStats>div{min-height:34px;padding-top:3px;padding-bottom:3px}.heroNextBar{min-height:30px;margin-top:4px}}
 @media(prefers-reduced-data:reduce){.hero{background-image:linear-gradient(180deg,#07131f,#06111d)!important}.heroGlow{display:none}}
+
+/* Compact club hero: the schedule below already carries the next fixture. */
+.verifiedMark{display:none}
+.heroNextBar{display:none}
+.identity h1{font-size:clamp(28px,5vw,46px)}
+.heroMain{padding-top:8px;padding-bottom:7px}
+@media(min-width:680px){.heroMain{grid-template-columns:100px minmax(0,1fr);gap:18px;padding-top:10px;padding-bottom:9px}.crest{width:100px}}
+@media(min-width:980px){.heroMain{grid-template-columns:128px minmax(0,1fr);gap:22px;padding-top:11px;padding-bottom:10px}.crest{width:128px}.identity h1{font-size:46px}}
+@media(min-width:1180px){.heroMain{grid-template-columns:136px minmax(0,1fr);padding-top:12px;padding-bottom:11px}.crest{width:136px}.identity h1{font-size:48px}}
+@media(max-width:480px){.identity h1{font-size:27px}.heroMain{padding-top:8px;padding-bottom:7px}}
