@@ -240,20 +240,20 @@
   }
 
   .wts-header-search input {
-    height: 34px;
-    padding-left: 34px;
+    height: 38px;
+    padding-left: 38px;
     padding-right: 9px;
-    font-size: 10px;
+    font-size: 16px;
   }
 
   .wts-header-search-submit {
-    width: 34px;
-    height: 34px;
+    width: 38px;
+    height: 38px;
   }
 
   .wts-header-search-icon {
-    width: 15px;
-    height: 15px;
+    width: 16px;
+    height: 16px;
   }
 
   .wts-header-search-results {
@@ -266,13 +266,29 @@
   }
 
   .wts-nav-favorites {
-    min-height: 34px !important;
-    padding: 5px 8px !important;
-    font-size: 10px !important;
+    min-height: 38px !important;
+    padding: 5px 9px !important;
+    font-size: 11px !important;
   }
 
   .wts-nav-favorites > span:last-child {
     display: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .headerLogo {
+    width: 132px !important;
+  }
+
+  .wts-primary-nav,
+  .wts-nav-actions {
+    gap: 5px;
+  }
+
+  .wts-header-search {
+    min-width: 64px;
+    flex-basis: auto;
   }
 }
 
