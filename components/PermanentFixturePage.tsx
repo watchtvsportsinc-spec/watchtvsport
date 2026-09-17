@@ -14,7 +14,7 @@ function competitionHref(item:PublicFixture){return item.sport==="football"?`/fo
 function clubHref(item:PublicFixture,slug:string){return item.sport==="football"?`/football/club/${slug}`:`/sports/${item.sport}/club/${slug}`;}
 
 export default async function PermanentFixturePage({fixture}:{fixture:PublicFixture}){
-  const snapshot=await getPublicEventsSnapshot({sport:fixture.sport,competition:fixture.competitionSlug,limit:500});
+  const snapshot=await getPublicEventsSnapshot({sport:fixture.sport,competition:fixture.competitionSlug,from:fixture.exactDate,limit:500});
   const exactEvent=fixture.eventId?snapshot.events.find(event=>event.id===fixture.eventId):undefined;
   const confirmed=exactEvent?.broadcasts.filter(b=>b.coverageStatus==="confirmed")??[];
   const windowLabel=fixtureWindowLabel(fixture);
