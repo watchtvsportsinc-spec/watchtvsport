@@ -6,6 +6,7 @@ import BroadcastOffers from "@/components/BroadcastOffers";
 import LocalTime from "@/components/LocalTime";
 import { getAllEvents, type EventData } from "@/lib/events";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
+import heroStyles from "../grand-prix-background.module.css";
 
 const SITE_URL = "https://watchtvsport.com";
 
@@ -69,7 +70,7 @@ export default async function Formula1GrandPrixEditionPage({ params, searchParam
     location: first.venue || first.country ? { "@type": "Place", name: [first.venue, first.country].filter(Boolean).join(", ") } : undefined,
   };
 
-  return <main id="main-content" className="v2-calendar">
+  return <main id="main-content" className={`v2-calendar ${heroStyles.page}`}>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Formula 1", href: "/formula-1" }, { label: first.eventGroupName ?? "Grand Prix", href: `/formula-1/grand-prix/${grandPrix}` }, { label: year }]} />
     <section className="v2-calendar-hero">
