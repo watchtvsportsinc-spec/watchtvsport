@@ -139,18 +139,18 @@
 
 .wts-home-v3 .wts-home-favorites .wts-favorites-rail{
   display:grid !important;
-  grid-template-columns:repeat(5,minmax(0,190px)) !important;
+  grid-template-columns:repeat(5,minmax(0,176px)) !important;
   grid-auto-flow:row;
   justify-content:start;
-  gap:8px !important;
-  padding:0 38px 14px !important;
+  gap:7px !important;
+  padding:0 38px 12px !important;
 }
 
 .wts-home-favorites .wts-favorite-tile{
   align-items:center;
   background:#071a2b !important;
   border:1px solid rgba(98,178,255,.34) !important;
-  box-shadow:0 8px 22px rgba(0,0,0,.28) !important;
+  box-shadow:0 6px 16px rgba(0,0,0,.24) !important;
   backdrop-filter:none !important;
 }
 
@@ -161,25 +161,26 @@
 
 .wts-home-favorites .wts-favorite-name-only{
   display:grid !important;
-  grid-template-columns:24px minmax(0,1fr) !important;
+  grid-template-columns:20px minmax(0,1fr) !important;
   align-items:center !important;
   justify-content:start !important;
-  min-height:38px !important;
-  height:38px !important;
-  max-height:38px !important;
-  padding:5px 9px !important;
+  min-height:27px !important;
+  height:27px !important;
+  max-height:27px !important;
+  padding:3px 8px !important;
   text-align:left;
-  gap:7px;
+  gap:6px;
+  border-radius:9px !important;
 }
 
 .wts-home-favorites .wts-favorite-mini-glyph{
   display:grid;
   place-items:center;
-  width:24px;
-  height:24px;
+  width:20px;
+  height:20px;
   border-radius:50%;
   background:#0b2237;
-  border:1px solid rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.12);
   font-size:13px;
   line-height:1;
 }
@@ -190,8 +191,8 @@
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
-  font-size:11px;
-  line-height:1.1;
+  font-size:10px;
+  line-height:1;
 }
 
 @media(max-width:900px){
@@ -302,6 +303,12 @@
     grid-template-columns:repeat(2,minmax(0,1fr)) !important;
     padding-left:18px !important;
     padding-right:18px !important;
+  }
+
+  .wts-home-favorites .wts-favorite-name-only{
+    min-height:30px !important;
+    height:30px !important;
+    max-height:30px !important;
   }
 }
 
