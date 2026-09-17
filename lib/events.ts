@@ -9,6 +9,7 @@ import { championsLeague202627LeaguePhase } from "../source/champions-league-202
 import { formula1Season2026Sessions } from "../source/formula-1-2026-season";
 import { ufc2026UpcomingSessions } from "../source/ufc-2026-upcoming";
 import { withPriorityBroadcasts } from "./priority-broadcasts";
+import { withBroadcastLanguageDefaults } from "./broadcast-language-defaults";
 import type { ParticipantVisualProfile } from "./participant-visuals";
 
 export type EntityType = "national_team" | "club" | "player" | "event";
@@ -118,7 +119,9 @@ export function mapMatchToEvent(match: MatchData): EventData {
 }
 
 function prepareEvent(event: EventData): EventData {
-  return withPriorityBroadcasts(normalizeEventParticipants(event));
+  return withBroadcastLanguageDefaults(
+    withPriorityBroadcasts(normalizeEventParticipants(event))
+  );
 }
 
 export function getAllEvents(): EventData[] {
