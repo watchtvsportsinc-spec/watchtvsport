@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { type FavoriteItem } from "@/lib/favorites";
+import { useEffect, useState } from "react";
+import { type FavoriteEventFeed, type FavoriteItem } from "@/lib/favorites";
 import { toggleFavorite, useFavorites } from "@/lib/favorites-client";
 
 function fallbackHref(item: FavoriteItem): string {
@@ -116,6 +117,45 @@ function displayLabel(item: FavoriteItem): string {
 
 export default function HomeFavoritesStrip() {
   const collection = useFavorites();
+  const [resolvedEventSports, setResolvedEventSports] = useState<Record<string, string>>({});
+  const eventIdsKey = collection.items
+    .filter((item) => item.kind === "event")
+    .map((item) => item.entityId)
+    .join("|");
+
+  useEffect(() => {
+    if (!eventIdsKey) {
+      setResolvedEventSports({});
+      return;
+    }
+
+    const controller = new AbortController();
+    const eventIds = eventIdsKey.split("|");
+
+    const resolveEventSports = async () => {
+      try {
+        const response = await fetch("/api/favorites/events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ eventIds, participantIds: [], competitionIds: [] }),
+          signal: controller.signal,
+        });
+        if (!response.ok) return;
+
+        const data = (await response.json()) as FavoriteEventFeed;
+        if (!Array.isArray(data.exactEvents)) return;
+
+        setResolvedEventSports(
+          Object.fromEntries(data.exactEvents.map((event) => [event.id, event.sport]))
+        );
+      } catch {
+        if (!controller.signal.aborted) setResolvedEventSports({});
+      }
+    };
+
+    void resolveEventSports();
+    return () => controller.abort();
+  }, [eventIdsKey]);
 
   if (collection.items.length === 0) {
     return (
@@ -133,7 +173,8 @@ export default function HomeFavoritesStrip() {
       <div className="wts-home-section-heading"><div><span className="wts-section-icon" aria-hidden="true">★</span><h2 id="home-favorites-title">Your favorites</h2></div><Link href="/favorites">Manage favorites →</Link></div>
       <div className="wts-favorites-rail">
         {visible.map((item) => {
-          const sport = favoriteSport(item);
+          const resolvedSport = resolvedEventSports[item.entityId];
+          const sport = resolvedSport ? knownSport(resolvedSport) ?? favoriteSport(item) : favoriteSport(item);
           return (
             <div className="wts-favorite-tile wts-favorite-name-only has-home-remove" key={`${item.kind}:${item.entityId}`}>
               <Link className="wts-home-favorite-main" href={fallbackHref(item)}>
