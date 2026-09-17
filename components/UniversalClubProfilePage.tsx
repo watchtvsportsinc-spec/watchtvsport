@@ -5,6 +5,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import FavoriteButton from "@/components/FavoriteButton";
 import LocalTime from "@/components/LocalTime";
 import ParticipantSportVisual from "@/components/ParticipantSportVisual";
+import { resolveClubSlug } from "@/lib/club-aliases";
 import type { EventData, Participant } from "@/lib/events";
 import type { FavoriteCandidate } from "@/lib/favorites";
 import { getPublicParticipantEvents } from "@/lib/public-participant-events";
@@ -22,6 +23,11 @@ function normalizedSlug(value: string): string {
 function participantMatches(participant: Participant | undefined, participantId: string, slug: string): boolean {
   if (!participant) return false;
   return participant.id === participantId || participant.slug === slug || normalizedSlug(participant.name) === slug;
+}
+
+function participantSlug(participant?: Participant): string | null {
+  if (!participant || participant.type !== "club") return null;
+  return participant.slug || resolveClubSlug(participant.name);
 }
 
 function opponent(event: EventData, participantId: string, slug: string): Participant | undefined {
@@ -168,6 +174,23 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
   const canonicalPath = canonicalClubPath(sport, club);
   const canonicalUrl = absoluteUrl(canonicalPath);
 
+  const clubSlugs = Array.from(new Set(
+    upcoming.flatMap((event) => [participantSlug(event.participant1), participantSlug(event.participant2)]
+      .filter((slug): slug is string => Boolean(slug))),
+  ));
+  const profileEntries = await Promise.all(
+    clubSlugs.map(async (slug) => [slug, await getPublicParticipantProfile(slug, sport)] as const),
+  );
+  const participantProfiles = new Map(profileEntries);
+
+  function visualForParticipant(participant?: Participant) {
+    if (!participant) return null;
+    if (participant.visualProfile) return participant.visualProfile;
+    if (participantMatches(participant, verified.participantId, club)) return verified.visual;
+    const slug = participantSlug(participant);
+    return slug ? participantProfiles.get(slug)?.visual ?? null : null;
+  }
+
   const teamJsonLd = {
     "@context": "https://schema.org",
     "@type": "SportsTeam",
@@ -261,7 +284,7 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
             </div>
             <article className={styles.nextMatchCompact} style={{ backgroundImage: `linear-gradient(90deg,rgba(3,11,19,.94),rgba(3,11,19,.72)),url('${fallbackBackdrop}')` }}>
               <div className={styles.compactTeam}>
-                {nextMatch.participant1 ? <ParticipantSportVisual sport={sport} label={nextMatch.participant1.name} countryCode={nextMatch.participant1.countryCode} visual={nextMatch.participant1.visualProfile} size="md" /> : <span className={styles.tbcVisual}>TBC</span>}
+                {nextMatch.participant1 ? <ParticipantSportVisual sport={sport} label={nextMatch.participant1.name} countryCode={nextMatch.participant1.countryCode} visual={visualForParticipant(nextMatch.participant1)} size="md" /> : <span className={styles.tbcVisual}>TBC</span>}
                 <strong>{nextMatch.participant1?.name ?? "TBC"}</strong>
               </div>
 
@@ -272,7 +295,7 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
               </div>
 
               <div className={styles.compactTeam}>
-                {nextMatch.participant2 ? <ParticipantSportVisual sport={sport} label={nextMatch.participant2.name} countryCode={nextMatch.participant2.countryCode} visual={nextMatch.participant2.visualProfile} size="md" /> : <span className={styles.tbcVisual}>TBC</span>}
+                {nextMatch.participant2 ? <ParticipantSportVisual sport={sport} label={nextMatch.participant2.name} countryCode={nextMatch.participant2.countryCode} visual={visualForParticipant(nextMatch.participant2)} size="md" /> : <span className={styles.tbcVisual}>TBC</span>}
                 <strong>{nextMatch.participant2?.name ?? "TBC"}</strong>
               </div>
 
@@ -327,29 +350,28 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
         {upcoming.length === 0 ? (
           <div className="v2-empty-state" role="status"><h3>No upcoming game currently confirmed</h3><p>New fixtures will appear here automatically as soon as a confirmed schedule is imported.</p></div>
         ) : (
-          <div className={styles.matchList}>
-            {upcoming.map((event) => {
-              const home = isHome(event, verified.participantId, club);
-              const other = opponent(event, verified.participantId, club);
-              const confirmed = event.broadcasts.filter((b) => b.coverageStatus === "confirmed").length;
-              return (
-                <article className={styles.matchRow} key={event.id}>
-                  <div className={styles.dateCell}><LocalTime date={event.eventDate} /></div>
-                  <div className={styles.opponentVisual}>
-                    {other ? <ParticipantSportVisual sport={sport} label={other.name} countryCode={other.countryCode} visual={other.visualProfile} size="sm" /> : <span>TBC</span>}
-                  </div>
-                  <div className={styles.fixtureCell}>
-                    <small>{home ? "HOME" : "AWAY"} · {event.competition}</small>
-                    <strong>{home ? `${clubName} vs ${other?.name ?? "TBC"}` : `${other?.name ?? "TBC"} vs ${clubName}`}</strong>
-                    <span>{event.stage ?? "Event"}</span>
-                  </div>
-                  <div className={styles.broadcastCell}>
-                    <span>{confirmed > 0 ? `${confirmed} confirmed` : "Listings pending"}</span>
-                    <Link href={event.detailPath}>Match page →</Link>
-                  </div>
-                </article>
-              );
-            })}
+          <div className="v2-match-next-list">
+            {upcoming.map((event) => (
+              <Link key={event.id} href={event.detailPath} className="v2-match-next-row">
+                <span className="v2-match-next-team is-left">
+                  {event.participant1 ? <ParticipantSportVisual sport={sport} label={event.participant1.name} countryCode={event.participant1.countryCode} visual={visualForParticipant(event.participant1)} size="sm" /> : <span className="v2-match-next-tbc">?</span>}
+                  <strong>{event.participant1?.name ?? "TBC"}</strong>
+                </span>
+
+                <span className="v2-match-next-meta">
+                  <span>{event.competition}</span>
+                  <small>{event.stage ?? "Fixture"}</small>
+                  <span className="v2-match-next-time"><LocalTime date={event.eventDate} /></span>
+                </span>
+
+                <span className="v2-match-next-team is-right">
+                  <strong>{event.participant2?.name ?? "TBC"}</strong>
+                  {event.participant2 ? <ParticipantSportVisual sport={sport} label={event.participant2.name} countryCode={event.participant2.countryCode} visual={visualForParticipant(event.participant2)} size="sm" /> : <span className="v2-match-next-tbc">?</span>}
+                </span>
+
+                <span className="v2-match-next-arrow" aria-hidden="true">›</span>
+              </Link>
+            ))}
           </div>
         )}
       </section>
