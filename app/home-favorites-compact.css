@@ -1,0 +1,48 @@
+/* Compact desktop favorites on the home page. Mobile is already handled by mobile-density.css. */
+@media (min-width: 761px) {
+  .wts-home-favorites {
+    padding-bottom: 10px;
+  }
+
+  .wts-favorites-rail {
+    gap: 8px;
+    padding: 1px 14px 0;
+  }
+
+  .wts-favorite-tile {
+    min-height: 50px;
+    grid-template-columns: 28px minmax(0, 1fr) 14px;
+    align-items: center;
+    padding: 6px 9px;
+    border-radius: 14px;
+  }
+
+  .wts-favorite-glyph {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  .wts-favorite-copy {
+    gap: 0;
+  }
+
+  .wts-favorite-copy strong {
+    font-size: 12px;
+    line-height: 1.1;
+  }
+
+  .wts-favorite-copy small {
+    font-size: 9px;
+    line-height: 1.1;
+  }
+
+  .wts-favorite-copy > span {
+    font-size: 8px;
+    line-height: 1.1;
+  }
+
+  .wts-favorite-tile > b {
+    align-self: center;
+  }
+}
