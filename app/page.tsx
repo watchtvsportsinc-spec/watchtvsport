@@ -160,7 +160,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       {snapshot.warning ? <p className="v2-data-warning" role="status">{snapshot.warning}</p> : null}
 
       <section className="wts-home-search-zone" aria-label="Find sports">
-        <div className="wts-home-search-copy"><p>Official sports TV guide</p><h1>Find your event. Find where it is shown.</h1></div>
+        <div className="wts-home-search-copy"><p>Official sports TV guide</p><h1>Find your <span style={{ color: "#2aa7ff" }}>event.</span> Find where it is <span style={{ color: "#2aa7ff" }}>shown.</span></h1></div>
         <SearchAutocomplete searchPath="/events" timeZone={filters.timeZone} suggestions={suggestions} />
         <nav className="wts-home-shortcuts" aria-label="Sports and competitions">
           {SHORTCUTS.map((item) => <Link href={item.href} key={item.label}><span aria-hidden="true">{item.icon}</span><strong>{item.label}</strong></Link>)}
