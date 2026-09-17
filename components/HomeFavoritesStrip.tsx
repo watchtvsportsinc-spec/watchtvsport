@@ -17,6 +17,39 @@ function fallbackHref(item: FavoriteItem): string {
   return "/favorites";
 }
 
+function favoriteSport(item: FavoriteItem): string {
+  if (item.event?.sport) return item.event.sport;
+  if (item.kind === "participant") {
+    const match = item.entityId.match(/^club:([^:]+):/);
+    if (match) return match[1];
+  }
+  if (item.kind === "competition") {
+    const separator = item.entityId.indexOf(":");
+    if (separator > 0) return item.entityId.slice(0, separator);
+  }
+  return "all";
+}
+
+function sportGlyph(sport: string): string {
+  if (sport === "football") return "⚽";
+  if (sport === "basketball") return "🏀";
+  if (sport === "hockey" || sport === "ice-hockey") return "🏒";
+  if (sport === "formula-1" || sport === "f1") return "🏁";
+  if (sport === "tennis") return "🎾";
+  if (sport === "ufc" || sport === "mma") return "🥊";
+  if (sport === "motogp" || sport === "motorcycle-racing") return "🏍";
+  if (sport === "american-football") return "🏈";
+  if (sport === "baseball") return "⚾";
+  return "●";
+}
+
+function displayLabel(item: FavoriteItem): string {
+  if (item.kind === "participant") {
+    return item.label.replace(/\s*\((?:football|soccer|basketball|ice hockey|hockey|tennis|motorsports?|formula 1|f1|mma|ufc|baseball|american football)\)\s*$/i, "").trim();
+  }
+  return item.label;
+}
+
 export default function HomeFavoritesStrip() {
   const collection = useFavorites();
 
@@ -35,11 +68,15 @@ export default function HomeFavoritesStrip() {
     <section className="wts-home-section wts-home-favorites" aria-labelledby="home-favorites-title">
       <div className="wts-home-section-heading"><div><span className="wts-section-icon" aria-hidden="true">★</span><h2 id="home-favorites-title">Your favorites</h2></div><Link href="/favorites">View all →</Link></div>
       <div className="wts-favorites-rail">
-        {visible.map((item) => (
-          <Link className="wts-favorite-tile wts-favorite-name-only" href={fallbackHref(item)} key={`${item.kind}:${item.entityId}`}>
-            <strong>{item.label}</strong>
-          </Link>
-        ))}
+        {visible.map((item) => {
+          const sport = favoriteSport(item);
+          return (
+            <Link className="wts-favorite-tile wts-favorite-name-only" href={fallbackHref(item)} key={`${item.kind}:${item.entityId}`}>
+              <span className="wts-favorite-mini-glyph" aria-hidden="true">{sportGlyph(sport)}</span>
+              <strong>{displayLabel(item)}</strong>
+            </Link>
+          );
+        })}
       </div>
     </section>
   );
