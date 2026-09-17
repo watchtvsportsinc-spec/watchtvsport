@@ -10,7 +10,7 @@
   background:
     linear-gradient(90deg,rgba(3,9,20,.58) 0%,rgba(3,9,20,.34) 26%,rgba(3,9,20,.08) 48%,rgba(3,9,20,0) 72%),
     linear-gradient(180deg,rgba(3,9,20,.04) 0%,rgba(3,9,20,.06) 62%,rgba(3,9,20,.9) 100%),
-    url('/api/home-hero?v=stadium-seat-2') center/cover no-repeat;
+    url('/api/home-hero?v=approved-sofa-stadium-1') center/cover no-repeat;
   box-shadow:none !important;
 }
 
@@ -135,7 +135,7 @@
     background:
       linear-gradient(90deg,rgba(3,9,20,.76) 0%,rgba(3,9,20,.48) 42%,rgba(3,9,20,.1) 72%),
       linear-gradient(180deg,rgba(3,9,20,.04),rgba(3,9,20,.14) 60%,rgba(3,9,20,.94) 100%),
-      url('/api/home-hero?v=stadium-seat-2') 59% center/cover no-repeat;
+      url('/api/home-hero?v=approved-sofa-stadium-1') 59% center/cover no-repeat;
   }
 
   .wts-home-search-copy{
