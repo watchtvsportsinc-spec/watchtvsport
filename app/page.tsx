@@ -157,7 +157,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       {snapshot.warning ? <p className="v2-data-warning" role="status">{snapshot.warning}</p> : null}
 
       <section className="wts-home-search-zone" aria-label="Find sports">
-        <div className="wts-home-search-copy"><p>Official sports TV guide</p><h1>Sport is <span style={{ color: "#2aa7ff" }}>everywhere.</span> Know where to <span style={{ color: "#2aa7ff" }}>watch.</span></h1></div>
+        <div className="wts-home-search-copy">
+          <p>Official sports TV guide</p>
+          <h1>Sport is <span style={{ color: "#2aa7ff" }}>everywhere.</span> Know where to <span style={{ color: "#2aa7ff" }}>watch.</span></h1>
+          <span className="wts-home-explainer">Find the official TV channels and streaming platforms for each event, country by country.</span>
+        </div>
         <nav className="wts-home-shortcuts" aria-label="Sports and competitions">
           {SHORTCUTS.map((item) => <Link href={item.href} key={item.label}><span aria-hidden="true">{item.icon}</span><strong>{item.label}</strong></Link>)}
           <Link href="/sports" className="wts-home-shortcuts-more"><strong>More</strong><span aria-hidden="true">→</span></Link>
