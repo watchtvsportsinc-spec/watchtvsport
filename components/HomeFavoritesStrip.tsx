@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { type FavoriteItem } from "@/lib/favorites";
-import { useFavorites } from "@/lib/favorites-client";
+import { toggleFavorite, useFavorites } from "@/lib/favorites-client";
 
 function fallbackHref(item: FavoriteItem): string {
   if (item.href) return item.href;
@@ -135,13 +135,80 @@ export default function HomeFavoritesStrip() {
         {visible.map((item) => {
           const sport = favoriteSport(item);
           return (
-            <Link className="wts-favorite-tile wts-favorite-name-only" href={fallbackHref(item)} key={`${item.kind}:${item.entityId}`}>
-              <span className="wts-favorite-mini-glyph" aria-hidden="true">{sportGlyph(sport)}</span>
-              <strong>{displayLabel(item)}</strong>
-            </Link>
+            <div className="wts-favorite-tile wts-favorite-name-only has-home-remove" key={`${item.kind}:${item.entityId}`}>
+              <Link className="wts-home-favorite-main" href={fallbackHref(item)}>
+                <span className="wts-favorite-mini-glyph" aria-hidden="true">{sportGlyph(sport)}</span>
+                <strong>{displayLabel(item)}</strong>
+              </Link>
+              <button
+                type="button"
+                className="wts-home-favorite-remove"
+                aria-label={`Remove ${displayLabel(item)} from favorites`}
+                title="Remove from favorites"
+                onClick={() => toggleFavorite(item)}
+              >
+                <span aria-hidden="true">★</span>
+              </button>
+            </div>
           );
         })}
       </div>
+      <style jsx global>{`
+        .wts-home-favorites .wts-favorite-name-only.has-home-remove {
+          grid-template-columns: minmax(0,1fr) 24px !important;
+          gap: 6px !important;
+        }
+        .wts-home-favorites .wts-home-favorite-main {
+          display: grid;
+          grid-template-columns: 22px minmax(0,1fr);
+          align-items: center;
+          gap: 7px;
+          min-width: 0;
+          color: inherit;
+          text-decoration: none;
+        }
+        .wts-home-favorites .wts-home-favorite-main strong {
+          display: -webkit-box;
+          min-width: 0;
+          overflow: hidden;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          white-space: normal;
+          overflow-wrap: anywhere;
+          text-overflow: ellipsis;
+          font-size: 10px;
+          line-height: 1.15;
+        }
+        .wts-home-favorites .wts-home-favorite-remove {
+          display: grid;
+          width: 24px;
+          height: 24px;
+          padding: 0;
+          place-items: center;
+          border: 0;
+          border-radius: 50%;
+          background: transparent;
+          color: #63b9ff;
+          cursor: pointer;
+          font: inherit;
+          line-height: 1;
+        }
+        .wts-home-favorites .wts-home-favorite-remove:hover,
+        .wts-home-favorites .wts-home-favorite-remove:focus-visible {
+          background: rgba(99,185,255,.12);
+          color: #fff;
+          outline: none;
+        }
+        @media(max-width:760px) {
+          .wts-home-favorites .wts-favorite-name-only.has-home-remove {
+            grid-template-columns: minmax(0,1fr) 26px !important;
+          }
+          .wts-home-favorites .wts-home-favorite-remove {
+            width: 26px;
+            height: 26px;
+          }
+        }
+      `}</style>
     </section>
   );
 }
