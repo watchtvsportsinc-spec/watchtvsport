@@ -243,7 +243,23 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
 
             <div className={styles.heroStats} aria-label={`${clubName} quick facts`}>
               <div><span className={styles.statIcon} aria-hidden="true">▦</span><strong>{upcoming.length}</strong><small>Upcoming</small></div>
-              <div><span className={styles.statIcon} aria-hidden="true">◆</span><strong>{competitions.length}</strong><small>Competition{competitions.length === 1 ? "" : "s"}</small></div>
+              <div className={styles.competitionStat}>
+                <span className={styles.statIcon} aria-hidden="true">◆</span>
+                <div className={styles.competitionTop}>
+                  <strong>{competitions.length}</strong>
+                  <small>Competition{competitions.length === 1 ? "" : "s"}</small>
+                </div>
+                <div className={styles.competitionSummary}>
+                  {competitions.length > 0 ? (
+                    <>
+                      {competitions.slice(0, 2).map((competition) => (
+                        <Link key={competition.slug} href={competitionHref(sport, competition.slug)}>{competition.name}</Link>
+                      ))}
+                      {competitions.length > 2 ? <span>+{competitions.length - 2}</span> : null}
+                    </>
+                  ) : <span>TBC</span>}
+                </div>
+              </div>
               <div><span className={styles.statIcon} aria-hidden="true">▣</span><strong>{confirmedListings}</strong><small>TV listings</small></div>
               <div className={styles.venueStat}><span className={styles.statIcon} aria-hidden="true">⌂</span><strong>{profile?.venueName ?? "TBC"}</strong><small>Home venue</small></div>
             </div>
@@ -261,56 +277,39 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
         </div>
       </section>
 
-      <div className={styles.contentGrid}>
-        <section id="matches" className={`${styles.section} ${styles.scheduleSection}`} aria-labelledby="matches-title">
-          <div className={styles.sectionHeader}>
-            <div><p className="v2-eyebrow">Schedule</p><h2 id="matches-title">Upcoming matches</h2></div>
-            <span>{upcoming.length} scheduled</span>
+      <section id="matches" className={`${styles.section} ${styles.scheduleSection}`} aria-labelledby="matches-title">
+        <div className={styles.sectionHeader}>
+          <div><p className="v2-eyebrow">Schedule</p><h2 id="matches-title">Upcoming matches</h2></div>
+          <span>{upcoming.length} scheduled</span>
+        </div>
+        {upcoming.length === 0 ? (
+          <div className="v2-empty-state" role="status"><h3>No upcoming game currently confirmed</h3><p>New fixtures will appear here automatically as soon as a confirmed schedule is imported.</p></div>
+        ) : (
+          <div className="v2-match-next-list">
+            {upcoming.map((event) => (
+              <Link key={event.id} href={event.detailPath} className="v2-match-next-row">
+                <span className="v2-match-next-team is-left">
+                  {event.participant1 ? <ParticipantSportVisual sport={sport} label={event.participant1.name} countryCode={event.participant1.countryCode} visual={visualForParticipant(event.participant1)} size="sm" /> : <span className="v2-match-next-tbc">?</span>}
+                  <strong>{event.participant1?.name ?? "TBC"}</strong>
+                </span>
+
+                <span className="v2-match-next-meta">
+                  <span>{event.competition}</span>
+                  <small>{event.stage ?? "Fixture"}</small>
+                  <span className="v2-match-next-time"><LocalTime date={event.eventDate} /></span>
+                </span>
+
+                <span className="v2-match-next-team is-right">
+                  <strong>{event.participant2?.name ?? "TBC"}</strong>
+                  {event.participant2 ? <ParticipantSportVisual sport={sport} label={event.participant2.name} countryCode={event.participant2.countryCode} visual={visualForParticipant(event.participant2)} size="sm" /> : <span className="v2-match-next-tbc">?</span>}
+                </span>
+
+                <span className="v2-match-next-arrow" aria-hidden="true">›</span>
+              </Link>
+            ))}
           </div>
-          {upcoming.length === 0 ? (
-            <div className="v2-empty-state" role="status"><h3>No upcoming game currently confirmed</h3><p>New fixtures will appear here automatically as soon as a confirmed schedule is imported.</p></div>
-          ) : (
-            <div className="v2-match-next-list">
-              {upcoming.map((event) => (
-                <Link key={event.id} href={event.detailPath} className="v2-match-next-row">
-                  <span className="v2-match-next-team is-left">
-                    {event.participant1 ? <ParticipantSportVisual sport={sport} label={event.participant1.name} countryCode={event.participant1.countryCode} visual={visualForParticipant(event.participant1)} size="sm" /> : <span className="v2-match-next-tbc">?</span>}
-                    <strong>{event.participant1?.name ?? "TBC"}</strong>
-                  </span>
-
-                  <span className="v2-match-next-meta">
-                    <span>{event.competition}</span>
-                    <small>{event.stage ?? "Fixture"}</small>
-                    <span className="v2-match-next-time"><LocalTime date={event.eventDate} /></span>
-                  </span>
-
-                  <span className="v2-match-next-team is-right">
-                    <strong>{event.participant2?.name ?? "TBC"}</strong>
-                    {event.participant2 ? <ParticipantSportVisual sport={sport} label={event.participant2.name} countryCode={event.participant2.countryCode} visual={visualForParticipant(event.participant2)} size="sm" /> : <span className="v2-match-next-tbc">?</span>}
-                  </span>
-
-                  <span className="v2-match-next-arrow" aria-hidden="true">›</span>
-                </Link>
-              ))}
-            </div>
-          )}
-        </section>
-
-        <aside className={styles.competitionPanel} id="competitions" aria-label={`${clubName} competitions`}>
-          <div className={styles.sideTitle}><h2>Competitions</h2><span>{competitions.length}</span></div>
-          {competitions.length > 0 ? (
-            <div className={styles.competitionList}>
-              {competitions.map((competition) => (
-                <Link key={competition.slug} href={competitionHref(sport, competition.slug)}>
-                  <span className={styles.flagMark}>◆</span>
-                  <strong>{competition.name}</strong>
-                  <span>Open →</span>
-                </Link>
-              ))}
-            </div>
-          ) : <p>No current competition has been imported yet.</p>}
-        </aside>
-      </div>
+        )}
+      </section>
 
       {recent.length > 0 ? (
         <section id="recent" className={`${styles.section} ${styles.recentSection}`} aria-labelledby="recent-title">
