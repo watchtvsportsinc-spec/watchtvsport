@@ -66,7 +66,7 @@ export default function HomeFavoritesStrip() {
 
   return (
     <section className="wts-home-section wts-home-favorites" aria-labelledby="home-favorites-title">
-      <div className="wts-home-section-heading"><div><span className="wts-section-icon" aria-hidden="true">★</span><h2 id="home-favorites-title">Your favorites</h2></div><Link href="/favorites">View all →</Link></div>
+      <div className="wts-home-section-heading"><div><span className="wts-section-icon" aria-hidden="true">★</span><h2 id="home-favorites-title">Your favorites</h2></div><Link href="/favorites">Manage favorites →</Link></div>
       <div className="wts-favorites-rail">
         {visible.map((item) => {
           const sport = favoriteSport(item);
