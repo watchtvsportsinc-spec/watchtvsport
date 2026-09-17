@@ -1,0 +1,168 @@
+/* WatchTVSport V2 header refinement */
+
+.wts-primary-nav {
+  flex: 1;
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.wts-nav-links,
+.wts-nav-actions {
+  display: flex;
+  align-items: center;
+}
+
+.wts-nav-links {
+  gap: 2px;
+  margin-left: 8px;
+}
+
+.wts-nav-actions {
+  gap: 12px;
+  margin-left: auto;
+}
+
+.wts-primary-nav a {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border-radius: 9px;
+  color: #c8d5e4;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.wts-primary-nav a:hover,
+.wts-primary-nav a.is-active {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.wts-header-search {
+  position: relative;
+  width: clamp(210px, 24vw, 330px);
+  flex: 0 1 330px;
+}
+
+.wts-header-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  transform: translateY(-50%);
+  color: #9fb4c9;
+  pointer-events: none;
+}
+
+.wts-header-search input {
+  width: 100%;
+  height: 38px;
+  border: 1px solid rgba(76, 161, 255, 0.28);
+  border-radius: 10px;
+  outline: 0;
+  background: rgba(4, 17, 31, 0.92);
+  color: #ffffff;
+  padding: 0 13px 0 39px;
+  font: inherit;
+  font-size: 12px;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+}
+
+.wts-header-search input::placeholder {
+  color: #8298ad;
+}
+
+.wts-header-search input:hover {
+  border-color: rgba(96, 165, 250, 0.48);
+}
+
+.wts-header-search input:focus {
+  border-color: #3b82f6;
+  background: #071522;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.wts-nav-favorites {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(7, 17, 29, 0.84);
+}
+
+.wts-nav-favorites > span:first-child {
+  font-size: 16px;
+  line-height: 1;
+}
+
+@media (max-width: 980px) {
+  .wts-nav-links {
+    gap: 0;
+    margin-left: 0;
+  }
+
+  .wts-primary-nav a {
+    padding-inline: 8px;
+    font-size: 12px;
+  }
+
+  .wts-header-search {
+    width: clamp(170px, 22vw, 240px);
+    flex-basis: 240px;
+  }
+
+  .wts-header-search input {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 760px) {
+  .wts-primary-nav {
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .wts-nav-links {
+    display: none;
+  }
+
+  .wts-nav-actions {
+    width: 100%;
+    justify-content: flex-end;
+    gap: 7px;
+  }
+
+  .wts-header-search {
+    width: min(100%, 210px);
+    flex: 1 1 150px;
+    max-width: 210px;
+  }
+
+  .wts-header-search input {
+    height: 34px;
+    padding-left: 34px;
+    padding-right: 9px;
+    font-size: 10px;
+  }
+
+  .wts-header-search-icon {
+    left: 10px;
+    width: 15px;
+    height: 15px;
+  }
+
+  .wts-nav-favorites {
+    min-height: 34px !important;
+    padding: 5px 8px !important;
+    font-size: 10px !important;
+  }
+
+  .wts-nav-favorites > span:last-child {
+    display: none;
+  }
+}
