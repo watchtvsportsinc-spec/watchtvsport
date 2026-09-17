@@ -3,6 +3,7 @@ import logoManifest from "@/data/broadcaster-logos.json";
 export type BroadcasterLogo = {
   src: string;
   compact?: boolean;
+  darkStyle?: "brand" | "invert" | "knockout";
 };
 
 function normalizedBroadcasterName(value: string) {
@@ -18,6 +19,7 @@ const LOGOS = Object.entries(logoManifest).reduce<Record<string, BroadcasterLogo
     const logo: BroadcasterLogo = {
       src: config.src,
       ...(config.compact ? { compact: true } : {}),
+      ...(config.darkStyle ? { darkStyle: config.darkStyle as BroadcasterLogo["darkStyle"] } : {}),
     };
 
     for (const name of [slug, ...config.aliases]) {
