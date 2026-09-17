@@ -8,6 +8,9 @@ const {
   PublicEventsPayloadError,
   parsePublicEventsPayload,
 } = await jiti.import("../lib/public-events-schema.ts");
+const { parseMultisportPublicEventsPayload } = await jiti.import(
+  "../lib/public-events-multisport.ts"
+);
 
 function validPayload() {
   return {
@@ -84,6 +87,35 @@ test("parses the bounded public Supabase contract", () => {
   assert.equal(parsed.events[0].participant1.visualProfile.primaryColor, "#004170");
   assert.equal(parsed.events[0].participant1.visualProfile.patternStyle, "center_stripe");
   assert.equal(parsed.events[0].participant1.visualProfile.visualStatus, "verified");
+});
+
+test("defaults French commentary for football broadcasts in France", () => {
+  const payload = validPayload();
+  payload.events[0].broadcasts[0].countryCode = "FR";
+  payload.events[0].broadcasts[0].countryName = "France";
+
+  const parsed = parseMultisportPublicEventsPayload(payload);
+  assert.deepEqual(parsed.events[0].broadcasts[0].commentaryLanguages, ["French"]);
+});
+
+test("preserves explicit commentary language exceptions for football in France", () => {
+  const payload = validPayload();
+  payload.events[0].broadcasts[0].countryCode = "FR";
+  payload.events[0].broadcasts[0].countryName = "France";
+  payload.events[0].broadcasts[0].commentaryLanguages = ["English"];
+
+  const parsed = parseMultisportPublicEventsPayload(payload);
+  assert.deepEqual(parsed.events[0].broadcasts[0].commentaryLanguages, ["English"]);
+});
+
+test("does not apply the France football language default to other sports", () => {
+  const payload = validPayload();
+  payload.events[0].sport = "formula-1";
+  payload.events[0].broadcasts[0].countryCode = "FR";
+  payload.events[0].broadcasts[0].countryName = "France";
+
+  const parsed = parseMultisportPublicEventsPayload(payload);
+  assert.equal(parsed.events[0].broadcasts[0].commentaryLanguages, undefined);
 });
 
 test("rejects unsafe participant visual values", () => {
