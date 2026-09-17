@@ -1,10 +1,10 @@
 .wts-home-search-zone{
   position:relative;
   isolation:isolate;
-  min-height:310px;
+  min-height:auto;
   overflow:hidden;
   margin-top:0;
-  padding:14px 0 80px;
+  padding:14px 0 14px;
   border:0 !important;
   border-radius:0 !important;
   background:#030914;
@@ -37,8 +37,8 @@
   flex-direction:column;
   align-items:flex-start;
   justify-content:center;
-  gap:7px;
-  margin:0 0 11px;
+  gap:5px;
+  margin:0 0 8px;
   text-align:left;
 }
 
@@ -66,6 +66,16 @@
   text-transform:uppercase;
 }
 
+.wts-home-explainer{
+  order:3;
+  display:block;
+  margin-top:3px;
+  color:#a9bfd4;
+  font-size:13px;
+  font-weight:500;
+  line-height:1.45;
+}
+
 .wts-home-shortcuts{
   position:relative;
   z-index:1;
@@ -76,7 +86,7 @@
   justify-content:flex-start;
   gap:7px;
   overflow-x:auto;
-  padding:0 0 4px;
+  padding:4px 0 2px;
   scrollbar-width:none;
 }
 
@@ -119,36 +129,52 @@
 .wts-home-search-zone + .wts-home-favorites{
   position:relative;
   z-index:3;
-  margin-top:-154px;
+  margin-top:12px;
+  padding-bottom:0;
   border:0 !important;
   border-radius:0 !important;
   background:transparent !important;
   box-shadow:none !important;
+  overflow:visible;
 }
 
 .wts-home-search-zone + .wts-home-favorites .wts-home-section-heading{
   position:relative;
-  padding:0 38px 7px !important;
+  padding:0 0 8px !important;
   background:transparent !important;
 }
 
 .wts-home-search-zone + .wts-home-favorites .wts-home-section-heading>a{
-  position:absolute;
-  top:-54px;
-  right:38px;
-  z-index:5;
+  position:static;
+  color:#43b2ff;
+}
+
+.wts-home-favorites .wts-section-icon{
+  width:auto;
+  height:auto;
+  border-radius:0;
+  background:transparent;
+  font-size:22px;
 }
 
 .wts-home-v3 .wts-home-favorites .wts-favorites-rail{
-  display:grid !important;
-  grid-template-columns:repeat(5,minmax(0,176px)) !important;
-  grid-auto-flow:row;
-  justify-content:start;
-  gap:7px !important;
-  padding:0 38px 12px !important;
+  display:flex !important;
+  flex-wrap:nowrap;
+  align-items:stretch;
+  gap:8px !important;
+  overflow-x:auto;
+  padding:0 0 12px !important;
+  scrollbar-width:none;
+}
+
+.wts-home-v3 .wts-home-favorites .wts-favorites-rail::-webkit-scrollbar{
+  display:none;
 }
 
 .wts-home-favorites .wts-favorite-tile{
+  flex:1 1 140px;
+  min-width:132px;
+  max-width:190px;
   align-items:center;
   background:#071a2b !important;
   border:1px solid rgba(98,178,255,.34) !important;
@@ -163,23 +189,23 @@
 
 .wts-home-favorites .wts-favorite-name-only{
   display:grid !important;
-  grid-template-columns:20px minmax(0,1fr) !important;
+  grid-template-columns:22px minmax(0,1fr) !important;
   align-items:center !important;
   justify-content:start !important;
-  min-height:27px !important;
-  height:27px !important;
-  max-height:27px !important;
-  padding:3px 8px !important;
+  min-height:42px !important;
+  height:42px !important;
+  max-height:42px !important;
+  padding:6px 10px !important;
   text-align:left;
-  gap:6px;
-  border-radius:9px !important;
+  gap:7px;
+  border-radius:11px !important;
 }
 
 .wts-home-favorites .wts-favorite-mini-glyph{
   display:grid;
   place-items:center;
-  width:20px;
-  height:20px;
+  width:22px;
+  height:22px;
   border-radius:50%;
   background:#0b2237;
   border:1px solid rgba(255,255,255,.12);
@@ -194,13 +220,13 @@
   text-overflow:ellipsis;
   white-space:nowrap;
   font-size:10px;
-  line-height:1;
+  line-height:1.15;
 }
 
 @media(max-width:900px){
   .wts-home-search-zone{
-    min-height:300px;
     padding-top:12px;
+    padding-bottom:12px;
   }
 
   .wts-home-search-copy h1{
@@ -214,23 +240,16 @@
     max-width:106px;
   }
 
-  .wts-home-search-zone + .wts-home-favorites{
-    margin-top:-146px;
-  }
-
-  .wts-home-search-zone + .wts-home-favorites .wts-home-section-heading>a{
-    top:-50px;
-  }
-
-  .wts-home-v3 .wts-home-favorites .wts-favorites-rail{
-    grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  .wts-home-favorites .wts-favorite-tile{
+    flex:0 0 150px;
+    min-width:150px;
+    max-width:150px;
   }
 }
 
 @media(max-width:760px){
   .wts-home-search-zone{
-    min-height:286px;
-    padding:16px 18px 72px;
+    padding:12px 0 10px;
     background:#030914;
   }
 
@@ -242,12 +261,12 @@
 
   .wts-home-search-copy{
     max-width:100%;
-    gap:6px;
-    margin-bottom:12px;
+    gap:5px;
+    margin-bottom:9px;
   }
 
   .wts-home-search-copy h1{
-    max-width:92%;
+    max-width:100%;
     font-size:clamp(25px,7.8vw,36px);
     line-height:1.02;
     white-space:normal;
@@ -258,6 +277,12 @@
     letter-spacing:.14em;
   }
 
+  .wts-home-explainer{
+    max-width:620px;
+    font-size:11px;
+    line-height:1.4;
+  }
+
   .wts-home-shortcuts{
     width:100%;
     max-width:100%;
@@ -265,7 +290,7 @@
     justify-content:flex-start;
     gap:5px;
     overflow-x:auto;
-    padding:1px 0 5px;
+    padding:2px 0 4px;
     scrollbar-width:none;
   }
 
@@ -284,36 +309,39 @@
   }
 
   .wts-home-search-zone + .wts-home-favorites{
-    margin-top:-92px;
+    margin-top:10px;
   }
 
   .wts-home-search-zone + .wts-home-favorites .wts-home-section-heading{
-    padding-left:18px !important;
-    padding-right:18px !important;
-  }
-
-  .wts-home-search-zone + .wts-home-favorites .wts-home-section-heading>a{
-    position:static;
+    padding:0 0 7px !important;
   }
 
   .wts-home-v3 .wts-home-favorites .wts-favorites-rail{
-    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
-    padding-left:18px !important;
-    padding-right:18px !important;
+    display:flex !important;
+    padding:0 0 10px !important;
+  }
+
+  .wts-home-favorites .wts-favorite-tile{
+    flex:0 0 145px;
+    min-width:145px;
+    max-width:145px;
   }
 
   .wts-home-favorites .wts-favorite-name-only{
-    min-height:30px !important;
-    height:30px !important;
-    max-height:30px !important;
+    min-height:40px !important;
+    height:40px !important;
+    max-height:40px !important;
   }
 }
 
 @media(max-width:480px){
   .wts-home-search-zone{
-    min-height:270px;
-    padding-top:12px;
-    padding-bottom:64px;
+    padding-top:10px;
+    padding-bottom:8px;
+  }
+
+  .wts-home-explainer{
+    font-size:10px;
   }
 }
 
