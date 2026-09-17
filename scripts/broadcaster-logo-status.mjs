@@ -1,9 +1,10 @@
-import { access, readFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const STRICT = process.argv.includes("--strict");
+const TRUSTED_LOGO_HOSTS = new Set(["dazngroup.com", "upload.wikimedia.org"]);
 
 function parseEnvValue(raw) {
   const value = raw.trim();
@@ -49,6 +50,15 @@ function findManifestEntry(manifest, broadcaster) {
   ) ?? null;
 }
 
+function verifiedAsset(entry) {
+  try {
+    const assetUrl = new URL(String(entry.src));
+    return assetUrl.protocol === "https:" && TRUSTED_LOGO_HOSTS.has(assetUrl.hostname);
+  } catch {
+    return false;
+  }
+}
+
 async function fetchBroadcasters() {
   const baseUrl = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(/\/$/, "");
   const key = process.env.SUPABASE_PUBLISHABLE_KEY
@@ -86,7 +96,7 @@ async function main() {
   const [manifest, broadcasters] = await Promise.all([loadManifest(), fetchBroadcasters()]);
   const known = [];
   const missing = [];
-  const brokenAssets = [];
+  const invalidAssets = [];
 
   for (const broadcaster of broadcasters) {
     const match = findManifestEntry(manifest, broadcaster);
@@ -96,26 +106,24 @@ async function main() {
     }
 
     const [manifestSlug, entry] = match;
-    const assetPath = resolve(ROOT, "public", String(entry.src).replace(/^\/+/, ""));
-    try {
-      await access(assetPath);
+    if (verifiedAsset(entry)) {
       known.push({ ...broadcaster, manifestSlug, src: entry.src });
-    } catch {
-      brokenAssets.push({ ...broadcaster, manifestSlug, src: entry.src });
+    } else {
+      invalidAssets.push({ ...broadcaster, manifestSlug, src: entry.src });
     }
   }
 
   console.log(`Broadcaster logo library: ${known.length}/${broadcasters.length} active broadcasters ready.`);
 
-  if (brokenAssets.length) {
-    console.log("\nManifest entries with a missing local asset:");
-    for (const broadcaster of brokenAssets) {
+  if (invalidAssets.length) {
+    console.log("\nManifest entries with an unapproved or invalid asset URL:");
+    for (const broadcaster of invalidAssets) {
       console.log(`- ${broadcaster.name}: ${broadcaster.src}`);
     }
   }
 
   if (missing.length) {
-    console.log("\nBroadcasters waiting for a verified local logo:");
+    console.log("\nBroadcasters waiting for a verified logo:");
     for (const broadcaster of missing) {
       const source = broadcaster.website_url ? ` — ${broadcaster.website_url}` : "";
       console.log(`- ${broadcaster.name} (${broadcaster.slug})${source}`);
@@ -124,7 +132,7 @@ async function main() {
     console.log("\nNo broadcaster logo is missing.");
   }
 
-  if (brokenAssets.length || (STRICT && missing.length)) {
+  if (invalidAssets.length || (STRICT && missing.length)) {
     process.exitCode = 1;
   }
 }
