@@ -162,6 +162,7 @@
     overflow-x: hidden !important;
     padding-left: 10px !important;
     padding-right: 10px !important;
+    padding-bottom: 14px !important;
   }
 
   .wts-home-v3 > *,
@@ -254,6 +255,16 @@
   .wts-home-v3 .wts-schedule-time strong {
     min-width: 0;
     text-overflow: ellipsis;
+  }
+
+  /* Keep the last home card visually connected to the footer on phones. */
+  .wts-home-v3 .wts-major-section {
+    margin-bottom: 0 !important;
+  }
+
+  .wts-home-v3 + footer,
+  body > div > footer {
+    margin-top: 10px !important;
   }
 }
 
