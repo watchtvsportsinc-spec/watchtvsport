@@ -9,9 +9,9 @@
   border-radius:0 !important;
   background-color:#030914;
   background:
-    linear-gradient(90deg,#030914 0%,rgba(3,9,20,.34) 7%,rgba(3,9,20,.08) 15%,rgba(3,9,20,0) 24%,rgba(3,9,20,0) 88%,rgba(3,9,20,.18) 95%,#030914 100%),
-    linear-gradient(180deg,rgba(3,9,20,0) 0%,rgba(3,9,20,.02) 66%,rgba(3,9,20,.72) 92%,#030914 100%),
-    url('/api/home-hero?v=full-scene-1') center bottom / 100% auto no-repeat;
+    linear-gradient(90deg,#030914 0%,rgba(3,9,20,.28) 10%,rgba(3,9,20,.05) 18%,rgba(3,9,20,0) 28%,rgba(3,9,20,0) 82%,rgba(3,9,20,.08) 90%,#030914 100%),
+    linear-gradient(180deg,rgba(3,9,20,0) 0%,rgba(3,9,20,.02) 66%,rgba(3,9,20,.7) 92%,#030914 100%),
+    url('/api/home-hero?v=full-scene-2') center bottom / 70% auto no-repeat;
   box-shadow:none !important;
 }
 
@@ -141,7 +141,7 @@
   .wts-home-search-zone{
     min-height:360px;
     background-position:center bottom;
-    background-size:112% auto;
+    background-size:82% auto;
   }
 
   .wts-home-search-copy h1{
@@ -161,9 +161,9 @@
     min-height:315px;
     padding:32px 18px 82px;
     background:
-      linear-gradient(90deg,#030914 0%,rgba(3,9,20,.68) 18%,rgba(3,9,20,.18) 52%,rgba(3,9,20,.04) 78%,#030914 100%),
+      linear-gradient(90deg,#030914 0%,rgba(3,9,20,.62) 18%,rgba(3,9,20,.16) 52%,rgba(3,9,20,.04) 78%,#030914 100%),
       linear-gradient(180deg,rgba(3,9,20,0),rgba(3,9,20,.1) 60%,rgba(3,9,20,.94) 100%),
-      url('/api/home-hero?v=full-scene-1') 60% bottom / auto 100% no-repeat;
+      url('/api/home-hero?v=full-scene-2') 60% bottom / auto 82% no-repeat;
   }
 
   .wts-home-search-copy{
@@ -224,7 +224,7 @@
     padding-top:26px;
     padding-bottom:72px;
     background-position:62% bottom;
-    background-size:auto 100%;
+    background-size:auto 88%;
   }
 }
 
