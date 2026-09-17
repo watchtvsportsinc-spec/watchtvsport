@@ -1,0 +1,18 @@
+.formula1Event :global(.v2-event-hero) {
+  background:
+    linear-gradient(90deg, rgba(2, 9, 17, .96) 0%, rgba(3, 12, 22, .78) 52%, rgba(3, 13, 23, .42) 100%),
+    url("/formula-1-grand-prix-hero.webp") center / cover no-repeat !important;
+}
+
+.motogpEvent :global(.v2-event-hero) {
+  background:
+    linear-gradient(90deg, rgba(2, 9, 17, .96) 0%, rgba(3, 12, 22, .78) 52%, rgba(3, 13, 23, .42) 100%),
+    url("/motogp-race-hero.webp") center / cover no-repeat !important;
+}
+
+@media (prefers-reduced-data: reduce) {
+  .formula1Event :global(.v2-event-hero),
+  .motogpEvent :global(.v2-event-hero) {
+    background: linear-gradient(135deg, #0b1a29, #06111c) !important;
+  }
+}
