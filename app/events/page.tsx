@@ -189,7 +189,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
             {events.map((event) => {
               const access = accessLabel(event);
               return <article className="wts-schedule-row" key={event.id}>
-                <div className="wts-schedule-status"><span className={event.status === "live" ? "is-live" : "is-upcoming"}>{event.status === "live" ? "Live" : "Upcoming"}</span></div>
+                <div className="wts-schedule-status">{event.status === "live" ? <span className="is-live">Live</span> : null}</div>
                 <div className="wts-schedule-competition"><b aria-hidden="true">{sportGlyph(event.sport)}</b><span><strong>{getSportLabel(event.sport)}</strong><small>{event.competition}</small></span></div>
                 <div className="wts-schedule-event"><strong>{event.title}</strong><small>{event.stage ?? event.venue ?? "Event"}</small></div>
                 <div className="wts-schedule-time"><strong>{event.status === "live" ? "Live now" : formatCalendarTime(event.eventDate, filters.timeZone)}</strong><small>{new Intl.DateTimeFormat("en", { weekday: "short", month: "short", day: "numeric", timeZone: filters.timeZone }).format(new Date(event.eventDate))}</small></div>
