@@ -42,6 +42,9 @@ export type ParticipantVisualProfile = {
 };
 
 const HEX = /^#[0-9a-f]{6}$/i;
+const GENERIC_PRIMARY = "#123A63";
+const GENERIC_SECONDARY = "#F8FAFC";
+const GENERIC_ACCENT = "#2F9CFF";
 
 export function isParticipantRenderFamily(value: unknown): value is ParticipantRenderFamily {
   return typeof value === "string" && [
@@ -59,6 +62,14 @@ export function isParticipantPatternStyle(value: unknown): value is ParticipantP
 
 export function safeVisualColor(value: unknown, fallback: string): string {
   return typeof value === "string" && HEX.test(value) ? value.toUpperCase() : fallback;
+}
+
+export function isGenericParticipantVisual(visual?: ParticipantVisualProfile | null): boolean {
+  if (!visual) return true;
+  return visual.primaryColor.toUpperCase() === GENERIC_PRIMARY
+    && visual.secondaryColor.toUpperCase() === GENERIC_SECONDARY
+    && visual.accentColor.toUpperCase() === GENERIC_ACCENT
+    && visual.patternStyle === "solid";
 }
 
 const COUNTRY_PALETTES: Record<string, [string,string,string]> = {
@@ -156,7 +167,7 @@ export function defaultRenderFamily(sport: string): ParticipantRenderFamily {
 export function defaultParticipantVisual(sport: string, countryCode?: string): ParticipantVisualProfile {
   const family = defaultRenderFamily(sport);
   const country = COUNTRY_PALETTES[(countryCode ?? "").toUpperCase()];
-  const colors = family === "mma_gloves" && country ? country : ["#123A63","#F8FAFC","#2F9CFF"];
+  const colors = family === "mma_gloves" && country ? country : [GENERIC_PRIMARY,GENERIC_SECONDARY,GENERIC_ACCENT];
   return {
     renderFamily: family,
     primaryColor: colors[0],
