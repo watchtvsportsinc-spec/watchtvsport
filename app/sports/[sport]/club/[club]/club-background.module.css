@@ -1,0 +1,15 @@
+.scope {
+  display: contents;
+}
+
+.footballClub :global(section[aria-labelledby="club-title"]) {
+  background-image:
+    linear-gradient(90deg, rgba(2, 9, 17, .96) 0%, rgba(3, 12, 22, .84) 48%, rgba(3, 13, 23, .48) 100%),
+    url("/football-club-hero.webp") !important;
+}
+
+@media (prefers-reduced-data: reduce) {
+  .footballClub :global(section[aria-labelledby="club-title"]) {
+    background-image: linear-gradient(180deg, #07131f, #06111d) !important;
+  }
+}

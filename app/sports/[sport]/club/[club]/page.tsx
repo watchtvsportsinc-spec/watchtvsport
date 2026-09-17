@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import ClubPendingFixtures from "@/components/ClubPendingFixtures";
 import UniversalClubProfilePage, { buildUniversalClubMetadata } from "@/components/UniversalClubProfilePage";
 import { resolveClubSlug } from "@/lib/club-aliases";
+import styles from "./club-background.module.css";
 
 type PageProps = { params: Promise<{ sport: string; club: string }> };
 
@@ -17,5 +18,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function ClubPage({ params }: PageProps) {
   const { sport, club } = await params;
   const canonicalClub = canonicalClubSlug(sport, club);
-  return <><UniversalClubProfilePage sport={sport} club={canonicalClub} /><ClubPendingFixtures sport={sport} club={canonicalClub} /></>;
+  const pageClassName = sport === "football" ? `${styles.scope} ${styles.footballClub}` : styles.scope;
+
+  return (
+    <div className={pageClassName}>
+      <UniversalClubProfilePage sport={sport} club={canonicalClub} />
+      <ClubPendingFixtures sport={sport} club={canonicalClub} />
+    </div>
+  );
 }
