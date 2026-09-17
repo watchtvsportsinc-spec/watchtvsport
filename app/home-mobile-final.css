@@ -63,6 +63,14 @@
     flex: 1 1 auto !important;
   }
 
+  .wts-header-search.is-page-search-duplicate {
+    display: none !important;
+  }
+
+  .wts-header-search.is-page-search-duplicate + .wts-nav-favorites {
+    margin-left: auto;
+  }
+
   .wts-header-search input {
     width: 100% !important;
     min-width: 0 !important;
