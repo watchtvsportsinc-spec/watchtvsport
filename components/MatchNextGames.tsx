@@ -32,6 +32,13 @@ function participantSlug(participant?: Participant) {
   return participant.slug || resolveClubSlug(participant.name);
 }
 
+function occurrenceHref(event: EventData) {
+  const participant1 = participantSlug(event.participant1);
+  const participant2 = participantSlug(event.participant2);
+  if (!participant1 || !participant2) return event.detailPath;
+  return `/event/${participant1}-${participant2}?event=${encodeURIComponent(event.id)}`;
+}
+
 function identityKeys(participant: CurrentParticipant) {
   return new Set([
     participant.id ? `id:${participant.id}` : "",
@@ -59,11 +66,9 @@ function sharesParticipant(event: EventData, currentKeySets: Set<string>[]) {
 
 export default async function MatchNextGames({
   sport,
-  competitionSlug,
   competitionHref,
   currentDate,
   currentEventId,
-  currentEventSlug,
   currentParticipants,
   limit = 7,
 }: Props) {
@@ -72,10 +77,13 @@ export default async function MatchNextGames({
   const currentTime = Date.parse(currentDate);
   if (!Number.isFinite(currentTime)) return null;
 
-  const snapshot = await getPublicEventsSnapshot({ sport, competition: competitionSlug, from: currentDate, limit: 250 });
+  // Search across the whole sport, not only the current competition. This is
+  // required when the same clubs meet in league, cup or continental play, and
+  // for NBA/NHL schedules where repeated matchups can be only a day apart.
+  const snapshot = await getPublicEventsSnapshot({ sport, from: currentDate, limit: 500 });
   const currentKeySets = currentParticipants.map(identityKeys);
   const events = snapshot.events
-    .filter((event) => event.id !== currentEventId && event.slug !== currentEventSlug)
+    .filter((event) => event.id !== currentEventId)
     .filter((event) => Date.parse(event.eventDate) > currentTime)
     .filter((event) => sharesParticipant(event, currentKeySets))
     .sort((a, b) => Date.parse(a.eventDate) - Date.parse(b.eventDate))
@@ -110,7 +118,7 @@ export default async function MatchNextGames({
       </div>
       <div className="v2-match-next-list">
         {events.map((event) => (
-          <Link key={event.id} href={event.detailPath} className="v2-match-next-row">
+          <Link key={event.id} href={occurrenceHref(event)} className="v2-match-next-row">
             <Team participant={event.participant1} side="left" />
             <span className="v2-match-next-meta">
               <span>{event.competition}</span>
