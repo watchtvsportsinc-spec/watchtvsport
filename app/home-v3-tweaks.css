@@ -1,16 +1,16 @@
 .wts-home-search-zone{
   position:relative;
   isolation:isolate;
-  min-height:390px;
+  min-height:340px;
   overflow:hidden;
   margin-top:0;
-  padding:56px 38px 118px;
+  padding:48px 38px 104px;
   border:0 !important;
   border-radius:0 !important;
   background:
-    linear-gradient(90deg,rgba(3,9,20,.98) 0%,rgba(3,9,20,.93) 26%,rgba(3,9,20,.52) 52%,rgba(3,9,20,.08) 78%,rgba(3,9,20,.14) 100%),
-    linear-gradient(180deg,rgba(3,9,20,.12) 0%,rgba(3,9,20,.12) 63%,rgba(3,9,20,.94) 100%),
-    url('/api/home-hero') center/cover no-repeat;
+    linear-gradient(90deg,rgba(3,9,20,.58) 0%,rgba(3,9,20,.34) 26%,rgba(3,9,20,.08) 48%,rgba(3,9,20,0) 72%),
+    linear-gradient(180deg,rgba(3,9,20,.04) 0%,rgba(3,9,20,.06) 62%,rgba(3,9,20,.9) 100%),
+    url('/api/home-hero?v=stadium-seat-2') center/cover no-repeat;
   box-shadow:none !important;
 }
 
@@ -19,8 +19,8 @@
   position:absolute;
   inset:auto 0 0;
   z-index:-1;
-  height:120px;
-  background:linear-gradient(180deg,transparent,#030914 92%);
+  height:105px;
+  background:linear-gradient(180deg,transparent,#030914 94%);
   pointer-events:none;
 }
 
@@ -28,25 +28,27 @@
   position:relative;
   z-index:1;
   display:flex;
-  max-width:690px;
+  width:100%;
+  max-width:none;
   flex-direction:column;
   align-items:flex-start;
   justify-content:center;
-  gap:9px;
-  margin:0 0 18px;
+  gap:8px;
+  margin:0 0 17px;
   text-align:left;
 }
 
 .wts-home-search-copy h1{
   order:1;
   width:100%;
-  max-width:690px;
+  max-width:none;
   margin:0;
-  font-size:clamp(31px,3.7vw,50px);
-  line-height:.98;
-  letter-spacing:-.045em;
+  font-size:clamp(28px,2.7vw,36px);
+  line-height:1;
+  letter-spacing:-.04em;
   text-align:left;
-  text-shadow:0 4px 24px rgba(0,0,0,.38);
+  white-space:nowrap;
+  text-shadow:0 4px 24px rgba(0,0,0,.48);
 }
 
 .wts-home-search-copy p{
@@ -64,34 +66,41 @@
   position:relative;
   z-index:1;
   display:flex;
-  max-width:700px;
-  flex-wrap:wrap;
+  width:100%;
+  max-width:none;
+  flex-wrap:nowrap;
   justify-content:flex-start;
   gap:7px;
-  overflow:visible;
-  padding:0;
+  overflow-x:auto;
+  padding:0 0 4px;
+  scrollbar-width:none;
+}
+
+.wts-home-shortcuts::-webkit-scrollbar{
+  display:none;
 }
 
 .wts-home-shortcuts a{
-  min-height:34px;
-  gap:6px;
-  padding:6px 11px;
-  font-size:11px;
+  flex:0 0 auto;
+  min-height:32px;
+  gap:5px;
+  padding:5px 10px;
+  font-size:10px;
   backdrop-filter:blur(10px);
-  background:rgba(4,16,30,.72);
+  background:rgba(4,16,30,.7);
 }
 
 .wts-home-shortcuts a span{
-  font-size:15px;
+  font-size:14px;
 }
 
 .wts-home-search-zone + .wts-home-favorites{
   position:relative;
   z-index:3;
-  margin-top:-104px;
+  margin-top:-92px;
   border:0 !important;
   border-radius:0 !important;
-  background:linear-gradient(180deg,rgba(3,9,20,.08),rgba(3,9,20,.72) 36%,#030914 100%) !important;
+  background:linear-gradient(180deg,rgba(3,9,20,.04),rgba(3,9,20,.68) 40%,#030914 100%) !important;
   box-shadow:none !important;
 }
 
@@ -113,25 +122,33 @@
   align-content:center;
 }
 
+@media(max-width:900px){
+  .wts-home-search-copy h1{
+    font-size:clamp(25px,3.4vw,31px);
+  }
+}
+
 @media(max-width:760px){
   .wts-home-search-zone{
-    min-height:330px;
-    padding:34px 18px 88px;
+    min-height:315px;
+    padding:32px 18px 82px;
     background:
-      linear-gradient(90deg,rgba(3,9,20,.98) 0%,rgba(3,9,20,.86) 42%,rgba(3,9,20,.32) 72%,rgba(3,9,20,.16) 100%),
-      linear-gradient(180deg,rgba(3,9,20,.1),rgba(3,9,20,.18) 60%,rgba(3,9,20,.96) 100%),
-      url('/api/home-hero') 58% center/cover no-repeat;
+      linear-gradient(90deg,rgba(3,9,20,.76) 0%,rgba(3,9,20,.48) 42%,rgba(3,9,20,.1) 72%),
+      linear-gradient(180deg,rgba(3,9,20,.04),rgba(3,9,20,.14) 60%,rgba(3,9,20,.94) 100%),
+      url('/api/home-hero?v=stadium-seat-2') 59% center/cover no-repeat;
   }
 
   .wts-home-search-copy{
-    max-width:78%;
+    max-width:100%;
     gap:6px;
     margin-bottom:14px;
   }
 
   .wts-home-search-copy h1{
-    max-width:100%;
-    font-size:clamp(27px,8.2vw,38px);
+    max-width:92%;
+    font-size:clamp(25px,7.8vw,36px);
+    line-height:1.02;
+    white-space:normal;
   }
 
   .wts-home-search-copy p{
@@ -140,7 +157,8 @@
   }
 
   .wts-home-shortcuts{
-    max-width:92%;
+    width:100%;
+    max-width:100%;
     flex-wrap:nowrap;
     justify-content:flex-start;
     gap:5px;
@@ -150,30 +168,26 @@
   }
 
   .wts-home-shortcuts a{
-    min-height:32px;
-    padding:5px 10px;
-    font-size:10px;
+    min-height:30px;
+    padding:5px 9px;
+    font-size:9px;
   }
 
   .wts-home-shortcuts a span{
-    font-size:14px;
+    font-size:13px;
   }
 
   .wts-home-search-zone + .wts-home-favorites{
-    margin-top:-74px;
+    margin-top:-68px;
   }
 }
 
 @media(max-width:480px){
   .wts-home-search-zone{
-    min-height:300px;
-    padding-top:28px;
-    padding-bottom:78px;
-    background-position:61% center;
-  }
-
-  .wts-home-search-copy{
-    max-width:86%;
+    min-height:285px;
+    padding-top:26px;
+    padding-bottom:72px;
+    background-position:62% center;
   }
 }
 
