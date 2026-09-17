@@ -81,7 +81,6 @@ export default async function SportsDirectory() {
               <h3>{item.title}</h3>
               <p>{item.description}</p>
             </div>
-            <span className={styles.arrow} aria-hidden="true">→</span>
           </div>
 
           <div className={styles.metrics}>
