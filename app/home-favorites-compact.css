@@ -1,48 +1,55 @@
 /* Compact desktop favorites on the home page. Mobile is already handled by mobile-density.css. */
 @media (min-width: 761px) {
-  .wts-home-favorites {
-    padding-bottom: 10px;
+  .wts-home-v3 .wts-home-favorites {
+    padding-bottom: 8px !important;
   }
 
-  .wts-favorites-rail {
-    gap: 8px;
-    padding: 1px 14px 0;
+  .wts-home-v3 .wts-home-favorites .wts-home-section-heading {
+    padding-top: 10px !important;
+    padding-bottom: 7px !important;
   }
 
-  .wts-favorite-tile {
-    min-height: 50px;
-    grid-template-columns: 28px minmax(0, 1fr) 14px;
-    align-items: center;
-    padding: 6px 9px;
-    border-radius: 14px;
+  .wts-home-v3 .wts-home-favorites .wts-favorites-rail {
+    gap: 8px !important;
+    padding: 0 14px 8px !important;
   }
 
-  .wts-favorite-glyph {
-    width: 28px;
-    height: 28px;
-    font-size: 14px;
+  .wts-home-v3 .wts-home-favorites .wts-favorite-tile {
+    height: 58px !important;
+    min-height: 58px !important;
+    max-height: 58px !important;
+    grid-template-columns: 28px minmax(0, 1fr) 14px !important;
+    align-items: center !important;
+    padding: 5px 9px !important;
+    border-radius: 14px !important;
   }
 
-  .wts-favorite-copy {
-    gap: 0;
+  .wts-home-v3 .wts-home-favorites .wts-favorite-glyph {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 14px !important;
   }
 
-  .wts-favorite-copy strong {
-    font-size: 12px;
-    line-height: 1.1;
+  .wts-home-v3 .wts-home-favorites .wts-favorite-copy {
+    gap: 0 !important;
   }
 
-  .wts-favorite-copy small {
-    font-size: 9px;
-    line-height: 1.1;
+  .wts-home-v3 .wts-home-favorites .wts-favorite-copy strong {
+    font-size: 12px !important;
+    line-height: 1.05 !important;
   }
 
-  .wts-favorite-copy > span {
-    font-size: 8px;
-    line-height: 1.1;
+  .wts-home-v3 .wts-home-favorites .wts-favorite-copy small {
+    font-size: 9px !important;
+    line-height: 1.05 !important;
   }
 
-  .wts-favorite-tile > b {
-    align-self: center;
+  .wts-home-v3 .wts-home-favorites .wts-favorite-copy > span {
+    font-size: 8px !important;
+    line-height: 1.05 !important;
+  }
+
+  .wts-home-v3 .wts-home-favorites .wts-favorite-tile > b {
+    align-self: center !important;
   }
 }
