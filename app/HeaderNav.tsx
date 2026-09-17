@@ -178,7 +178,7 @@ export default function HeaderNav() {
           className={`wts-nav-favorites${pathname === "/favorites" ? " is-active" : ""}`}
           href="/favorites"
         >
-          <span aria-hidden="true">♡</span>
+          <span aria-hidden="true">★</span>
           <span>Favorites</span>
         </Link>
       </div>
