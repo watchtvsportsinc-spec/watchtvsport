@@ -60,7 +60,14 @@ export default function MatchHero({
   team2,
   favorite,
 }: Props) {
-  const heroClassName = `v2-match-hero ${sport === "american-football" ? backgroundStyles.americanFootball : ""}`.trim();
+  const sportBackgroundClass = sport === "american-football"
+    ? backgroundStyles.americanFootball
+    : sport === "basketball"
+      ? backgroundStyles.basketball
+      : sport === "tennis"
+        ? backgroundStyles.tennis
+        : "";
+  const heroClassName = `v2-match-hero ${sportBackgroundClass}`.trim();
 
   return (
     <section className={heroClassName} aria-label={`${team1.name} vs ${team2.name}`}>
