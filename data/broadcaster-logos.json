@@ -3,18 +3,21 @@
     "src": "https://dazngroup.com/wp-content/uploads/2024/09/dazn.svg",
     "sourceUrl": "https://dazngroup.com/",
     "aliases": ["DAZN", "DAZN Canada"],
-    "compact": false
+    "compact": false,
+    "darkStyle": "invert"
   },
   "canal-plus": {
     "src": "https://upload.wikimedia.org/wikipedia/commons/c/c6/CanalPlus.svg",
     "sourceUrl": "https://commons.wikimedia.org/wiki/File:CanalPlus.svg",
     "aliases": ["CANAL+", "Canal Plus", "CanalPlus"],
-    "compact": true
+    "compact": true,
+    "darkStyle": "knockout"
   },
   "paramount-plus": {
     "src": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Paramount%2B_logo.svg",
     "sourceUrl": "https://commons.wikimedia.org/wiki/File:Paramount%2B_logo.svg",
     "aliases": ["Paramount+", "Paramount Plus", "ParamountPlus"],
-    "compact": true
+    "compact": true,
+    "darkStyle": "brand"
   }
 }
