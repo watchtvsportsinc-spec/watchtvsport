@@ -1,33 +1,43 @@
 .wts-home-search-zone{
   position:relative;
   isolation:isolate;
-  min-height:340px;
+  min-height:350px;
   overflow:hidden;
   margin-top:0;
   padding:48px 38px 104px;
   border:0 !important;
   border-radius:0 !important;
-  background-color:#030914;
-  background:
-    linear-gradient(90deg,rgba(3,9,20,.9) 0%,rgba(3,9,20,.7) 28%,rgba(3,9,20,.28) 48%,rgba(3,9,20,.04) 70%),
-    linear-gradient(180deg,rgba(3,9,20,.03) 0%,rgba(3,9,20,.04) 62%,rgba(3,9,20,.9) 100%),
-    url('/api/home-hero?v=approved-sofa-stadium-2') right center / auto 112% no-repeat;
+  background:#030914;
   box-shadow:none !important;
+}
+
+.wts-home-search-zone:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background-image:url('/api/home-hero?v=original-composition-1');
+  background-repeat:no-repeat;
+  background-size:auto 100%;
+  background-position:right center;
+  opacity:.98;
 }
 
 .wts-home-search-zone:after{
   content:"";
   position:absolute;
-  inset:auto 0 0;
-  z-index:-1;
-  height:105px;
-  background:linear-gradient(180deg,transparent,#030914 94%);
+  inset:0;
+  z-index:1;
   pointer-events:none;
+  background:
+    linear-gradient(90deg,rgba(3,9,20,.98) 0%,rgba(3,9,20,.92) 24%,rgba(3,9,20,.56) 39%,rgba(3,9,20,.16) 52%,rgba(3,9,20,0) 68%,rgba(3,9,20,.12) 90%,rgba(3,9,20,.52) 100%),
+    linear-gradient(180deg,rgba(3,9,20,.02) 0%,rgba(3,9,20,0) 58%,rgba(3,9,20,.28) 76%,rgba(3,9,20,.9) 100%);
 }
 
 .wts-home-search-copy{
   position:relative;
-  z-index:1;
+  z-index:2;
   display:flex;
   width:100%;
   max-width:none;
@@ -65,7 +75,7 @@
 
 .wts-home-shortcuts{
   position:relative;
-  z-index:1;
+  z-index:2;
   display:flex;
   width:100%;
   max-width:none;
@@ -107,7 +117,7 @@
   margin-top:-92px;
   border:0 !important;
   border-radius:0 !important;
-  background:linear-gradient(180deg,rgba(3,9,20,.04),rgba(3,9,20,.68) 40%,#030914 100%) !important;
+  background:linear-gradient(180deg,rgba(3,9,20,.02),rgba(3,9,20,.66) 40%,#030914 100%) !important;
   box-shadow:none !important;
 }
 
@@ -148,16 +158,28 @@
     min-width:106px;
     max-width:106px;
   }
+
+  .wts-home-search-zone:before{
+    background-position:64% center;
+  }
 }
 
 @media(max-width:760px){
   .wts-home-search-zone{
     min-height:315px;
     padding:32px 18px 82px;
+  }
+
+  .wts-home-search-zone:before{
+    background-size:auto 100%;
+    background-position:70% center;
+    opacity:.8;
+  }
+
+  .wts-home-search-zone:after{
     background:
-      linear-gradient(90deg,rgba(3,9,20,.86) 0%,rgba(3,9,20,.62) 42%,rgba(3,9,20,.15) 72%),
-      linear-gradient(180deg,rgba(3,9,20,.04),rgba(3,9,20,.12) 60%,rgba(3,9,20,.94) 100%),
-      url('/api/home-hero?v=approved-sofa-stadium-2') 72% center / auto 104% no-repeat;
+      linear-gradient(90deg,rgba(3,9,20,.96) 0%,rgba(3,9,20,.76) 34%,rgba(3,9,20,.34) 58%,rgba(3,9,20,.08) 76%,rgba(3,9,20,.4) 100%),
+      linear-gradient(180deg,rgba(3,9,20,.03),rgba(3,9,20,.08) 60%,rgba(3,9,20,.94) 100%);
   }
 
   .wts-home-search-copy{
@@ -217,12 +239,17 @@
     min-height:285px;
     padding-top:26px;
     padding-bottom:72px;
-    background-position:76% center;
-    background-size:auto 100%;
+  }
+
+  .wts-home-search-zone:before{
+    background-position:74% center;
   }
 }
 
 @media(prefers-reduced-data:reduce){
+  .wts-home-search-zone:before{
+    display:none;
+  }
   .wts-home-search-zone{
     background:linear-gradient(135deg,#04101d,#06182a 62%,#030914);
   }
