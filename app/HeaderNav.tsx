@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { getClubNameBySlug, resolveClubSlug } from "@/lib/club-aliases";
 
 const links = [
   { href: "/events", label: "Events" },
@@ -15,7 +16,23 @@ function sportsIsActive(pathname: string): boolean {
 
 export default function HeaderNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const homeIsActive = pathname === "/";
+
+  function submitSearch(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const query = String(formData.get("q") ?? "").trim();
+    if (!query) return;
+
+    const resolvedSlug = resolveClubSlug(query);
+    if (getClubNameBySlug(resolvedSlug)) {
+      router.push(`/sports/football/club/${resolvedSlug}`);
+      return;
+    }
+
+    router.push(`/events?q=${encodeURIComponent(query)}`);
+  }
 
   return (
     <nav className="wts-primary-nav" aria-label="Primary navigation">
@@ -28,7 +45,7 @@ export default function HeaderNav() {
       </div>
 
       <div className="wts-nav-actions">
-        <form className="wts-header-search" action="/events" method="get" role="search">
+        <form className="wts-header-search" action="/events" method="get" role="search" onSubmit={submitSearch}>
           <label className="sr-only" htmlFor="wts-header-search-input">Search teams, competitions and events</label>
           <svg className="wts-header-search-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none">
             <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.8" />
