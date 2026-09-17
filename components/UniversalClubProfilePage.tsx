@@ -34,10 +34,6 @@ function opponent(event: EventData, participantId: string, slug: string): Partic
   return [event.participant1, event.participant2].find((participant) => participant && !participantMatches(participant, participantId, slug));
 }
 
-function isHome(event: EventData, participantId: string, slug: string): boolean {
-  return participantMatches(event.participant1, participantId, slug);
-}
-
 function favoriteForParticipant(sport: string, participantId: string, label: string): FavoriteCandidate {
   return { kind: "participant", entityId: participantId, label: `${label} (${getSportLabel(sport)})` };
 }
@@ -168,8 +164,6 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
   const links = socialLinks(profile);
   const flagSrc = profile?.countryCode ? `/flags/${profile.countryCode.toLowerCase()}.png` : null;
   const heroImage = profile?.heroImageUrl || sportBackdrop(sport);
-  const nextOpponent = nextMatch ? opponent(nextMatch, verified.participantId, club) : undefined;
-  const teamIsHome = nextMatch ? isHome(nextMatch, verified.participantId, club) : false;
   const canonicalPath = canonicalClubPath(sport, club);
   const canonicalUrl = absoluteUrl(canonicalPath);
 
@@ -227,6 +221,9 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
         style={{ backgroundImage: `linear-gradient(90deg,rgba(2,9,17,.98) 0%,rgba(3,12,22,.89) 46%,rgba(3,13,23,.48) 100%),url('${heroImage}')` }}
       >
         <div className={styles.heroGlow} aria-hidden="true" />
+        <div className={styles.heroFavorite}>
+          <FavoriteButton favorite={favorite} compact />
+        </div>
         <div className={styles.heroContent}>
           <div className={styles.crest} aria-label={`${clubName} team visual`}>
             <ParticipantSportVisual sport={sport} label={clubName} countryCode={profile?.countryCode} visual={verified.visual} size="hero" />
@@ -241,22 +238,7 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
               {profile?.foundedYear ? <span>{foundedLabel(sport)} {profile.foundedYear}</span> : null}
               {profile?.profileStatus ? <span className={styles.verifiedMark}>{profile.profileStatus === "verified" ? "Verified profile" : "Sourced profile"}</span> : null}
             </div>
-            <p className={styles.tagline}>{profile?.summary ?? `Upcoming games, team information and verified broadcaster listings for ${clubName}.`}</p>
-            <div className={styles.heroActions}>
-              <FavoriteButton favorite={favorite} />
-              {profile?.officialWebsiteUrl ? <a className={styles.ghostButton} href={profile.officialWebsiteUrl} target="_blank" rel="noopener noreferrer">Official site ↗</a> : null}
-            </div>
           </div>
-
-          {nextMatch ? (
-            <aside className={styles.heroNext} aria-label={`${clubName} next game`}>
-              <div className={styles.heroNextTop}><span>Next game</span><small>{teamIsHome ? "HOME" : "AWAY"}</small></div>
-              <strong>{nextOpponent?.name ?? nextMatch.title}</strong>
-              <span className={styles.heroNextCompetition}>{nextMatch.competition}</span>
-              <div className={styles.heroNextTime}><LocalTime date={nextMatch.eventDate} /></div>
-              <Link href={nextMatch.detailPath}>Open match page →</Link>
-            </aside>
-          ) : null}
         </div>
       </section>
 
