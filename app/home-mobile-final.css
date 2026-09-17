@@ -15,16 +15,6 @@
     overflow-x: hidden;
   }
 
-  /* On mobile, do not force the content wrapper to fill the viewport height.
-     The footer should follow the actual page content immediately. */
-  .wts-page-shell {
-    flex: 0 0 auto !important;
-  }
-
-  .wts-site-footer {
-    margin-top: 10px !important;
-  }
-
   /* Header: logo + search + favorite control must always fit on one phone viewport. */
   header {
     width: 100%;
@@ -172,7 +162,6 @@
     overflow-x: hidden !important;
     padding-left: 10px !important;
     padding-right: 10px !important;
-    padding-bottom: 14px !important;
   }
 
   .wts-home-v3 > *,
@@ -265,10 +254,6 @@
   .wts-home-v3 .wts-schedule-time strong {
     min-width: 0;
     text-overflow: ellipsis;
-  }
-
-  .wts-home-v3 .wts-major-section {
-    margin-bottom: 0 !important;
   }
 }
 
