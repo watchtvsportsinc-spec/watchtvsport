@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   favoriteKey,
   type FavoriteCandidate,
@@ -24,6 +24,7 @@ export default function FavoriteButton({
   const collection = useFavorites();
   const [announcement, setAnnouncement] = useState("");
   const [hasSaveError, setHasSaveError] = useState(false);
+  const lastTouchRef = useRef(0);
   const targetKey = favoriteKey(favorite);
   const isSaved = collection.items.some((item) => favoriteKey(item) === targetKey);
   const visibleLabel = compact
@@ -66,7 +67,15 @@ export default function FavoriteButton({
             ? `Remove ${favorite.label} from favorites`
             : `Add ${favorite.label} to favorites`
         }
-        onClick={handleToggle}
+        onTouchEnd={(event) => {
+          event.preventDefault();
+          lastTouchRef.current = Date.now();
+          handleToggle();
+        }}
+        onClick={() => {
+          if (Date.now() - lastTouchRef.current < 700) return;
+          handleToggle();
+        }}
       >
         <span aria-hidden="true">{isSaved ? "★" : "☆"}</span>
         <span>{visibleLabel}</span>
