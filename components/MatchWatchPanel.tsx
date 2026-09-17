@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { broadcasterInitials, getBroadcasterLogo } from "@/lib/broadcaster-logos";
 import type { BroadcastInfo } from "@/lib/matches";
 
 type Props = {
@@ -112,6 +113,7 @@ export default function MatchWatchPanel({
             <div className="v2-match-broadcaster-list">
               {filteredBroadcasts.map((broadcast, index) => {
                 const meta = compactBroadcastMeta(broadcast);
+                const logo = getBroadcasterLogo(broadcast.broadcaster);
                 return (
                   <a
                     className="v2-match-broadcaster-row"
@@ -122,6 +124,9 @@ export default function MatchWatchPanel({
                   >
                     <span className="v2-match-broadcaster-country">{broadcast.countryName}</span>
                     <span className="v2-match-broadcaster-service">
+                      <span className={`v2-match-broadcaster-logo${logo?.compact ? " is-wide" : ""}`} aria-hidden="true">
+                        {logo ? <img src={logo.src} alt="" /> : <span>{broadcasterInitials(broadcast.broadcaster)}</span>}
+                      </span>
                       <strong>{broadcast.broadcaster}</strong>
                       <small className={meta === "Language pending" ? "is-pending" : ""}>{meta}</small>
                     </span>
