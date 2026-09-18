@@ -165,26 +165,39 @@ export default async function Formula1Page() {
         </div>
       ) : (
         <div className="wts-f1-race-list">
-          {weekends.map((weekend, index) => (
-            <article className="wts-f1-race-card" key={weekend.id}>
+          {weekends.map((weekend) => (
+            <Link
+              className="wts-f1-race-card"
+              href={`/formula-1/grand-prix/${weekend.slug}`}
+              key={weekend.id}
+            >
               <div className="wts-f1-race-copy">
                 <div className="wts-f1-race-topline">
-                  <span>{[weekend.country, weekend.venue].filter(Boolean).join(" · ")}</span>
+                  {[weekend.country, weekend.venue].filter(Boolean).join(" · ")}
                 </div>
 
-                <h3>
-                  {grandPrixFlagCode(weekend.slug, weekend.country) ? (
-                    <img
-                      className="wts-f1-country-flag"
-                      src={`/flags/${grandPrixFlagCode(weekend.slug, weekend.country)}.png`}
-                      alt=""
-                      aria-hidden="true"
-                    />
-                  ) : null}
-                  <Link href={`/formula-1/grand-prix/${weekend.slug}`}>
-                    {weekend.name}
-                  </Link>
-                </h3>
+                <div className="wts-f1-race-title-row">
+                  <h3>
+                    {grandPrixFlagCode(weekend.slug, weekend.country) ? (
+                      <img
+                        className="wts-f1-country-flag"
+                        src={`/flags/${grandPrixFlagCode(weekend.slug, weekend.country)}.png`}
+                        alt=""
+                        aria-hidden="true"
+                      />
+                    ) : null}
+                    <span>{weekend.name}</span>
+                  </h3>
+
+                  <div className="wts-f1-race-access" aria-label="Access">
+                    {weekend.freeCountries > 0 ? (
+                      <span className="is-free">Free · {weekend.freeCountries}</span>
+                    ) : null}
+                    {weekend.paidCountries > 0 ? (
+                      <span className="is-paid">Paid · {weekend.paidCountries}</span>
+                    ) : null}
+                  </div>
+                </div>
 
                 <div className="wts-f1-race-meta">
                   <span>
@@ -203,26 +216,7 @@ export default async function Formula1Page() {
                   </span>
                 </div>
               </div>
-
-              <div className="wts-f1-race-side">
-                <div className="wts-f1-race-access">
-                  {weekend.freeCountries > 0 ? (
-                    <span className="is-free">Free · {weekend.freeCountries}</span>
-                  ) : null}
-                  {weekend.paidCountries > 0 ? (
-                    <span className="is-paid">Paid · {weekend.paidCountries}</span>
-                  ) : null}
-                </div>
-                <Link
-                  className="wts-f1-race-link"
-                  href={`/formula-1/grand-prix/${weekend.slug}`}
-                  aria-label={`Open ${weekend.name}`}
-                  title={`Open ${weekend.name}`}
-                >
-                  <b aria-hidden="true">→</b>
-                </Link>
-              </div>
-            </article>
+            </Link>
           ))}
         </div>
       )}
