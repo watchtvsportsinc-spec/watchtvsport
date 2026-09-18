@@ -751,3 +751,25 @@
   .wts-timezone-note{display:none}
   .wts-period-row{justify-content:flex-start}
 }
+
+
+.wts-result-favorite-mark{
+  margin-left:7px;
+  color:#63bdff;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.02em;
+  white-space:nowrap;
+}
+.wts-team-picker-group-label{
+  margin:8px 7px 3px !important;
+  padding:0 !important;
+  color:#63bdff !important;
+  font-size:8px !important;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.wts-team-picker-group-label:first-child{
+  margin-top:2px !important;
+}
