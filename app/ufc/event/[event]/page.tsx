@@ -150,6 +150,9 @@ export default async function UfcEventPage({
   const main =
     sessions.find((session) => session.sessionType === "main_card") ??
     sessions.at(-1)!;
+  const mainBout =
+    bouts.find((bout) => bout.titleBout) ??
+    [...bouts].sort((a, b) => a.order - b.order)[0];
   const canonicalPath = `/ufc/event/${event}`;
 
   const competitionRights = await getPublicCompetitionBroadcastRights({
@@ -219,34 +222,77 @@ export default async function UfcEventPage({
       />
 
       <section
-        className="v2-calendar-hero"
+        className="v2-calendar-hero wts-ufc-event-hero"
         aria-labelledby="ufc-event-title"
       >
-        <div className="wts-event-hero-top">
+        <div className="wts-ufc-hero-header">
           <div>
-            <p className="v2-eyebrow">UFC fight event</p>
+            <p className="wts-ufc-event-kicker">UFC · Fight Night</p>
             <h1 id="ufc-event-title">{first.eventGroupName}</h1>
           </div>
-          <div className="wts-event-hero-actions">
-            <FavoriteButton favorite={favorite} />
+          <FavoriteButton favorite={favorite} />
+        </div>
+
+        {mainBout ? (
+          <div className="wts-ufc-main-event">
+            <div className="wts-ufc-main-event-label">
+              <span>{mainBout.titleBout ? "TITLE FIGHT" : "MAIN EVENT"}</span>
+              <strong>{mainBout.weightClass ?? "Main Event"}</strong>
+            </div>
+
+            <div className="wts-ufc-main-fighter is-red">
+              <span className="wts-ufc-main-flag" aria-hidden="true">
+                {countryFlag(mainBout.fighter1.countryCode)}
+              </span>
+              <div>
+                <small>{mainBout.fighter1.countryCode ?? "Fighter"}</small>
+                <strong>{mainBout.fighter1.name}</strong>
+              </div>
+            </div>
+
+            <div className="wts-ufc-main-vs" aria-hidden="true">VS</div>
+
+            <div className="wts-ufc-main-fighter is-blue">
+              <div>
+                <small>{mainBout.fighter2.countryCode ?? "Fighter"}</small>
+                <strong>{mainBout.fighter2.name}</strong>
+              </div>
+              <span className="wts-ufc-main-flag" aria-hidden="true">
+                {countryFlag(mainBout.fighter2.countryCode)}
+              </span>
+            </div>
+          </div>
+        ) : null}
+
+        <div className="wts-ufc-event-program">
+          <div className="wts-ufc-program-meta">
+            <span>
+              <b>Venue</b>
+              {first.venue ?? "Venue TBC"}
+              {first.country ? " · " + first.country : ""}
+            </span>
+            <span>
+              <b>Main Card</b>
+              <LocalTime date={main.eventDate} showTimeZone />
+            </span>
+          </div>
+
+          <div className="wts-ufc-program-sessions" aria-label="Fight night program">
+            {sessions.map((session) => (
+              <span
+                className={session.sessionType === "main_card" ? "is-main" : undefined}
+                key={session.id}
+              >
+                <b>
+                  {session.stage ??
+                    session.sessionType?.replaceAll("_", " ") ??
+                    "Session"}
+                </b>
+                <LocalTime date={session.eventDate} />
+              </span>
+            ))}
           </div>
         </div>
-
-        <div className="wts-event-hero-meta">
-          {first.venue ? <span>{first.venue}</span> : null}
-          {first.country ? <span>{first.country}</span> : null}
-          <span>{sessions.length} card session{sessions.length === 1 ? "" : "s"}</span>
-        </div>
-
-        <p className="v2-hero-copy">
-          Early Prelims, Prelims and Main Card are grouped on this event page.
-          Official viewing options are tracked separately because the service
-          can change between parts of the same fight night.
-        </p>
-
-        <p className="v2-signature">
-          Main Card: <LocalTime date={main.eventDate} showTimeZone />
-        </p>
       </section>
 
       <EventSessionSchedule
