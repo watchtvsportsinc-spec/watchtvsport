@@ -157,9 +157,6 @@ export default async function Formula1Page() {
             <article className="wts-f1-race-card" key={weekend.id}>
               <div className="wts-f1-race-copy">
                 <div className="wts-f1-race-topline">
-                  <span className={weekend.isLive ? "is-live" : index === 0 ? "is-next" : ""}>
-                    {weekend.isLive ? "LIVE" : index === 0 ? "NEXT" : "GRAND PRIX"}
-                  </span>
                   <span>{[weekend.country, weekend.venue].filter(Boolean).join(" · ")}</span>
                 </div>
 
