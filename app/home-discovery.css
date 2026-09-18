@@ -409,7 +409,8 @@
 .wts-discovery-card-time{
   display:grid;
   gap:2px;
-  justify-items:start;
+  justify-items:center;
+  text-align:center;
 }
 .wts-result-status{
   display:inline-flex;
@@ -779,7 +780,12 @@
     min-height:0;
     padding:5px 7px;
   }
-  .wts-discovery-card-time{grid-area:time}
+  .wts-discovery-card-time{
+    grid-area:time;
+    width:100%;
+    justify-items:center;
+    text-align:center;
+  }
   .wts-discovery-card-main{grid-area:main}
   .wts-result-access-stack{
     grid-area:access;
