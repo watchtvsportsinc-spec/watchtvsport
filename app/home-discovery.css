@@ -1009,3 +1009,58 @@
     min-width:28px;
   }
 }
+
+
+/* UFC event rows reuse the Home schedule language */
+.wts-ufc-event-row{
+  position:relative;
+}
+.wts-discovery-card.has-favorite-action{
+  grid-template-columns:100px minmax(0,1fr) 90px 44px 96px;
+}
+.wts-discovery-card-favorite-space{
+  width:44px;
+  min-width:44px;
+}
+.wts-discovery-card-favorite{
+  position:absolute;
+  z-index:3;
+  top:50%;
+  right:102px;
+  transform:translateY(-50%);
+}
+.wts-discovery-card-favorite .v2-favorite-button{
+  margin:0 !important;
+}
+
+@media(max-width:760px){
+  .wts-discovery-card.has-favorite-action{
+    grid-template-columns:68px minmax(0,1fr) minmax(30px,max-content) 36px 30px;
+    grid-template-areas:"time main access favorite open";
+  }
+  .wts-discovery-card.has-favorite-action .wts-discovery-card-time{grid-area:time}
+  .wts-discovery-card.has-favorite-action .wts-discovery-card-main{grid-area:main}
+  .wts-discovery-card.has-favorite-action .wts-result-access-stack{grid-area:access}
+  .wts-discovery-card.has-favorite-action .wts-discovery-card-favorite-space{grid-area:favorite}
+  .wts-discovery-card.has-favorite-action .wts-discovery-card-open{grid-area:open}
+  .wts-discovery-card-favorite-space{
+    width:36px;
+    min-width:36px;
+  }
+  .wts-discovery-card-favorite{
+    right:34px;
+  }
+}
+
+@media(max-width:390px){
+  .wts-discovery-card.has-favorite-action{
+    grid-template-columns:66px minmax(0,1fr) minmax(28px,max-content) 34px 28px;
+  }
+  .wts-discovery-card-favorite-space{
+    width:34px;
+    min-width:34px;
+  }
+  .wts-discovery-card-favorite{
+    right:31px;
+  }
+}
