@@ -44,23 +44,31 @@ function RaceCard({ item, completed = false }: { item: WeekendView; completed?: 
   const { weekend, exactNext, confirmed, freeCountries, paidCountries } = item;
 
   return (
-    <article className="wts-f1-race-card">
+    <Link
+      className="wts-f1-race-card"
+      href={`/sports/motogp/grand-prix/${weekend.slug}`}
+    >
       <div className="wts-f1-race-copy">
         <div className="wts-f1-race-topline">
-          <span>{weekend.country} · {weekend.venue}</span>
+          {weekend.country} · {weekend.venue}
         </div>
 
-        <h3>
-          <img
-            className="wts-f1-country-flag"
-            src={`/flags/${weekend.flagCode}.png`}
-            alt=""
-            aria-hidden="true"
-          />
-          <Link href={`/sports/motogp/grand-prix/${weekend.slug}`}>
-            {weekend.name}
-          </Link>
-        </h3>
+        <div className="wts-f1-race-title-row">
+          <h3>
+            <img
+              className="wts-f1-country-flag"
+              src={`/flags/${weekend.flagCode}.png`}
+              alt=""
+              aria-hidden="true"
+            />
+            <span>{weekend.name}</span>
+          </h3>
+
+          <div className="wts-f1-race-access" aria-label="Access">
+            {freeCountries > 0 ? <span className="is-free">Free · {freeCountries}</span> : null}
+            {paidCountries > 0 ? <span className="is-paid">Paid · {paidCountries}</span> : null}
+          </div>
+        </div>
 
         <div className="wts-f1-race-meta">
           <span>
@@ -83,22 +91,7 @@ function RaceCard({ item, completed = false }: { item: WeekendView; completed?: 
           </span>
         </div>
       </div>
-
-      <div className="wts-f1-race-side">
-        <div className="wts-f1-race-access">
-          {freeCountries > 0 ? <span className="is-free">Free · {freeCountries}</span> : null}
-          {paidCountries > 0 ? <span className="is-paid">Paid · {paidCountries}</span> : null}
-        </div>
-        <Link
-          className="wts-f1-race-link"
-          href={`/sports/motogp/grand-prix/${weekend.slug}`}
-          aria-label={`Open ${weekend.name}`}
-          title={`Open ${weekend.name}`}
-        >
-          <b aria-hidden="true">→</b>
-        </Link>
-      </div>
-    </article>
+    </Link>
   );
 }
 
