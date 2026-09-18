@@ -497,19 +497,19 @@
   background-image:
     linear-gradient(
       90deg,
-      rgba(3,10,18,.72) 0%,
-      rgba(3,10,18,.38) 24%,
-      rgba(3,10,18,.18) 50%,
-      rgba(3,10,18,.38) 76%,
-      rgba(3,10,18,.72) 100%
+      rgba(3,10,18,.58) 0%,
+      rgba(3,10,18,.26) 24%,
+      rgba(3,10,18,.12) 50%,
+      rgba(3,10,18,.26) 76%,
+      rgba(3,10,18,.58) 100%
     ),
     linear-gradient(
       180deg,
-      rgba(3,10,18,.18) 0%,
-      rgba(3,10,18,.06) 46%,
-      rgba(3,10,18,.42) 100%
+      rgba(3,10,18,.12) 0%,
+      rgba(3,10,18,.04) 46%,
+      rgba(3,10,18,.32) 100%
     ),
-    url('/mma-hero-bg-wide.webp') !important;
+    url('/mma-hero-approved.jpg') !important;
   background-position:center center !important;
   background-size:cover !important;
   background-repeat:no-repeat !important;
