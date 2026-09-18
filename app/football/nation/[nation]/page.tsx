@@ -69,7 +69,7 @@ export default async function NationPage({ params }: PageProps) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(teamJsonLd) }} />
       <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Football", href: "/football" }, { label: participant.name }]} />
 
-      <section className="v2-calendar-hero" aria-labelledby="nation-title">
+      <section className="v2-calendar-hero wts-standard-hero" aria-labelledby="nation-title">
         <p className="v2-eyebrow">National football team</p>
         <h1 id="nation-title">{participant.name}</h1>
         <p className="v2-hero-copy">{upcoming.length > 0 ? `Upcoming matches and verified official broadcasters for ${participant.name}.` : `Historical matches and preserved broadcaster records for ${participant.name}.`}</p>

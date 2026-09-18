@@ -752,3 +752,77 @@
     min-width:104px;
   }
 }
+
+/* Shared content hero height.
+   Reference: the /ufc hub hero. Home, /events and World Cup archive pages are intentionally excluded. */
+:root{
+  --wts-standard-content-hero-height:285px;
+}
+
+.wts-standard-hero,
+.v2-match-hero,
+.v2-event-hero,
+.v2-calendar-hero.wts-f1-hero,
+.wts-combat-event-hero{
+  box-sizing:border-box !important;
+  height:var(--wts-standard-content-hero-height) !important;
+  min-height:var(--wts-standard-content-hero-height) !important;
+  max-height:var(--wts-standard-content-hero-height) !important;
+}
+
+/* Match heroes are naturally much shorter than the UFC reference.
+   Keep their existing layout, but vertically balance it inside the shared frame. */
+.v2-match-hero{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+/* The fight-card hero contains more information than the hub hero.
+   Tighten its internal rhythm so nothing is clipped by the shared height. */
+.wts-combat-event-hero{
+  padding:24px 28px !important;
+}
+.wts-combat-main-event{
+  margin-top:12px !important;
+  padding:8px 0 9px !important;
+  gap:7px 14px !important;
+}
+.wts-combat-event-program{
+  margin-top:9px !important;
+  gap:12px !important;
+}
+.wts-combat-program-sessions>span{
+  padding:6px 8px !important;
+}
+
+@media(max-width:760px){
+  :root{
+    --wts-standard-content-hero-height:235px;
+  }
+
+  .wts-combat-event-hero{
+    padding:13px 12px !important;
+  }
+  .wts-combat-main-event{
+    margin-top:7px !important;
+    padding:6px 0 !important;
+    gap:5px 7px !important;
+  }
+  .wts-combat-event-program{
+    margin-top:6px !important;
+    gap:5px !important;
+  }
+  .wts-combat-program-meta{
+    gap:4px 10px !important;
+    font-size:8px !important;
+  }
+  .wts-combat-program-sessions{
+    gap:5px !important;
+  }
+  .wts-combat-program-sessions>span{
+    min-width:88px !important;
+    padding:5px 7px !important;
+  }
+}
+

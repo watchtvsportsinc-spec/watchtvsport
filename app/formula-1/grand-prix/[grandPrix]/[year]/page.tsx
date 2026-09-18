@@ -73,7 +73,7 @@ export default async function Formula1GrandPrixEditionPage({ params, searchParam
   return <main id="main-content" className={`v2-calendar ${heroStyles.page}`}>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Formula 1", href: "/formula-1" }, { label: first.eventGroupName ?? "Grand Prix", href: `/formula-1/grand-prix/${grandPrix}` }, { label: year }]} />
-    <section className="v2-calendar-hero">
+    <section className="v2-calendar-hero wts-standard-hero">
       <p className="v2-eyebrow">Formula 1 · dated edition</p>
       <h1>{name}</h1>
       <p className="v2-hero-copy">This page represents the concrete {year} edition and therefore carries event-specific dates and structured data.</p>
