@@ -222,16 +222,13 @@ export default async function Formula1GrandPrixPage({
       />
 
       <section
-        className="v2-calendar-hero wts-f1-hero wts-f1-grand-prix-hero"
+        className="v2-calendar-hero wts-f1-hero wts-f1-grand-prix-hero wts-sport-hero-frame"
         aria-labelledby="gp-title"
+        style={{
+          backgroundImage:
+            "linear-gradient(90deg,rgba(3,10,18,.97),rgba(3,12,22,.72)),url('/formula-1-hero-bg.webp')",
+        }}
       >
-        <img
-          className="wts-f1-hero-image"
-          src="/formula-1-hero-bg.webp"
-          alt=""
-          aria-hidden="true"
-        />
-        <div className="wts-f1-hero-shade" aria-hidden="true" />
         <div className="wts-f1-hero-content">
           <div className="wts-event-hero-top">
             <div>

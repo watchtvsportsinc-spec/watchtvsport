@@ -1009,31 +1009,10 @@
   isolation: isolate;
   overflow: hidden;
   min-height: 285px;
-  background: #07131f !important;
-}
-
-.wts-f1-hero-image {
-  position: absolute;
-  inset: 0;
-  z-index: -2;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 72% 100%;
-}
-
-.wts-f1-hero-shade {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background:
-    linear-gradient(
-      90deg,
-      rgba(2, 9, 17, 0.88) 0%,
-      rgba(3, 12, 22, 0.72) 45%,
-      rgba(3, 13, 23, 0.52) 100%
-    ),
-    linear-gradient(180deg, rgba(2, 9, 17, 0.12), rgba(2, 9, 17, 0.32));
+  background-color: #07131f;
+  background-size: cover;
+  background-position: 72% 100%;
+  background-repeat: no-repeat;
 }
 
 .wts-f1-hero-content {
@@ -1260,12 +1239,8 @@
     min-height: 235px;
   }
 
-  .wts-f1-hero-image {
-    object-position: 78% 100%;
-  }
-
-  .wts-f1-hero-shade {
-    background: rgba(2, 9, 17, 0.68);
+  .v2-calendar-hero.wts-f1-hero {
+    background-position: 78% 100%;
   }
 
   .wts-f1-race-card {

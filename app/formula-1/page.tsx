@@ -117,14 +117,14 @@ export default async function Formula1Page() {
   return <main id="main-content" className="v2-calendar">
     {snapshot.warning ? <p className="v2-data-warning" role="status">{snapshot.warning}</p> : null}
     <Breadcrumbs items={[{label:"Home",href:"/"},{label:"Sports",href:"/sports"},{label:"Motorsports",href:"/motorsports"},{label:"Formula 1"}]}/>
-    <section className="v2-calendar-hero wts-f1-hero" aria-labelledby="f1-title">
-      <img
-        className="wts-f1-hero-image"
-        src="/formula-1-hero-bg.webp"
-        alt=""
-        aria-hidden="true"
-      />
-      <div className="wts-f1-hero-shade" aria-hidden="true" />
+    <section
+      className="v2-calendar-hero wts-f1-hero wts-sport-hero-frame"
+      aria-labelledby="f1-title"
+      style={{
+        backgroundImage:
+          "linear-gradient(90deg,rgba(3,10,18,.97),rgba(3,12,22,.72)),url('/formula-1-hero-bg.webp')",
+      }}
+    >
       <div className="wts-f1-hero-content">
         <p className="v2-eyebrow">Motorsports · Championship</p>
         <h1 id="f1-title">Formula 1</h1>
