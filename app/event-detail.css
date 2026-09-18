@@ -500,9 +500,9 @@
   z-index:0;
   inset:0;
   pointer-events:none;
-  background-image:url('/mma-combat-arena-bg.webp');
+  background-image:url('/mma-combat-arena-bg-dezoom.webp');
   background-position:center 52%;
-  background-size:100% auto;
+  background-size:94% auto;
   background-repeat:no-repeat;
   opacity:.82;
   transform:none;
@@ -705,6 +705,10 @@
 }
 
 @media(max-width:760px){
+  .wts-combat-event-hero::before{
+    background-size:auto 100%;
+    background-position:center center;
+  }
   .wts-combat-hero-header h1{
     font-size:32px;
   }
