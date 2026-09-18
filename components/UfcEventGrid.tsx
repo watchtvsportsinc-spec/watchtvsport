@@ -97,6 +97,7 @@ export default function UfcEventGrid({
         const itemDate = dateKey(card.mainDate, timeZone);
         const previousDate =
           index > 0 ? dateKey(ordered[index - 1].mainDate, timeZone) : "";
+        const href = "/ufc/event/" + card.slug;
         const accessOptions = [
           card.freeCountries > 0 ? "Free" : null,
           card.paidCountries > 0 ? "Paid" : null,
@@ -111,10 +112,7 @@ export default function UfcEventGrid({
             ) : null}
 
             <article className="wts-ufc-event-row">
-              <Link
-                className="wts-discovery-card is-group has-favorite-action"
-                href={"/ufc/event/" + card.slug}
-              >
+              <Link className="wts-ufc-event-main" href={href}>
                 <div className="wts-discovery-card-time">
                   <span
                     className={
@@ -132,9 +130,7 @@ export default function UfcEventGrid({
                 </div>
 
                 <div className="wts-discovery-card-main">
-                  <p>
-                    🥊 UFC{card.country ? " · " + card.country : ""}
-                  </p>
+                  <p>🥊 UFC{card.country ? " · " + card.country : ""}</p>
                   <h3>{card.name}</h3>
                   <span>
                     {sessionSummary(card)}
@@ -165,25 +161,27 @@ export default function UfcEventGrid({
                     <span className="wts-result-access is-tbc">TV TBC</span>
                   )}
                 </span>
-
-                <span className="wts-discovery-card-favorite-space" aria-hidden="true" />
-
-                <div className="wts-discovery-card-open">
-                  <span>View event</span>
-                  <b aria-hidden="true">›</b>
-                </div>
               </Link>
 
-              <div className="wts-discovery-card-favorite">
+              <div className="wts-ufc-event-actions">
                 <FavoriteButton
                   compact
                   favorite={{
                     kind: "group",
                     entityId: card.id,
                     label: card.name,
-                    href: "/ufc/event/" + card.slug,
+                    href,
                   }}
                 />
+
+                <Link
+                  className="wts-ufc-event-open"
+                  href={href}
+                  aria-label={"View " + card.name}
+                >
+                  <span>View event</span>
+                  <b aria-hidden="true">›</b>
+                </Link>
               </div>
             </article>
           </Fragment>
