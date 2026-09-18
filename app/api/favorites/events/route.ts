@@ -59,12 +59,13 @@ export async function POST(request: Request): Promise<Response> {
   const eventIds = readIds(body.eventIds);
   const participantIds = readIds(body.participantIds);
   const competitionIds = readIds(body.competitionIds);
+  const groupIds = readIds(body.groupIds);
 
-  if (!eventIds || !participantIds || !competitionIds) {
+  if (!eventIds || !participantIds || !competitionIds || !groupIds) {
     return invalidRequest("Favorite identifiers are invalid.");
   }
 
-  if (eventIds.length + participantIds.length + competitionIds.length > MAX_FAVORITES) {
+  if (eventIds.length + participantIds.length + competitionIds.length + groupIds.length > MAX_FAVORITES) {
     return invalidRequest("Favorite selection is too large.", 413);
   }
 
@@ -72,6 +73,7 @@ export async function POST(request: Request): Promise<Response> {
     eventIds,
     participantIds,
     competitionIds,
+    groupIds,
   };
 
   const dataSnapshot = await getPublicEventsSnapshot();
