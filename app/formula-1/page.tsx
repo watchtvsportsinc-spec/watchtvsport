@@ -185,8 +185,7 @@ export default async function Formula1Page() {
               return (
                 <article className="wts-ufc-event-row" key={weekend.id}>
                   <Link className="wts-ufc-event-main" href={href}>
-                    <div className="wts-discovery-card-time">
-                      <span className="wts-result-status">Grand Prix</span>
+                    <div className="wts-discovery-card-time wts-motorsport-event-time">
                       <strong><LocalTime date={nextDate} display="time" /></strong>
                       <small><LocalTime date={nextDate} display="date" /></small>
                     </div>
