@@ -21,7 +21,9 @@
     "apply:v2-seed": "node scripts/apply-v2-seed-to-supabase.mjs --apply",
     "validate:import": "node scripts/validate-import.mjs",
     "logos:status": "node scripts/broadcaster-logo-status.mjs",
-    "logos:status:strict": "node scripts/broadcaster-logo-status.mjs --strict"
+    "logos:status:strict": "node scripts/broadcaster-logo-status.mjs --strict",
+    "predev": "node scripts/rebuild-mma-hero.mjs",
+    "prebuild": "node scripts/rebuild-mma-hero.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
