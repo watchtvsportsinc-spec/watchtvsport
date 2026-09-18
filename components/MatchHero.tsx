@@ -83,7 +83,7 @@ export default function MatchHero({
         <TeamBlock sport={sport} team={team1} />
         <span className="v2-match-hero-center">
           <b>VS</b>
-          {date ? <LocalTime date={date} /> : <span>{scheduleText ?? "Schedule TBC"}</span>}
+          {date ? <LocalTime date={date} showYear showTimeZone /> : <span>{scheduleText ?? "Schedule TBC"}</span>}
           {status ? <small>{status}</small> : null}
         </span>
         <TeamBlock sport={sport} team={team2} />
