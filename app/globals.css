@@ -996,7 +996,7 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  min-height: 260px;
+  min-height: 285px;
   background: #07131f !important;
 }
 
@@ -1007,7 +1007,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center center;
+  object-position: 72% 100%;
 }
 
 .wts-f1-hero-shade {
@@ -1236,11 +1236,11 @@
 
 @media (max-width: 720px) {
   .v2-calendar-hero.wts-f1-hero {
-    min-height: 220px;
+    min-height: 235px;
   }
 
   .wts-f1-hero-image {
-    object-position: 60% center;
+    object-position: 78% 100%;
   }
 
   .wts-f1-hero-shade {
