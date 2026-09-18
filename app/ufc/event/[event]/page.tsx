@@ -28,6 +28,16 @@ function cardEvents(events: EventData[], slug: string) {
     .sort((a, b) => (a.sequenceNumber ?? 999) - (b.sequenceNumber ?? 999));
 }
 
+function countryFlag(code?: string): string {
+  if (!code || !/^[A-Za-z]{2}$/.test(code)) return "•";
+  return String.fromCodePoint(
+    ...code
+      .toUpperCase()
+      .split("")
+      .map((letter) => 127397 + letter.charCodeAt(0))
+  );
+}
+
 function formatBoutSegment(value: string): string {
   return value
     .replaceAll("_", " ")
