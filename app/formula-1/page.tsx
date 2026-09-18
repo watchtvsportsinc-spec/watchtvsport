@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import LocalTime from "@/components/LocalTime";
+import SportHero from "@/components/SportHero";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 
 export const metadata: Metadata = {
@@ -117,23 +118,14 @@ export default async function Formula1Page() {
   return <main id="main-content" className="v2-calendar">
     {snapshot.warning ? <p className="v2-data-warning" role="status">{snapshot.warning}</p> : null}
     <Breadcrumbs items={[{label:"Home",href:"/"},{label:"Sports",href:"/sports"},{label:"Motorsports",href:"/motorsports"},{label:"Formula 1"}]}/>
-    <section
-      className="v2-calendar-hero wts-f1-hero wts-sport-hero-frame"
-      aria-labelledby="f1-title"
-      style={{
-        backgroundImage:
-          "linear-gradient(90deg,rgba(3,10,18,.97),rgba(3,12,22,.72)),url('/formula-1-hero-bg.webp')",
-      }}
-    >
-      <div className="wts-f1-hero-content">
-        <p className="v2-eyebrow">Motorsports · Championship</p>
-        <h1 id="f1-title">Formula 1</h1>
-        <p className="v2-hero-copy">
-          Current Grand Prix weekends from verified event data. Open a Grand Prix
-          for its published sessions and exact broadcaster information.
-        </p>
-      </div>
-    </section>
+    <SportHero
+      eyebrow="Motorsports · Championship"
+      title="Formula 1"
+      description="Current Grand Prix weekends from verified event data. Open a Grand Prix for its published sessions and exact broadcaster information."
+      backdrop="/formula-1-hero-bg.webp"
+      titleId="f1-title"
+      backgroundPosition="72% 100%"
+    />
     <section className="v2-results wts-f1-results" aria-labelledby="grand-prix-title">
       <div className="v2-results-heading">
         <div>

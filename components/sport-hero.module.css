@@ -1,0 +1,71 @@
+.hero{
+  position:relative;
+  isolation:isolate;
+  box-sizing:border-box;
+  width:100%;
+  height:var(--wts-standard-content-hero-height,285px);
+  min-height:var(--wts-standard-content-hero-height,285px);
+  max-height:var(--wts-standard-content-hero-height,285px);
+  margin-top:12px;
+  padding:34px;
+  overflow:hidden;
+  border:1px solid rgba(84,164,242,.24);
+  border-radius:24px;
+  background-color:#07131f;
+  background-image:
+    linear-gradient(90deg,rgba(3,10,18,.97) 0%,rgba(3,12,22,.74) 48%,rgba(3,12,22,.38) 100%),
+    var(--sport-hero-image);
+  background-position:center center,var(--sport-hero-position,center center);
+  background-size:cover,cover;
+  background-repeat:no-repeat,no-repeat;
+  box-shadow:0 20px 60px rgba(0,0,0,.28);
+}
+.content{
+  position:relative;
+  z-index:1;
+  max-width:720px;
+}
+.eyebrow{
+  margin:0 0 6px;
+  color:#63b9ff;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+}
+.hero h1{
+  margin:0;
+  color:#fff;
+  font-size:clamp(40px,7vw,72px);
+  line-height:1;
+  letter-spacing:-.05em;
+}
+.description{
+  max-width:720px;
+  margin:12px 0 0;
+  color:#bdd0df;
+  font-size:14px;
+  line-height:1.6;
+}
+@media(max-width:560px){
+  .hero{
+    height:var(--wts-standard-content-hero-height,235px);
+    min-height:var(--wts-standard-content-hero-height,235px);
+    max-height:var(--wts-standard-content-hero-height,235px);
+    padding:18px 15px;
+    border-radius:17px;
+  }
+  .hero h1{
+    font-size:36px;
+  }
+  .description{
+    margin-top:7px;
+    font-size:11px;
+    line-height:1.42;
+  }
+}
+@media(prefers-reduced-data:reduce){
+  .hero{
+    background-image:linear-gradient(135deg,#07131f,#0a1d2f);
+  }
+}

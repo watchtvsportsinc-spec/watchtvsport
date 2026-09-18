@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import SportCompetitionGrid, { type SportCompetitionCard } from "@/components/SportCompetitionGrid";
+import SportHero from "@/components/SportHero";
 import { classifyCompetition, displayCompetitionName, type CompetitionCategory } from "@/lib/competition-catalog";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 import { getPublicSportCompetitions } from "@/lib/public-sport-competitions";
@@ -53,7 +54,7 @@ export default async function SportHubPage({sport,canonical}:{sport:string;canon
  return <main id="main-content" className={styles.page}>
   <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(jsonLd)}}/>
   <Breadcrumbs items={[{label:"Home",href:"/"},{label:"Sports",href:"/sports"},{label:title}]}/>
-  <section className={styles.hero} style={{backgroundImage:`linear-gradient(90deg,rgba(3,10,18,.97),rgba(3,12,22,.72)),url('${cfg.backdrop}')`}}><p>{cfg.eyebrow}</p><h1>{title}</h1><span>{cfg.description}</span><div className={styles.heroActions}><a href="#competitions">Competitions</a>{current.length?<a href="#next">Live & next</a>:null}</div></section>
+  <SportHero eyebrow={cfg.eyebrow} title={title} description={cfg.description} backdrop={cfg.backdrop} titleId={`${sport}-title`} />
   {current.length>0?<section id="next" className={styles.current} aria-labelledby={`${sport}-current-title`}><div className={styles.heading}><div><p>What matters now</p><h2 id={`${sport}-current-title`}>Live & next</h2></div><Link href="/events#sports-filters">Full schedule →</Link></div><div className={styles.currentGrid}>{current.map(event=>{const confirmed=event.broadcasts.filter(b=>b.coverageStatus==="confirmed");const freeCountries=new Set(confirmed.filter(b=>b.access==="Free").map(b=>b.countryCode)).size;return <Link href={event.detailPath} key={event.id}><span className={event.status==="live"?styles.liveBadge:dayKey(event.eventDate)===today?styles.todayBadge:styles.statusBadge}>{event.status==="live"?"LIVE":dayKey(event.eventDate)===today?"TODAY":"UPCOMING"}</span><small>{displayCompetitionName(sport,event.competitionSlug,event.competition)}</small><strong>{event.title}</strong><span>{event.status==="live"?"Live now":new Intl.DateTimeFormat("en",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}).format(new Date(event.eventDate))}</span><em>{confirmed.length} confirmed{freeCountries?` · free in ${freeCountries}`:""}</em></Link>})}</div></section>:null}
   <aside className={styles.monetizationSlot} data-monetization-slot="sport-hub-top" aria-label="Partner placement reserved"><span>Partner placement</span><strong>Reserved for relevant broadcaster or connectivity offers</strong></aside>
   <section id="competitions" className={styles.section} aria-labelledby={`${sport}-competitions-title`}><div className={styles.heading}><div><p>Choose where to go next</p><h2 id={`${sport}-competitions-title`}>Competitions & tournaments</h2></div><span>{competitions.length} available</span></div>

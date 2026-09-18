@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import UfcEventGrid, { type UfcHubCard } from "@/components/UfcEventGrid";
+import SportHero from "@/components/SportHero";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 import styles from "@/components/sport-hub.module.css";
 
@@ -116,29 +117,14 @@ export default async function UfcPage() {
         ]}
       />
 
-      <section
-        className={styles.hero}
-        aria-labelledby="ufc-title"
-        style={{
-          backgroundImage: "url('/ufc-arena-bg.webp')",
-          backgroundPosition: "center center",
-          backgroundSize: "cover",
-          backgroundRepeat: "no-repeat",
-        }}
-      >
-        <p>Combat sports · Organization</p>
-        <h1 id="ufc-title">UFC</h1>
-        <span>
-          Upcoming numbered events and Fight Nights, grouped as complete cards
-          with their published sessions and verified official viewing options.
-        </span>
-        <div className={styles.heroActions}>
-          <a href="#upcoming-ufc">Upcoming events</a>
-          <Link href="/?sport=combat&competition=combat%3A%3Aufc">
-            UFC on the TV guide
-          </Link>
-        </div>
-      </section>
+      <SportHero
+        eyebrow="Combat sports · Organization"
+        title="UFC"
+        description="Upcoming numbered events and Fight Nights, grouped as complete cards with their published sessions and verified official viewing options."
+        backdrop="/ufc-arena-bg.webp"
+        titleId="ufc-title"
+        backgroundPosition="center center"
+      />
 
       <section
         id="upcoming-ufc"
