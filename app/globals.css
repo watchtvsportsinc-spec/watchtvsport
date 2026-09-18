@@ -100,6 +100,13 @@
   font-size: 16px;
 }
 
+/* Align the top rhythm of content pages with the Football sport hub:
+   breadcrumbs start immediately below the site header, then keep their
+   existing 12px gap before the hero. Home keeps its own spacing. */
+.v2-calendar:not(.v2-home) {
+  padding-top: 0;
+}
+
 .v2-data-warning {
   margin: 0 0 14px;
   border: 1px solid rgba(245, 158, 11, 0.48);
