@@ -20,6 +20,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - Filters such as country/access remain UI query parameters and must not create duplicate canonical SEO pages.
 - New data-source automation requires explicit source reuse approval. Automatic collection and automatic publication are separate permissions.
 - Every material V2 change must keep `npm test` and `npm run build` green.
+- Workflow ownership: ChatGPT performs the code changes directly on GitHub on the `refonte/watchtvsport-v2` branch. The user should not be asked to edit code manually; their normal local action is only to pull the branch and run the terminal commands needed to preview/test the result.
 - Keep low-bandwidth operation viable: CSS/HTML must carry the core UX; decorative media is optional enhancement.
 
 See `docs/v2-product-architecture.md`, `docs/seo-quality-policy.md`, and `docs/data-sources.md` before changing data or routing architecture.
