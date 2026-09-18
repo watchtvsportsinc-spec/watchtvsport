@@ -116,7 +116,7 @@ async function postRpc(rpcName: string, body: Record<string, unknown>, targeted:
 
 async function fetchSupabaseEvents(filters: PublicEventFilters): Promise<PublicEventsPayload> {
   if (hasFilters(filters)) {
-    const targetedResponse = await postRpc("get_public_events_filtered_v1", {
+    const targetedResponse = await postRpc("get_public_events_filtered_v2", {
       p_sport_slug: filters.sport ?? null,
       p_competition_slug: filters.competition ?? null,
       p_event_slug: filters.slug ?? null,
@@ -132,7 +132,7 @@ async function fetchSupabaseEvents(filters: PublicEventFilters): Promise<PublicE
   }
 
   let lastStatus = 0;
-  for (const rpcName of ["get_public_events_v3", "get_public_events_v2"]) {
+  for (const rpcName of ["get_public_events_v4", "get_public_events_v3", "get_public_events_v2"]) {
     const response = await postRpc(rpcName, {}, false);
     if (response.ok) {
       const payload = await parseEventResponse(response);
