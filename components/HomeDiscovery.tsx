@@ -6,6 +6,7 @@ import SearchAutocomplete from "@/components/SearchAutocomplete";
 import { useFavorites } from "@/lib/favorites-client";
 import type { SearchSuggestion } from "@/lib/search-suggestions";
 import { getSportBySlug, sportsRegistry } from "@/lib/sports-registry";
+import { clubSlug, resolveClubSlug } from "@/lib/club-aliases";
 
 export type HomeDiscoveryParticipant = {
   id: string;
@@ -301,6 +302,11 @@ function joinLabels(labels: string[]): string {
   if (labels.length === 0) return "";
   if (labels.length <= 3) return labels.join(" + ");
   return labels.slice(0, 2).join(" + ") + " +" + (labels.length - 2);
+}
+
+function stableClubFavoriteId(sport: string, label: string): string {
+  const slug = sport === "football" ? resolveClubSlug(label) : clubSlug(label);
+  return `club:${sport}:${slug}`;
 }
 
 export default function HomeDiscovery({
@@ -683,11 +689,12 @@ export default function HomeDiscovery({
   const filteredTeamOptions = teamOptions.filter((option) =>
     option.label.toLowerCase().includes(teamQuery.trim().toLowerCase())
   );
-  const favoriteTeamOptions = filteredTeamOptions.filter((option) =>
-    favoriteParticipantIds.has(option.value)
-  );
+  const isFavoriteTeamOption = (option: FilterOption) =>
+    favoriteParticipantIds.has(option.value) ||
+    favoriteParticipantIds.has(stableClubFavoriteId(option.category, option.label));
+  const favoriteTeamOptions = filteredTeamOptions.filter(isFavoriteTeamOption);
   const otherTeamOptions = filteredTeamOptions.filter(
-    (option) => !favoriteParticipantIds.has(option.value)
+    (option) => !isFavoriteTeamOption(option)
   );
 
   const hiddenSelectionExists = availableCategories
