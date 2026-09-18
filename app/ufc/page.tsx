@@ -112,7 +112,8 @@ export default async function UfcPage() {
             icon: "next" as const,
             value: "NEXT",
             label: "UP NEXT",
-            detail: `${nextCard.name} · ${new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(new Date(nextCard.mainDate))}`,
+            detail: nextCard.name,
+            date: nextCard.mainDate,
             tone: "next" as const,
           }]
         : []),

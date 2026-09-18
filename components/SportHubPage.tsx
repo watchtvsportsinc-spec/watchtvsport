@@ -59,7 +59,7 @@ export default async function SportHubPage({sport,canonical}:{sport:string;canon
   ...(liveCount>0
     ? [{icon:"live" as const,value:liveCount,label:"LIVE NOW",tone:"live" as const}]
     : nextEvent
-      ? [{icon:"next" as const,value:"NEXT",label:"UP NEXT",detail:`${nextEvent.title} · ${new Intl.DateTimeFormat("en",{month:"short",day:"numeric"}).format(new Date(nextEvent.eventDate))}`,tone:"next" as const}]
+      ? [{icon:"next" as const,value:"NEXT",label:"UP NEXT",detail:nextEvent.title,date:nextEvent.eventDate,tone:"next" as const}]
       : []),
  ];
  const title=cfg.title||getSportLabel(sport);const canonicalPath=canonical??`/sports/${sport}`;

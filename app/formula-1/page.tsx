@@ -127,7 +127,8 @@ export default async function Formula1Page() {
             icon: "next" as const,
             value: "NEXT",
             label: "UP NEXT",
-            detail: `${nextWeekend.name} · ${new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(new Date(nextWeekend.nextSession ?? nextWeekend.firstSession))}`,
+            detail: nextWeekend.name,
+            date: nextWeekend.nextSession ?? nextWeekend.firstSession,
             tone: "next" as const,
           }]
         : []),

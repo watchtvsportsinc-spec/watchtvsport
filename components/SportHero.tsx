@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import LocalTime from "@/components/LocalTime";
 import styles from "./sport-hero.module.css";
 
 export type SportHeroStat = {
@@ -6,6 +7,7 @@ export type SportHeroStat = {
   value: string | number;
   label: string;
   detail?: string;
+  date?: string;
   tone?: "default" | "live" | "next";
 };
 
@@ -53,21 +55,30 @@ export default function SportHero({
 
       {stats.length > 0 ? (
         <div className={styles.stats} aria-label={`${title} overview`}>
-          {stats.slice(0, 3).map((stat, index) => (
-            <div
-              className={`${styles.stat} ${stat.tone === "live" ? styles.live : stat.tone === "next" ? styles.next : ""}`}
-              key={`${stat.label}-${index}`}
-            >
-              <span className={styles.statIcon} aria-hidden="true">{iconFor(stat.icon)}</span>
-              <span className={styles.statText}>
-                <span className={styles.statTop}>
-                  <strong>{stat.value}</strong>
-                  <small>{stat.label}</small>
+          {Array.from({ length: 3 }, (_, index) => stats[index] ?? null).map((stat, index) =>
+            stat ? (
+              <div
+                className={`${styles.stat} ${stat.tone === "live" ? styles.live : stat.tone === "next" ? styles.next : ""}`}
+                key={`${stat.label}-${index}`}
+              >
+                <span className={styles.statIcon} aria-hidden="true">{iconFor(stat.icon)}</span>
+                <span className={styles.statText}>
+                  <span className={styles.statTop}>
+                    <strong>{stat.value}</strong>
+                    <small>{stat.label}</small>
+                  </span>
+                  {stat.detail ? <span className={styles.statDetail}>{stat.detail}</span> : null}
+                  {stat.date ? (
+                    <span className={styles.statWhen}>
+                      <LocalTime date={stat.date} />
+                    </span>
+                  ) : null}
                 </span>
-                {stat.detail ? <span className={styles.statDetail}>{stat.detail}</span> : null}
-              </span>
-            </div>
-          ))}
+              </div>
+            ) : (
+              <div className={styles.statPlaceholder} aria-hidden="true" key={`empty-${index}`} />
+            ),
+          )}
         </div>
       ) : null}
     </section>
