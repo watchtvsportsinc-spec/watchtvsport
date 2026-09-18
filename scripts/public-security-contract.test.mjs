@@ -3,7 +3,7 @@ import test from "node:test";
 
 const SUPABASE_URL = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "https://jywqhiiwsmudthaujhmi.supabase.co").replace(/\/$/, "");
 const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_30SkJ3gyUbPvH5sGFXpyHg_a4Qlzdi-";
-const EXPECTED_ACCESS_CONTRACT_HASH = "3a07d714db034218d52c497021254428";
+const EXPECTED_ACCESS_CONTRACT_HASH = "540ccff9b7309981308c9df1ae1c9306";
 
 async function request(path, { method = "GET", body, accept = "application/json" } = {}) {
   const response = await fetch(`${SUPABASE_URL}${path}`, {
@@ -79,6 +79,32 @@ test("anon can call the bounded public events RPC", async () => {
     body: { p_limit: 1 },
   });
   assert.equal(result.status, 200, result.text);
+});
+
+test("anon can call the enriched multisport public events RPC without exposing internal group ids", async () => {
+  const result = await request("/rest/v1/rpc/get_public_events_filtered_v2", {
+    method: "POST",
+    body: {
+      p_sport_slug: "ufc",
+      p_from: "2026-09-19T00:00:00Z",
+      p_to: "2026-09-21T00:00:00Z",
+      p_limit: 20,
+    },
+  });
+  assert.equal(result.status, 200, result.text);
+  const payload = JSON.parse(result.text);
+  assert.ok(Array.isArray(payload?.events), result.text);
+  assert.ok(payload.events.length > 0, "Expected published UFC event sessions");
+  assert.ok(
+    payload.events.every((event) =>
+      typeof event.eventGroupId === "string" &&
+      typeof event.eventGroupName === "string" &&
+      typeof event.eventGroupSlug === "string" &&
+      !("eventPageId" in event) &&
+      !("eventEditionId" in event)
+    ),
+    "Enriched public events must expose stable public grouping keys without leaking internal page or edition UUIDs",
+  );
 });
 
 test("anon can resolve a permanent matchup and optional occurrence selector", async () => {
