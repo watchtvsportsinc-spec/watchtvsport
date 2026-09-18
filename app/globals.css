@@ -953,3 +953,40 @@
     flex-direction: column;
   }
 }
+
+
+/* Star-only favorite controls */
+.v2-favorite-button.is-icon-only,
+.v2-calendar .v2-favorite-button.is-icon-only,
+.v2-favorite-button.is-icon-only.is-compact {
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
+  gap: 0;
+  border-radius: 10px;
+}
+
+.v2-favorite-button.is-icon-only > span:first-child {
+  font-size: 21px;
+}
+
+.v2-event-main .v2-favorite-button.is-icon-only {
+  margin-top: 8px;
+}
+
+@media (max-width: 560px) {
+  .v2-favorite-button.is-icon-only,
+  .v2-calendar .v2-favorite-button.is-icon-only,
+  .v2-favorite-button.is-icon-only.is-compact {
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    min-height: 36px;
+  }
+
+  .v2-favorite-button.is-icon-only > span:first-child {
+    font-size: 19px;
+  }
+}
