@@ -58,6 +58,14 @@ export default function CombatEventHero({
       className="v2-calendar-hero wts-combat-event-hero"
       aria-labelledby="combat-event-title"
     >
+      <div className="wts-combat-arena-backdrop" aria-hidden="true" />
+      <img
+        className="wts-combat-arena-image"
+        src="/mma-combat-arena-bg-dezoom.webp"
+        alt=""
+        aria-hidden="true"
+      />
+      <div className="wts-combat-arena-shade" aria-hidden="true" />
       <div className="wts-combat-hero-header">
         <div>
           <p className="wts-combat-event-kicker">
