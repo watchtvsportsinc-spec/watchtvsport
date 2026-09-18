@@ -1049,15 +1049,17 @@
 }
 
 .wts-f1-race-card {
-  display: block;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  min-height: 104px;
   border: 1px solid rgba(96, 165, 250, 0.15);
   border-radius: 16px;
   background:
     radial-gradient(circle at 100% 0%, rgba(37, 99, 235, 0.08), transparent 32%),
     linear-gradient(145deg, rgba(8, 24, 39, 0.98), rgba(5, 18, 30, 0.98));
-  color: inherit;
-  padding: 14px 16px;
-  text-decoration: none;
+  padding: 13px 14px 13px 16px;
   transition:
     transform 0.18s ease,
     border-color 0.18s ease,
@@ -1068,10 +1070,6 @@
   transform: translateY(-1px);
   border-color: rgba(96, 165, 250, 0.34);
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
-}
-
-.wts-f1-race-card:hover .wts-f1-race-copy h3 span {
-  color: #8fd0ff;
 }
 
 .wts-f1-race-copy {
@@ -1090,31 +1088,28 @@
   white-space: nowrap;
 }
 
-.wts-f1-race-title-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 12px;
-}
-
 .wts-f1-race-copy h3 {
   display: flex;
   min-width: 0;
   align-items: center;
   gap: 9px;
   margin: 0;
-  color: #fff;
   font-size: clamp(18px, 2.2vw, 24px);
   line-height: 1.12;
   letter-spacing: -0.025em;
 }
 
-.wts-f1-race-copy h3 span {
+.wts-f1-race-copy h3 a {
   overflow: hidden;
   min-width: 0;
+  color: #fff;
+  text-decoration: none;
   text-overflow: ellipsis;
-  transition: color 0.18s ease;
   white-space: nowrap;
+}
+
+.wts-f1-race-copy h3 a:hover {
+  color: #8fd0ff;
 }
 
 .wts-f1-country-flag {
@@ -1124,36 +1119,6 @@
   border-radius: 4px;
   object-fit: cover;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14);
-}
-
-.wts-f1-race-access {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 5px;
-}
-
-.wts-f1-race-access span {
-  display: inline-flex;
-  min-height: 22px;
-  align-items: center;
-  border-radius: 999px;
-  padding: 2px 8px;
-  font-size: 8px;
-  font-weight: 900;
-  white-space: nowrap;
-}
-
-.wts-f1-race-access .is-free {
-  border: 1px solid rgba(52, 211, 153, 0.25);
-  background: rgba(16, 185, 129, 0.09);
-  color: #73e5ba;
-}
-
-.wts-f1-race-access .is-paid {
-  border: 1px solid rgba(251, 191, 36, 0.25);
-  background: rgba(245, 158, 11, 0.09);
-  color: #ffd36f;
 }
 
 .wts-f1-race-meta {
@@ -1179,6 +1144,82 @@
   text-transform: uppercase;
 }
 
+.wts-f1-race-actions {
+  display: grid;
+  grid-template-columns: minmax(70px, auto) 40px 94px;
+  align-items: center;
+  gap: 8px;
+}
+
+.wts-f1-race-access {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+}
+
+.wts-f1-race-access span {
+  display: inline-flex;
+  min-height: 22px;
+  align-items: center;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 8px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.wts-f1-race-access .is-free {
+  border: 1px solid rgba(52, 211, 153, 0.34);
+  background: rgba(16, 185, 129, 0.1);
+  color: #73e5ba;
+}
+
+.wts-f1-race-access .is-paid {
+  border: 1px solid rgba(251, 191, 36, 0.32);
+  background: rgba(245, 158, 11, 0.08);
+  color: #ffd36f;
+}
+
+.wts-f1-race-actions .v2-favorite-button.is-icon-only,
+.wts-f1-race-actions .v2-favorite-button.is-icon-only.is-compact {
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  min-height: 40px;
+  border-color: rgba(147, 197, 253, 0.4);
+  background: rgba(30, 41, 59, 0.9);
+}
+
+.wts-f1-race-view {
+  display: inline-flex;
+  width: 94px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 10px;
+  background: #0b8cf4;
+  color: #fff;
+  padding: 0 10px;
+  font-size: 9px;
+  font-weight: 900;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease;
+}
+
+.wts-f1-race-view b {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.wts-f1-race-view:hover {
+  transform: translateY(-1px);
+  background: #159cff;
+}
+
 @media (max-width: 720px) {
   .v2-calendar-hero.wts-f1-hero {
     min-height: 235px;
@@ -1186,6 +1227,9 @@
   }
 
   .wts-f1-race-card {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 11px;
+    min-height: 0;
     padding: 11px;
   }
 
@@ -1199,13 +1243,21 @@
     height: 18px;
   }
 
-  .wts-f1-race-title-row {
-    gap: 8px;
-  }
-
   .wts-f1-race-meta {
     gap: 7px 14px;
     margin-top: 8px;
+  }
+
+  .wts-f1-race-actions {
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr) 40px 94px;
+    gap: 7px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 10px;
+  }
+
+  .wts-f1-race-access {
+    align-content: center;
   }
 }
 
@@ -1214,23 +1266,8 @@
     font-size: 8px;
   }
 
-  .wts-f1-race-title-row {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 7px;
-  }
-
-  .wts-f1-race-copy h3 span {
+  .wts-f1-race-copy h3 a {
     white-space: normal;
-  }
-
-  .wts-f1-race-access {
-    justify-content: flex-start;
-  }
-
-  .wts-f1-race-access span {
-    min-height: 20px;
-    padding: 2px 6px;
-    font-size: 7px;
   }
 
   .wts-f1-race-meta {
@@ -1240,5 +1277,21 @@
 
   .wts-f1-race-meta > span:last-child {
     grid-column: 1 / -1;
+  }
+
+  .wts-f1-race-actions {
+    grid-template-columns: minmax(0, 1fr) 40px 92px;
+  }
+
+  .wts-f1-race-actions .v2-favorite-button.is-icon-only,
+  .wts-f1-race-actions .v2-favorite-button.is-icon-only.is-compact {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    min-height: 40px;
+  }
+
+  .wts-f1-race-view {
+    width: 92px;
   }
 }

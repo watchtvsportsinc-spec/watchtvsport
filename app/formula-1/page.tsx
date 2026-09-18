@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import LocalTime from "@/components/LocalTime";
+import FavoriteButton from "@/components/FavoriteButton";
 import SportHero from "@/components/SportHero";
 import styles from "@/components/sport-hub.module.css";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
@@ -165,18 +166,22 @@ export default async function Formula1Page() {
         </div>
       ) : (
         <div className="wts-f1-race-list">
-          {weekends.map((weekend) => (
-            <Link
-              className="wts-f1-race-card"
-              href={`/formula-1/grand-prix/${weekend.slug}`}
-              key={weekend.id}
-            >
-              <div className="wts-f1-race-copy">
-                <div className="wts-f1-race-topline">
-                  {[weekend.country, weekend.venue].filter(Boolean).join(" · ")}
-                </div>
+          {weekends.map((weekend) => {
+            const href = `/formula-1/grand-prix/${weekend.slug}`;
+            const favorite = {
+              kind: "group" as const,
+              entityId: weekend.id,
+              label: weekend.name,
+              href,
+            };
 
-                <div className="wts-f1-race-title-row">
+            return (
+              <article className="wts-f1-race-card" key={weekend.id}>
+                <div className="wts-f1-race-copy">
+                  <div className="wts-f1-race-topline">
+                    {[weekend.country, weekend.venue].filter(Boolean).join(" · ")}
+                  </div>
+
                   <h3>
                     {grandPrixFlagCode(weekend.slug, weekend.country) ? (
                       <img
@@ -186,9 +191,28 @@ export default async function Formula1Page() {
                         aria-hidden="true"
                       />
                     ) : null}
-                    <span>{weekend.name}</span>
+                    <Link href={href}>{weekend.name}</Link>
                   </h3>
 
+                  <div className="wts-f1-race-meta">
+                    <span>
+                      <b>Next session</b>
+                      <LocalTime date={weekend.nextSession ?? weekend.firstSession} />
+                    </span>
+                    <span>
+                      <b>Weekend</b>
+                      {weekend.sessionCount} published sessions
+                    </span>
+                    <span>
+                      <b>TV coverage</b>
+                      {weekend.confirmed > 0
+                        ? `${weekend.confirmed} confirmed listings`
+                        : "Pending"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="wts-f1-race-actions">
                   <div className="wts-f1-race-access" aria-label="Access">
                     {weekend.freeCountries > 0 ? (
                       <span className="is-free">Free · {weekend.freeCountries}</span>
@@ -197,27 +221,14 @@ export default async function Formula1Page() {
                       <span className="is-paid">Paid · {weekend.paidCountries}</span>
                     ) : null}
                   </div>
+                  <FavoriteButton favorite={favorite} />
+                  <Link className="wts-f1-race-view" href={href}>
+                    View event <b aria-hidden="true">›</b>
+                  </Link>
                 </div>
-
-                <div className="wts-f1-race-meta">
-                  <span>
-                    <b>Next session</b>
-                    <LocalTime date={weekend.nextSession ?? weekend.firstSession} />
-                  </span>
-                  <span>
-                    <b>Weekend</b>
-                    {weekend.sessionCount} published sessions
-                  </span>
-                  <span>
-                    <b>TV coverage</b>
-                    {weekend.confirmed > 0
-                      ? `${weekend.confirmed} confirmed listings`
-                      : "Pending"}
-                  </span>
-                </div>
-              </div>
-            </Link>
-          ))}
+              </article>
+            );
+          })}
         </div>
       )}
     </section>

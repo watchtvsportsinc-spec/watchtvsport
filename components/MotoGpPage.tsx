@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import LocalTime from "@/components/LocalTime";
+import FavoriteButton from "@/components/FavoriteButton";
 import SportHero from "@/components/SportHero";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 import {
@@ -43,32 +44,30 @@ type WeekendView = {
 function RaceCard({ item, completed = false }: { item: WeekendView; completed?: boolean }) {
   const { weekend, exactNext, confirmed, freeCountries, paidCountries } = item;
 
+  const href = `/sports/motogp/grand-prix/${weekend.slug}`;
+  const favorite = {
+    kind: "group" as const,
+    entityId: `motogp-${weekend.slug}`,
+    label: weekend.name,
+    href,
+  };
+
   return (
-    <Link
-      className="wts-f1-race-card"
-      href={`/sports/motogp/grand-prix/${weekend.slug}`}
-    >
+    <article className="wts-f1-race-card">
       <div className="wts-f1-race-copy">
         <div className="wts-f1-race-topline">
           {weekend.country} · {weekend.venue}
         </div>
 
-        <div className="wts-f1-race-title-row">
-          <h3>
-            <img
-              className="wts-f1-country-flag"
-              src={`/flags/${weekend.flagCode}.png`}
-              alt=""
-              aria-hidden="true"
-            />
-            <span>{weekend.name}</span>
-          </h3>
-
-          <div className="wts-f1-race-access" aria-label="Access">
-            {freeCountries > 0 ? <span className="is-free">Free · {freeCountries}</span> : null}
-            {paidCountries > 0 ? <span className="is-paid">Paid · {paidCountries}</span> : null}
-          </div>
-        </div>
+        <h3>
+          <img
+            className="wts-f1-country-flag"
+            src={`/flags/${weekend.flagCode}.png`}
+            alt=""
+            aria-hidden="true"
+          />
+          <Link href={href}>{weekend.name}</Link>
+        </h3>
 
         <div className="wts-f1-race-meta">
           <span>
@@ -91,7 +90,18 @@ function RaceCard({ item, completed = false }: { item: WeekendView; completed?: 
           </span>
         </div>
       </div>
-    </Link>
+
+      <div className="wts-f1-race-actions">
+        <div className="wts-f1-race-access" aria-label="Access">
+          {freeCountries > 0 ? <span className="is-free">Free · {freeCountries}</span> : null}
+          {paidCountries > 0 ? <span className="is-paid">Paid · {paidCountries}</span> : null}
+        </div>
+        <FavoriteButton favorite={favorite} />
+        <Link className="wts-f1-race-view" href={href}>
+          View event <b aria-hidden="true">›</b>
+        </Link>
+      </div>
+    </article>
   );
 }
 
