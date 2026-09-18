@@ -141,6 +141,7 @@ export default async function Formula1GrandPrixPage({
   const race = events.find((event) => event.sessionType === "race");
   const editionLabel = first.eventEditionLabel ?? editionKey(first);
   const editionYear = String(new Date(first.eventDate).getUTCFullYear());
+  const currentYear = String(new Date().getUTCFullYear());
   const sessionPlan = getFormula1SessionPlan2026(weekend);
   const canonicalPath = `/formula-1/grand-prix/${grandPrix}`;
 
@@ -249,12 +250,14 @@ export default async function Formula1GrandPrixPage({
           </p>
         ) : null}
 
-        <Link
-          className="wts-event-hero-secondary"
-          href={`/formula-1/grand-prix/${grandPrix}/${editionYear}`}
-        >
-          Open {editionYear} edition →
-        </Link>
+        {editionYear !== currentYear ? (
+          <Link
+            className="wts-event-hero-secondary"
+            href={`/formula-1/grand-prix/${grandPrix}/${editionYear}`}
+          >
+            Open {editionYear} edition →
+          </Link>
+        ) : null}
       </section>
 
       <EventSessionSchedule
