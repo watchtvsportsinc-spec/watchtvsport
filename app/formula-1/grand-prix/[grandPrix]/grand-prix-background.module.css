@@ -1,16 +1,12 @@
-.page.page.page > :global(.v2-calendar-hero) {
-  background:
-    linear-gradient(
-      90deg,
-      rgba(2, 9, 17, 0.84) 0%,
-      rgba(3, 12, 22, 0.66) 48%,
-      rgba(3, 13, 23, 0.48) 100%
-    ),
-    url("/formula-1-hero-bg.webp") center center / cover no-repeat !important;
-}
+/* Grand Prix heroes intentionally inherit the exact Formula 1 hub hero
+   height, image positioning and dark overlay from app/globals.css. */
 
 @media (prefers-reduced-data: reduce) {
-  .page.page.page > :global(.v2-calendar-hero) {
+  .page.page.page > :global(.v2-calendar-hero.wts-f1-hero) :global(.wts-f1-hero-image) {
+    display: none;
+  }
+
+  .page.page.page > :global(.v2-calendar-hero.wts-f1-hero) {
     background: linear-gradient(135deg, #0b1a29, #06111c) !important;
   }
 }
