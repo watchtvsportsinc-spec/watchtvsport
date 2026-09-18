@@ -237,7 +237,7 @@ export function getFavoriteEventFeed(events: EventData[], lookup: FavoriteLookup
   const eventIds = new Set(lookup.eventIds);
   const participantIds = new Set(lookup.participantIds);
   const competitionIds = new Set(lookup.competitionIds);
-  const groupIds = new Set(lookup.groupIds);
+  const groupIds = new Set(lookup.groupIds ?? []);
 
   const exactEvents = events
     .filter((event) => eventIds.has(event.id))
