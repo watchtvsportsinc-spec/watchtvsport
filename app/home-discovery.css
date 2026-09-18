@@ -1010,57 +1010,109 @@
   }
 }
 
-
 /* UFC event rows reuse the Home schedule language */
 .wts-ufc-event-row{
-  position:relative;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:stretch;
+  min-width:0;
+  border-top:1px solid rgba(255,255,255,.055);
+  background:rgba(3,13,23,.15);
 }
-.wts-discovery-card.has-favorite-action{
-  grid-template-columns:100px minmax(0,1fr) 90px 44px 96px;
+.wts-ufc-event-row:first-of-type{border-top:0}
+.wts-ufc-event-row:hover{background:rgba(23,93,153,.08)}
+
+.wts-ufc-event-main{
+  display:grid;
+  grid-template-columns:100px minmax(0,1fr) 90px;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+  min-height:66px;
+  padding:8px 8px 8px 11px;
+  color:#fff;
+  text-decoration:none;
 }
-.wts-discovery-card-favorite-space{
-  width:44px;
-  min-width:44px;
+
+.wts-ufc-event-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:6px;
+  padding:8px 10px 8px 4px;
+  border-left:1px solid rgba(255,255,255,.04);
 }
-.wts-discovery-card-favorite{
-  position:absolute;
-  z-index:3;
-  top:50%;
-  right:102px;
-  transform:translateY(-50%);
-}
-.wts-discovery-card-favorite .v2-favorite-button{
+
+.wts-ufc-event-actions .v2-favorite-button{
   margin:0 !important;
+  flex:0 0 auto;
+}
+
+.wts-ufc-event-open{
+  display:inline-flex;
+  min-width:92px;
+  height:40px;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  border-radius:11px;
+  background:linear-gradient(135deg,#0b8cff,#0872dc);
+  color:#fff;
+  padding:0 12px;
+  text-decoration:none;
+  font-size:8px;
+  font-weight:900;
+  white-space:nowrap;
+}
+.wts-ufc-event-open:hover{
+  filter:brightness(1.08);
+}
+.wts-ufc-event-open b{
+  font-size:16px;
+  line-height:1;
 }
 
 @media(max-width:760px){
-  .wts-discovery-card.has-favorite-action{
-    grid-template-columns:68px minmax(0,1fr) minmax(30px,max-content) 36px 30px;
-    grid-template-areas:"time main access favorite open";
+  .wts-ufc-event-row{
+    grid-template-columns:minmax(0,1fr) auto;
   }
-  .wts-discovery-card.has-favorite-action .wts-discovery-card-time{grid-area:time}
-  .wts-discovery-card.has-favorite-action .wts-discovery-card-main{grid-area:main}
-  .wts-discovery-card.has-favorite-action .wts-result-access-stack{grid-area:access}
-  .wts-discovery-card.has-favorite-action .wts-discovery-card-favorite-space{grid-area:favorite}
-  .wts-discovery-card.has-favorite-action .wts-discovery-card-open{grid-area:open}
-  .wts-discovery-card-favorite-space{
-    width:36px;
-    min-width:36px;
+
+  .wts-ufc-event-main{
+    grid-template-columns:68px minmax(0,1fr) minmax(30px,max-content);
+    gap:5px;
+    min-height:0;
+    padding:5px 4px 5px 7px;
   }
-  .wts-discovery-card-favorite{
-    right:34px;
+
+  .wts-ufc-event-actions{
+    gap:4px;
+    padding:5px 6px 5px 3px;
   }
+
+  .wts-ufc-event-open{
+    width:34px;
+    min-width:34px;
+    height:36px;
+    padding:0;
+    border-radius:10px;
+  }
+  .wts-ufc-event-open span{display:none}
+  .wts-ufc-event-open b{font-size:18px}
 }
 
 @media(max-width:390px){
-  .wts-discovery-card.has-favorite-action{
-    grid-template-columns:66px minmax(0,1fr) minmax(28px,max-content) 34px 28px;
+  .wts-ufc-event-main{
+    grid-template-columns:66px minmax(0,1fr) minmax(28px,max-content);
+    padding-left:5px;
   }
-  .wts-discovery-card-favorite-space{
-    width:34px;
-    min-width:34px;
+
+  .wts-ufc-event-actions{
+    gap:3px;
+    padding-right:4px;
   }
-  .wts-discovery-card-favorite{
-    right:31px;
+
+  .wts-ufc-event-open{
+    width:30px;
+    min-width:30px;
   }
 }
