@@ -501,11 +501,11 @@
   inset:0;
   pointer-events:none;
   background-image:url('/mma-combat-arena-bg.webp');
-  background-position:center 48%;
-  background-size:cover;
+  background-position:center 52%;
+  background-size:100% auto;
   background-repeat:no-repeat;
   opacity:.82;
-  transform:scale(1.015);
+  transform:none;
 }
 .wts-combat-event-hero::after{
   content:"";
