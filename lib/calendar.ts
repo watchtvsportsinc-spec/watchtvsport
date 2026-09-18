@@ -1,5 +1,5 @@
 import type { EventData } from "./events";
-import { getClubSearchNames } from "./club-aliases";
+import { clubSlug, getClubSearchNames, resolveClubSlug } from "./club-aliases";
 import { getSportLabel, sportsRegistry } from "./sports-registry";
 import type {
   FavoriteEventFeed,
@@ -223,6 +223,16 @@ export function getCalendarPage(events: EventData[], filters: CalendarFilters, n
   };
 }
 
+function participantFavoriteIds(event: EventData, participant: EventData["participant1"]): string[] {
+  if (!participant) return [];
+  const ids = [participant.id];
+  if (participant.type === "club") {
+    const slug = event.sport === "football" ? resolveClubSlug(participant.name) : clubSlug(participant.name);
+    ids.push(`club:${event.sport}:${slug}`);
+  }
+  return ids;
+}
+
 export function getFavoriteEventFeed(events: EventData[], lookup: FavoriteLookup, now = new Date()): FavoriteEventFeed {
   const eventIds = new Set(lookup.eventIds);
   const participantIds = new Set(lookup.participantIds);
@@ -237,7 +247,7 @@ export function getFavoriteEventFeed(events: EventData[], lookup: FavoriteLookup
     .filter((event) => {
       if (eventIds.has(event.id)) return false;
       const followsCompetition = competitionIds.has(event.competitionSlug) || competitionIds.has(`${event.sport}:${event.competitionSlug}`);
-      const followsParticipant = [event.participant1, event.participant2].some((participant) => participant && participantIds.has(participant.id));
+      const followsParticipant = [event.participant1, event.participant2].some((participant) => participantFavoriteIds(event, participant).some((id) => participantIds.has(id)));
       if (!followsCompetition && !followsParticipant) return false;
       const startTime = new Date(event.eventDate).getTime();
       return event.status === "live" || (event.status !== "finished" && Number.isFinite(startTime) && startTime >= now.getTime());
