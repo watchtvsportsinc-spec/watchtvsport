@@ -1,5 +1,5 @@
 import Image from "next/image";
-import mmaArenaBackground from "../public/mma-combat-arena-bg-dezoom.webp";
+import mmaArenaBackground from "../public/mma-combat-arena-bg-valid.webp";
 import FavoriteButton from "@/components/FavoriteButton";
 import LocalTime from "@/components/LocalTime";
 import type { FavoriteCandidate } from "@/lib/favorites";
