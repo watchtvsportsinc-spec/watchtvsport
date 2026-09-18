@@ -132,7 +132,7 @@ async function fetchSupabaseEvents(filters: PublicEventFilters): Promise<PublicE
   }
 
   let lastStatus = 0;
-  for (const rpcName of ["get_public_events_v4", "get_public_events_v3", "get_public_events_v2"]) {
+  for (const rpcName of ["get_public_events_v3", "get_public_events_v2"]) {
     const response = await postRpc(rpcName, {}, false);
     if (response.ok) {
       const payload = await parseEventResponse(response);
