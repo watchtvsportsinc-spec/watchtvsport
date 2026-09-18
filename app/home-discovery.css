@@ -870,3 +870,47 @@
 .wts-discovery-favorites-link span {
   font-size: 20px;
 }
+
+
+/* Final sitewide star-only favorite sizing */
+.v2-favorite-button.is-icon-only,
+.v2-calendar .v2-favorite-button.is-icon-only,
+[class*="club-page_"] .v2-favorite-button.is-icon-only,
+[class*="favorites-view_"] .v2-favorite-button.is-icon-only {
+  box-sizing:border-box !important;
+  width:40px !important;
+  min-width:40px !important;
+  max-width:40px !important;
+  height:40px !important;
+  min-height:40px !important;
+  padding:0 !important;
+  gap:0 !important;
+  border-radius:10px !important;
+}
+.v2-favorite-button.is-icon-only>span:first-child{
+  font-size:21px !important;
+}
+.wts-search-results .wts-search-result-favorite{
+  box-sizing:border-box !important;
+  width:34px !important;
+  min-width:34px !important;
+  max-width:34px !important;
+  height:34px !important;
+  min-height:34px !important;
+  padding:0 !important;
+}
+@media(max-width:760px){
+  .v2-favorite-button.is-icon-only,
+  .v2-calendar .v2-favorite-button.is-icon-only,
+  [class*="club-page_"] .v2-favorite-button.is-icon-only,
+  [class*="favorites-view_"] .v2-favorite-button.is-icon-only{
+    width:36px !important;
+    min-width:36px !important;
+    max-width:36px !important;
+    height:36px !important;
+    min-height:36px !important;
+  }
+  .v2-favorite-button.is-icon-only>span:first-child{
+    font-size:19px !important;
+  }
+}
