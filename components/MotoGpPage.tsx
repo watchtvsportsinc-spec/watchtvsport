@@ -41,14 +41,12 @@ type WeekendView = {
 };
 
 function RaceCard({ item, completed = false }: { item: WeekendView; completed?: boolean }) {
-  const { weekend, exactNext, confirmed, freeCountries, paidCountries, live } = item;
-  const status = completed ? "Finished" : live ? "Live weekend" : "Upcoming";
+  const { weekend, exactNext, confirmed, freeCountries, paidCountries } = item;
 
   return (
     <article className="wts-f1-race-card">
       <div className="wts-f1-race-copy">
         <div className="wts-f1-race-topline">
-          <span className={live ? "is-live" : !completed ? "is-next" : undefined}>{status}</span>
           <span>{weekend.country} · {weekend.venue}</span>
         </div>
 
