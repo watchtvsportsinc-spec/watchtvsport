@@ -1047,7 +1047,7 @@
 
 .wts-f1-race-card {
   display: grid;
-  grid-template-columns: 58px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 16px;
   min-height: 118px;
@@ -1067,21 +1067,6 @@
   transform: translateY(-1px);
   border-color: rgba(96, 165, 250, 0.34);
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
-}
-
-.wts-f1-race-number {
-  display: grid;
-  width: 44px;
-  height: 44px;
-  place-items: center;
-  border: 1px solid rgba(96, 165, 250, 0.22);
-  border-radius: 12px;
-  background: rgba(8, 31, 51, 0.8);
-  color: #60a5fa;
-  font-size: 13px;
-  font-weight: 950;
-  letter-spacing: 0.06em;
-  font-variant-numeric: tabular-nums;
 }
 
 .wts-f1-race-copy {
@@ -1135,10 +1120,22 @@
 }
 
 .wts-f1-race-copy h3 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
   margin: 0;
   font-size: clamp(18px, 2.2vw, 24px);
   line-height: 1.12;
   letter-spacing: -0.025em;
+}
+
+.wts-f1-country-flag {
+  width: 28px;
+  height: 20px;
+  flex: 0 0 auto;
+  border-radius: 4px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14);
 }
 
 .wts-f1-race-copy h3 a {
@@ -1248,21 +1245,20 @@
   }
 
   .wts-f1-race-card {
-    grid-template-columns: 42px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     gap: 10px;
     min-height: 0;
     padding: 11px;
   }
 
-  .wts-f1-race-number {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    font-size: 11px;
+  .wts-f1-race-copy h3 {
+    gap: 8px;
+    font-size: 17px;
   }
 
-  .wts-f1-race-copy h3 {
-    font-size: 17px;
+  .wts-f1-country-flag {
+    width: 25px;
+    height: 18px;
   }
 
   .wts-f1-race-meta {
