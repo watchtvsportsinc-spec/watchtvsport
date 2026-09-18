@@ -49,8 +49,10 @@ type CategoryDefinition = {
 };
 
 type FilterOption = {
+  key: string;
   value: string;
   label: string;
+  category: string;
 };
 
 type EventResult = {
@@ -96,6 +98,14 @@ const CATEGORY_BY_SPORT = new Map(
 );
 
 const GROUPED_CATEGORIES = new Set(["motorsports", "combat"]);
+const TEAM_FILTER_CATEGORIES = new Set([
+  "football",
+  "basketball",
+  "hockey",
+  "american-football",
+  "baseball",
+  "rugby",
+]);
 
 function categoryForSport(sport: string): string {
   return CATEGORY_BY_SPORT.get(sport) ?? sport;
@@ -130,8 +140,19 @@ function seriesLabel(sport: string, events: HomeDiscoveryEvent[]): string {
   return event?.competition || fallbackLabel(sport);
 }
 
-function normalizeInitialCategory(value?: string): string {
-  if (!value) return "all";
+function splitCsv(value?: string): string[] {
+  if (!value) return [];
+  return Array.from(
+    new Set(
+      value
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean)
+    )
+  );
+}
+
+function normalizeCategory(value: string): string {
   if (["formula-1", "motogp", "motorsports", "wec", "indycar", "formula-e"].includes(value)) return "motorsports";
   if (["ufc", "mma", "boxing", "pfl", "one", "combat", "combat-sports"].includes(value)) return "combat";
   if (value === "ice-hockey") return "hockey";
@@ -139,10 +160,16 @@ function normalizeInitialCategory(value?: string): string {
   return value;
 }
 
-function impliedSubfilterFromSport(value?: string): string {
-  if (!value) return "";
-  if (["formula-1", "motogp", "ufc", "mma", "boxing", "pfl", "one", "wec", "indycar", "formula-e"].includes(value)) return value;
-  return "";
+function normalizeInitialCategories(value?: string): string[] {
+  return splitCsv(value)
+    .map(normalizeCategory)
+    .filter((category) => category !== "all");
+}
+
+function impliedSubfiltersFromSport(value?: string): string[] {
+  return splitCsv(value).filter((sport) =>
+    ["formula-1", "motogp", "ufc", "mma", "boxing", "pfl", "one", "wec", "indycar", "formula-e"].includes(sport)
+  );
 }
 
 function isIsoDate(value?: string): boolean {
@@ -257,6 +284,12 @@ function accessClass(access: string): string {
   return "is-tbc";
 }
 
+function joinLabels(labels: string[]): string {
+  if (labels.length === 0) return "";
+  if (labels.length <= 3) return labels.join(" + ");
+  return labels.slice(0, 2).join(" + ") + " +" + (labels.length - 2);
+}
+
 export default function HomeDiscovery({
   events,
   timeZone,
@@ -268,22 +301,36 @@ export default function HomeDiscovery({
 }) {
   const [now] = useState(() => new Date());
   const today = dateKey(now, timeZone);
-  const initialPeriod: Period = initial.when === "live" ? "live" : isIsoDate(initial.date) || initial.when === "tomorrow" ? "date" : "upcoming";
-  const initialDate = initial.when === "tomorrow" ? addDays(today, 1) : isIsoDate(initial.date) ? initial.date as string : today;
-  const rawInitialCategory = normalizeInitialCategory(initial.sport);
-  const initialSubfilter = initial.competition || impliedSubfilterFromSport(initial.sport);
+  const initialPeriod: Period =
+    initial.when === "live"
+      ? "live"
+      : isIsoDate(initial.date) || initial.when === "tomorrow"
+        ? "date"
+        : "upcoming";
+  const initialDate =
+    initial.when === "tomorrow"
+      ? addDays(today, 1)
+      : isIsoDate(initial.date)
+        ? (initial.date as string)
+        : today;
 
   const [period, setPeriod] = useState<Period>(initialPeriod);
   const [selectedDate, setSelectedDate] = useState(initialDate);
-  const [selectedCategory, setSelectedCategory] = useState(rawInitialCategory);
-  const [selectedSubfilter, setSelectedSubfilter] = useState(initialSubfilter);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(normalizeInitialCategories(initial.sport));
+  const [selectedSubfilters, setSelectedSubfilters] = useState<string[]>([
+    ...splitCsv(initial.competition),
+    ...impliedSubfiltersFromSport(initial.sport),
+  ]);
   const [selectedTeam, setSelectedTeam] = useState(initial.team || "");
   const [teamPickerOpen, setTeamPickerOpen] = useState(false);
   const [teamQuery, setTeamQuery] = useState("");
   const [showMoreSports, setShowMoreSports] = useState(false);
   const [visibleLimit, setVisibleLimit] = useState(20);
 
-  const dateChoices = useMemo(() => Array.from({ length: 7 }, (_, index) => addDays(today, index)), [today]);
+  const dateChoices = useMemo(
+    () => Array.from({ length: 7 }, (_, index) => addDays(today, index)),
+    [today]
+  );
 
   const availableCategories = useMemo(() => {
     const seen = new Set(events.map((event) => categoryForSport(event.sport)));
@@ -296,75 +343,183 @@ export default function HomeDiscovery({
     return [...configured, ...unknown];
   }, [events]);
 
-  const categoryIsAvailable = selectedCategory === "all" || availableCategories.some((category) => category.id === selectedCategory);
-  const effectiveCategory = categoryIsAvailable ? selectedCategory : "all";
+  const availableCategoryIds = useMemo(
+    () => new Set(availableCategories.map((category) => category.id)),
+    [availableCategories]
+  );
+
+  const effectiveCategories = useMemo(
+    () => selectedCategories.filter((category) => availableCategoryIds.has(category)),
+    [availableCategoryIds, selectedCategories]
+  );
 
   const categoryEvents = useMemo(() => {
-    if (effectiveCategory === "all") return events;
-    return events.filter((event) => categoryForSport(event.sport) === effectiveCategory);
-  }, [effectiveCategory, events]);
+    if (effectiveCategories.length === 0) return events;
+    const selected = new Set(effectiveCategories);
+    return events.filter((event) => selected.has(categoryForSport(event.sport)));
+  }, [effectiveCategories, events]);
 
   const subfilterOptions = useMemo<FilterOption[]>(() => {
-    if (effectiveCategory === "all") return [];
+    if (effectiveCategories.length === 0) return [];
 
-    if (GROUPED_CATEGORIES.has(effectiveCategory)) {
-      const sports = Array.from(new Set(categoryEvents.map((event) => event.sport)));
-      return sports
-        .map((sport) => ({ value: sport, label: seriesLabel(sport, categoryEvents) }))
-        .sort((a, b) => a.label.localeCompare(b.label));
+    const options: FilterOption[] = [];
+
+    for (const category of effectiveCategories) {
+      const eventsForCategory = categoryEvents.filter(
+        (event) => categoryForSport(event.sport) === category
+      );
+
+      if (GROUPED_CATEGORIES.has(category)) {
+        const sports = Array.from(new Set(eventsForCategory.map((event) => event.sport)));
+        for (const sport of sports) {
+          options.push({
+            key: category + "::" + sport,
+            value: sport,
+            label: seriesLabel(sport, eventsForCategory),
+            category,
+          });
+        }
+        continue;
+      }
+
+      const competitions = new Map<string, string>();
+      for (const event of eventsForCategory) {
+        competitions.set(event.competitionSlug, event.competition);
+      }
+
+      for (const [value, label] of competitions) {
+        options.push({
+          key: category + "::" + value,
+          value,
+          label,
+          category,
+        });
+      }
     }
 
-    const competitions = new Map<string, string>();
-    for (const event of categoryEvents) {
-      competitions.set(event.competitionSlug, event.competition);
-    }
-    return Array.from(competitions, ([value, label]) => ({ value, label })).sort((a, b) => a.label.localeCompare(b.label));
-  }, [categoryEvents, effectiveCategory]);
+    return options.sort((a, b) => {
+      const categoryDifference = categoryDefinition(a.category).label.localeCompare(
+        categoryDefinition(b.category).label
+      );
+      return categoryDifference || a.label.localeCompare(b.label);
+    });
+  }, [categoryEvents, effectiveCategories]);
 
-  const effectiveSubfilter = selectedSubfilter && subfilterOptions.some((option) => option.value === selectedSubfilter) ? selectedSubfilter : "";
+  const effectiveSubfilterKeys = useMemo(() => {
+    const optionKeys = new Set(subfilterOptions.map((option) => option.key));
+    const resolved = new Set<string>();
+
+    for (const token of selectedSubfilters) {
+      if (optionKeys.has(token)) {
+        resolved.add(token);
+        continue;
+      }
+
+      for (const option of subfilterOptions) {
+        if (option.value === token) resolved.add(option.key);
+      }
+    }
+
+    return Array.from(resolved);
+  }, [selectedSubfilters, subfilterOptions]);
+
+  const effectiveSubfilterSet = useMemo(
+    () => new Set(effectiveSubfilterKeys),
+    [effectiveSubfilterKeys]
+  );
+
+  const singleTeamCategory =
+    effectiveCategories.length === 1 && TEAM_FILTER_CATEGORIES.has(effectiveCategories[0])
+      ? effectiveCategories[0]
+      : "";
+
+  const selectedCompetitionOptions = useMemo(
+    () =>
+      subfilterOptions.filter(
+        (option) =>
+          option.category === singleTeamCategory && effectiveSubfilterSet.has(option.key)
+      ),
+    [effectiveSubfilterSet, singleTeamCategory, subfilterOptions]
+  );
 
   const teamOptions = useMemo<FilterOption[]>(() => {
-    if (!effectiveSubfilter || GROUPED_CATEGORIES.has(effectiveCategory)) return [];
+    if (!singleTeamCategory || selectedCompetitionOptions.length === 0) return [];
 
+    const selectedCompetitionValues = new Set(
+      selectedCompetitionOptions.map((option) => option.value)
+    );
     const participants = new Map<string, string>();
+
     for (const event of categoryEvents) {
-      if (event.competitionSlug !== effectiveSubfilter) continue;
+      if (categoryForSport(event.sport) !== singleTeamCategory) continue;
+      if (!selectedCompetitionValues.has(event.competitionSlug)) continue;
+
       for (const participant of [event.participant1, event.participant2]) {
         if (!participant || participant.type === "player" || participant.type === "event") continue;
         participants.set(participant.id, participant.name);
       }
     }
 
-    return Array.from(participants, ([value, label]) => ({ value, label })).sort((a, b) => a.label.localeCompare(b.label));
-  }, [categoryEvents, effectiveCategory, effectiveSubfilter]);
+    return Array.from(participants, ([value, label]) => ({
+      key: value,
+      value,
+      label,
+      category: singleTeamCategory,
+    })).sort((a, b) => a.label.localeCompare(b.label));
+  }, [categoryEvents, selectedCompetitionOptions, singleTeamCategory]);
 
-  const effectiveTeam = selectedTeam && teamOptions.some((option) => option.value === selectedTeam) ? selectedTeam : "";
+  const effectiveTeam =
+    selectedTeam && teamOptions.some((option) => option.value === selectedTeam)
+      ? selectedTeam
+      : "";
 
   const periodEvents = useMemo(() => {
     return events.filter((event) => {
       const eventTime = Date.parse(event.eventDate);
       if (!Number.isFinite(eventTime)) return false;
       if (period === "live") return event.status === "live";
-      if (period === "date") return dateKey(new Date(event.eventDate), timeZone) === selectedDate;
+      if (period === "date") {
+        return dateKey(new Date(event.eventDate), timeZone) === selectedDate;
+      }
       if (event.status === "live") return true;
       return event.status !== "finished" && eventTime >= now.getTime();
     });
   }, [events, now, period, selectedDate, timeZone]);
 
   const filteredEvents = useMemo(() => {
+    const categorySet = new Set(effectiveCategories);
+
     return periodEvents
-      .filter((event) => effectiveCategory === "all" || categoryForSport(event.sport) === effectiveCategory)
+      .filter(
+        (event) =>
+          effectiveCategories.length === 0 ||
+          categorySet.has(categoryForSport(event.sport))
+      )
       .filter((event) => {
-        if (!effectiveSubfilter) return true;
-        if (GROUPED_CATEGORIES.has(effectiveCategory)) return event.sport === effectiveSubfilter;
-        return event.competitionSlug === effectiveSubfilter;
+        if (effectiveSubfilterKeys.length === 0) return true;
+
+        const category = categoryForSport(event.sport);
+        const eventFilterKey = GROUPED_CATEGORIES.has(category)
+          ? category + "::" + event.sport
+          : category + "::" + event.competitionSlug;
+
+        return effectiveSubfilterSet.has(eventFilterKey);
       })
       .filter((event) => {
         if (!effectiveTeam) return true;
-        return event.participant1?.id === effectiveTeam || event.participant2?.id === effectiveTeam;
+        return (
+          event.participant1?.id === effectiveTeam ||
+          event.participant2?.id === effectiveTeam
+        );
       })
       .sort((a, b) => Date.parse(a.eventDate) - Date.parse(b.eventDate));
-  }, [effectiveCategory, effectiveSubfilter, effectiveTeam, periodEvents]);
+  }, [
+    effectiveCategories,
+    effectiveSubfilterKeys.length,
+    effectiveSubfilterSet,
+    effectiveTeam,
+    periodEvents,
+  ]);
 
   const allGroups = useMemo(() => {
     const groups = new Map<string, HomeDiscoveryEvent[]>();
@@ -392,6 +547,7 @@ export default function HomeDiscovery({
         groupedMatches.set(event.eventGroupId, list);
         continue;
       }
+
       output.push({
         kind: "event",
         id: event.id,
@@ -405,13 +561,20 @@ export default function HomeDiscovery({
       const first = fullSessions[0];
       const last = fullSessions[fullSessions.length - 1] ?? first;
       const liveSession = fullSessions.find((event) => event.status === "live");
-      const futureSession = fullSessions.find((event) => event.status !== "finished" && Date.parse(event.eventDate) >= now.getTime());
+      const futureSession = fullSessions.find(
+        (event) =>
+          event.status !== "finished" &&
+          Date.parse(event.eventDate) >= now.getTime()
+      );
       const nextSession = liveSession ?? futureSession ?? matchingSessions[0] ?? first;
       const category = categoryForSport(first.sport);
+
       output.push({
         kind: "group",
         id: groupId,
-        sortTime: Math.min(...matchingSessions.map((event) => Date.parse(event.eventDate))),
+        sortTime: Math.min(
+          ...matchingSessions.map((event) => Date.parse(event.eventDate))
+        ),
         category,
         title: first.eventGroupName || first.title,
         detailPath: stripHash(first.detailPath),
@@ -428,33 +591,80 @@ export default function HomeDiscovery({
     return output.sort((a, b) => a.sortTime - b.sortTime);
   }, [allGroups, filteredEvents, now]);
 
-  const liveCount = useMemo(() => events.filter((event) => event.status === "live").length, [events]);
-  const upcomingCount = useMemo(() => events.filter((event) => event.status === "live" || (event.status !== "finished" && Date.parse(event.eventDate) >= now.getTime())).length, [events, now]);
+  const liveCount = useMemo(
+    () => events.filter((event) => event.status === "live").length,
+    [events]
+  );
+  const upcomingCount = useMemo(
+    () =>
+      events.filter(
+        (event) =>
+          event.status === "live" ||
+          (event.status !== "finished" &&
+            Date.parse(event.eventDate) >= now.getTime())
+      ).length,
+    [events, now]
+  );
 
-  const selectedCategoryDefinition = effectiveCategory === "all" ? null : categoryDefinition(effectiveCategory);
-  const selectedSubfilterLabel = subfilterOptions.find((option) => option.value === effectiveSubfilter)?.label;
-  const selectedTeamLabel = teamOptions.find((option) => option.value === effectiveTeam)?.label;
+  const selectedCategoryLabels = effectiveCategories.map(
+    (category) => categoryDefinition(category).label
+  );
+  const selectedSubfilterLabels = subfilterOptions
+    .filter((option) => effectiveSubfilterSet.has(option.key))
+    .map((option) =>
+      effectiveCategories.length > 1
+        ? categoryDefinition(option.category).label + " · " + option.label
+        : option.label
+    );
+  const selectedTeamLabel = teamOptions.find(
+    (option) => option.value === effectiveTeam
+  )?.label;
 
-  const resultTitle = [
-    selectedCategoryDefinition?.label,
-    selectedSubfilterLabel,
-    selectedTeamLabel,
-  ].filter(Boolean).join(" · ") || (period === "live" ? "Live now" : period === "date" ? formatLongDateKey(selectedDate) : "Live & upcoming");
+  const resultTitle =
+    [
+      joinLabels(selectedCategoryLabels),
+      joinLabels(selectedSubfilterLabels),
+      selectedTeamLabel,
+    ]
+      .filter(Boolean)
+      .join(" · ") ||
+    (period === "live"
+      ? "Live now"
+      : period === "date"
+        ? formatLongDateKey(selectedDate)
+        : "Live & upcoming");
 
-  const resultNoun = effectiveCategory === "motorsports"
-    ? "weekend"
-    : effectiveCategory === "combat"
-      ? "event"
-      : effectiveCategory === "football" || effectiveCategory === "basketball" || effectiveCategory === "hockey"
+  const resultNoun =
+    effectiveCategories.length === 1 && effectiveCategories[0] === "motorsports"
+      ? "weekend"
+      : effectiveCategories.length === 1 &&
+          ["football", "basketball", "hockey"].includes(effectiveCategories[0])
         ? "match"
         : "event";
 
-  const filteredTeamOptions = teamOptions.filter((option) => option.label.toLowerCase().includes(teamQuery.trim().toLowerCase()));
+  const filteredTeamOptions = teamOptions.filter((option) =>
+    option.label.toLowerCase().includes(teamQuery.trim().toLowerCase())
+  );
 
-  const sportsToShow = showMoreSports || availableCategories.slice(6).some((category) => category.id === effectiveCategory)
-    ? availableCategories
-    : availableCategories.slice(0, 6);
+  const hiddenSelectionExists = availableCategories
+    .slice(6)
+    .some((category) => effectiveCategories.includes(category.id));
+  const sportsToShow =
+    showMoreSports || hiddenSelectionExists
+      ? availableCategories
+      : availableCategories.slice(0, 6);
   const hasMoreSports = availableCategories.length > 6;
+
+  const secondaryLabel =
+    effectiveCategories.length > 1
+      ? "Competitions / series"
+      : effectiveCategories[0] === "motorsports"
+        ? "Series"
+        : effectiveCategories[0] === "combat"
+          ? "Organization"
+          : effectiveCategories[0] === "tennis"
+            ? "Tournament"
+            : "Competition";
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -465,11 +675,17 @@ export default function HomeDiscovery({
     if (period === "date") params.set("date", selectedDate);
     else params.delete("date");
 
-    if (effectiveCategory !== "all") params.set("sport", effectiveCategory);
-    else params.delete("sport");
+    if (effectiveCategories.length > 0) {
+      params.set("sport", effectiveCategories.join(","));
+    } else {
+      params.delete("sport");
+    }
 
-    if (effectiveSubfilter) params.set("competition", effectiveSubfilter);
-    else params.delete("competition");
+    if (effectiveSubfilterKeys.length > 0) {
+      params.set("competition", effectiveSubfilterKeys.join(","));
+    } else {
+      params.delete("competition");
+    }
 
     if (effectiveTeam) params.set("team", effectiveTeam);
     else params.delete("team");
@@ -478,9 +694,18 @@ export default function HomeDiscovery({
     params.delete("page");
 
     const query = params.toString();
-    const nextUrl = window.location.pathname + (query ? "?" + query : "") + window.location.hash;
+    const nextUrl =
+      window.location.pathname +
+      (query ? "?" + query : "") +
+      window.location.hash;
     window.history.replaceState(window.history.state, "", nextUrl);
-  }, [effectiveCategory, effectiveSubfilter, effectiveTeam, period, selectedDate]);
+  }, [
+    effectiveCategories,
+    effectiveSubfilterKeys,
+    effectiveTeam,
+    period,
+    selectedDate,
+  ]);
 
   useEffect(() => {
     if (!teamPickerOpen) return;
@@ -491,20 +716,48 @@ export default function HomeDiscovery({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [teamPickerOpen]);
 
-  function chooseCategory(category: string) {
-    setSelectedCategory(category);
-    setSelectedSubfilter("");
+  function toggleCategory(category: string) {
+    const current = effectiveCategories;
+    const next = current.includes(category)
+      ? current.filter((item) => item !== category)
+      : [...current, category];
+
+    const nextCategorySet = new Set(next);
+    const retainedSubfilters = effectiveSubfilterKeys.filter((key) =>
+      nextCategorySet.has(key.split("::", 1)[0])
+    );
+
+    setSelectedCategories(next);
+    setSelectedSubfilters(retainedSubfilters);
     setSelectedTeam("");
     setTeamPickerOpen(false);
     setTeamQuery("");
     setVisibleLimit(20);
   }
 
-  function chooseSubfilter(value: string) {
-    setSelectedSubfilter(value);
+  function clearCategories() {
+    setSelectedCategories([]);
+    setSelectedSubfilters([]);
     setSelectedTeam("");
     setTeamPickerOpen(false);
     setTeamQuery("");
+    setVisibleLimit(20);
+  }
+
+  function toggleSubfilter(key: string) {
+    const current = effectiveSubfilterKeys;
+    const next = current.includes(key)
+      ? current.filter((item) => item !== key)
+      : [...current, key];
+
+    setSelectedSubfilters(next);
+    setVisibleLimit(20);
+  }
+
+  function clearSubfilters() {
+    setSelectedSubfilters([]);
+    setSelectedTeam("");
+    setTeamPickerOpen(false);
     setVisibleLimit(20);
   }
 
@@ -517,8 +770,8 @@ export default function HomeDiscovery({
   function resetAll() {
     setPeriod("upcoming");
     setSelectedDate(today);
-    setSelectedCategory("all");
-    setSelectedSubfilter("");
+    setSelectedCategories([]);
+    setSelectedSubfilters([]);
     setSelectedTeam("");
     setTeamPickerOpen(false);
     setTeamQuery("");
@@ -531,7 +784,10 @@ export default function HomeDiscovery({
         <div>
           <p className="wts-discovery-eyebrow">Official sports TV guide</p>
           <h1 id="wts-discovery-title">Find your event. See where to watch.</h1>
-          <p className="wts-discovery-copy">Choose a date, sport and competition. The list updates here; open a page only when you have found the event you want.</p>
+          <p className="wts-discovery-copy">
+            Choose one or several sports and competitions. The list updates here;
+            open a page only when you have found the event you want.
+          </p>
         </div>
         <Link className="wts-discovery-favorites-link" href="/favorites">
           <span aria-hidden="true">★</span>
@@ -566,7 +822,9 @@ export default function HomeDiscovery({
             Upcoming
             <span>{upcomingCount}</span>
           </button>
-          <p className="wts-timezone-note">Times in your local timezone · {localTimeZoneLabel(timeZone)}</p>
+          <p className="wts-timezone-note">
+            Times in your local timezone · {localTimeZoneLabel(timeZone)}
+          </p>
         </div>
 
         <div className="wts-date-rail" aria-label="Choose date">
@@ -586,7 +844,13 @@ export default function HomeDiscovery({
               </button>
             );
           })}
-          <label className={period === "date" && !dateChoices.includes(selectedDate) ? "wts-calendar-control is-active" : "wts-calendar-control"}>
+          <label
+            className={
+              period === "date" && !dateChoices.includes(selectedDate)
+                ? "wts-calendar-control is-active"
+                : "wts-calendar-control"
+            }
+          >
             <span aria-hidden="true">▣</span>
             <b>Calendar</b>
             <input
@@ -605,29 +869,39 @@ export default function HomeDiscovery({
             <div className="wts-filter-level-label">
               <span>1</span>
               <strong>Sport</strong>
+              <small>multiple allowed</small>
             </div>
-            <div className="wts-filter-pills-dynamic" role="group" aria-label="Sports">
+            <div
+              className="wts-filter-pills-dynamic"
+              role="group"
+              aria-label="Sports"
+            >
               <button
                 type="button"
-                className={effectiveCategory === "all" ? "is-active" : undefined}
-                aria-pressed={effectiveCategory === "all"}
-                onClick={() => chooseCategory("all")}
+                className={
+                  effectiveCategories.length === 0 ? "is-active" : undefined
+                }
+                aria-pressed={effectiveCategories.length === 0}
+                onClick={clearCategories}
               >
                 <span aria-hidden="true">▦</span>
                 All sports
               </button>
-              {sportsToShow.map((category) => (
-                <button
-                  type="button"
-                  className={effectiveCategory === category.id ? "is-active" : undefined}
-                  aria-pressed={effectiveCategory === category.id}
-                  key={category.id}
-                  onClick={() => chooseCategory(category.id)}
-                >
-                  <span aria-hidden="true">{category.icon}</span>
-                  {category.label}
-                </button>
-              ))}
+              {sportsToShow.map((category) => {
+                const active = effectiveCategories.includes(category.id);
+                return (
+                  <button
+                    type="button"
+                    className={active ? "is-active" : undefined}
+                    aria-pressed={active}
+                    key={category.id}
+                    onClick={() => toggleCategory(category.id)}
+                  >
+                    <span aria-hidden="true">{category.icon}</span>
+                    {category.label}
+                  </button>
+                );
+              })}
               {hasMoreSports ? (
                 <button
                   type="button"
@@ -636,43 +910,62 @@ export default function HomeDiscovery({
                   onClick={() => setShowMoreSports((current) => !current)}
                 >
                   {showMoreSports ? "Less" : "More"}
-                  <span aria-hidden="true">{showMoreSports ? "↑" : "↓"}</span>
+                  <span aria-hidden="true">
+                    {showMoreSports ? "↑" : "↓"}
+                  </span>
                 </button>
               ) : null}
             </div>
           </div>
 
-          {effectiveCategory !== "all" && subfilterOptions.length > 0 ? (
+          {effectiveCategories.length > 0 && subfilterOptions.length > 0 ? (
             <div className="wts-filter-level is-child">
               <div className="wts-filter-level-label">
                 <span>2</span>
-                <strong>{effectiveCategory === "motorsports" ? "Series" : effectiveCategory === "combat" ? "Organization" : effectiveCategory === "tennis" ? "Tournament" : "Competition"}</strong>
+                <strong>{secondaryLabel}</strong>
+                <small>multiple allowed</small>
               </div>
-              <div className="wts-filter-pills-dynamic" role="group" aria-label="Secondary filters">
+              <div
+                className="wts-filter-pills-dynamic"
+                role="group"
+                aria-label="Secondary filters"
+              >
                 <button
                   type="button"
-                  className={!effectiveSubfilter ? "is-active" : undefined}
-                  aria-pressed={!effectiveSubfilter}
-                  onClick={() => chooseSubfilter("")}
+                  className={
+                    effectiveSubfilterKeys.length === 0
+                      ? "is-active"
+                      : undefined
+                  }
+                  aria-pressed={effectiveSubfilterKeys.length === 0}
+                  onClick={clearSubfilters}
                 >
-                  {effectiveCategory === "motorsports" ? "All series" : effectiveCategory === "combat" ? "All combat" : effectiveCategory === "tennis" ? "All tournaments" : "All competitions"}
+                  All selected sports
                 </button>
-                {subfilterOptions.map((option) => (
-                  <button
-                    type="button"
-                    className={effectiveSubfilter === option.value ? "is-active" : undefined}
-                    aria-pressed={effectiveSubfilter === option.value}
-                    key={option.value}
-                    onClick={() => chooseSubfilter(option.value)}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+                {subfilterOptions.map((option) => {
+                  const active = effectiveSubfilterSet.has(option.key);
+                  return (
+                    <button
+                      type="button"
+                      className={active ? "is-active" : undefined}
+                      aria-pressed={active}
+                      key={option.key}
+                      onClick={() => toggleSubfilter(option.key)}
+                    >
+                      {effectiveCategories.length > 1 ? (
+                        <small className="wts-filter-chip-prefix">
+                          {categoryDefinition(option.category).label}
+                        </small>
+                      ) : null}
+                      {option.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           ) : null}
 
-          {effectiveSubfilter && teamOptions.length > 0 ? (
+          {selectedCompetitionOptions.length > 0 && teamOptions.length > 0 ? (
             <div className="wts-filter-level is-child">
               <div className="wts-filter-level-label">
                 <span>3</span>
@@ -682,7 +975,11 @@ export default function HomeDiscovery({
               <div className="wts-team-filter-inline">
                 <button
                   type="button"
-                  className={effectiveTeam ? "wts-team-select has-selection" : "wts-team-select"}
+                  className={
+                    effectiveTeam
+                      ? "wts-team-select has-selection"
+                      : "wts-team-select"
+                  }
                   onClick={() => {
                     setTeamQuery("");
                     setTeamPickerOpen(true);
@@ -711,17 +1008,32 @@ export default function HomeDiscovery({
       <div className="wts-discovery-results">
         <div className="wts-discovery-results-heading">
           <div>
-            <p>{period === "live" ? "Now" : period === "date" ? formatLongDateKey(selectedDate) : "Now & next"}</p>
+            <p>
+              {period === "live"
+                ? "Now"
+                : period === "date"
+                  ? formatLongDateKey(selectedDate)
+                  : "Now & next"}
+            </p>
             <h2>{resultTitle}</h2>
           </div>
-          <span aria-live="polite">{resultItems.length} {resultNoun}{resultItems.length === 1 ? "" : "s"}</span>
+          <span aria-live="polite">
+            {resultItems.length} {resultNoun}
+            {resultItems.length === 1 ? "" : "s"}
+          </span>
         </div>
 
         {resultItems.length === 0 ? (
           <div className="wts-discovery-empty">
-            <strong>{period === "live" ? "No live events match these filters." : "No events match these filters."}</strong>
+            <strong>
+              {period === "live"
+                ? "No live events match these filters."
+                : "No events match these filters."}
+            </strong>
             <span>Change the date or clear one of the filters.</span>
-            <button type="button" onClick={resetAll}>Show all upcoming</button>
+            <button type="button" onClick={resetAll}>
+              Show all upcoming
+            </button>
           </div>
         ) : (
           <div className="wts-discovery-list">
@@ -730,22 +1042,65 @@ export default function HomeDiscovery({
                 const nextSession = item.nextSession;
                 const live = Boolean(nextSession?.status === "live");
                 return (
-                  <Link className="wts-discovery-card is-group" href={item.detailPath} key={item.id}>
+                  <Link
+                    className="wts-discovery-card is-group"
+                    href={item.detailPath}
+                    key={item.id}
+                  >
                     <div className="wts-discovery-card-time">
-                      <span className={live ? "wts-result-status is-live" : "wts-result-status is-upcoming"}>
-                        {live ? "Live" : item.category === "motorsports" ? "Weekend" : "Event"}
+                      <span
+                        className={
+                          live
+                            ? "wts-result-status is-live"
+                            : "wts-result-status is-upcoming"
+                        }
+                      >
+                        {live
+                          ? "Live"
+                          : item.category === "motorsports"
+                            ? "Weekend"
+                            : "Event"}
                       </span>
-                      <strong>{nextSession ? formatTime(nextSession.eventDate, timeZone) : "TBC"}</strong>
-                      <small>{formatDateRange(item.startDate, item.endDate, timeZone)}</small>
+                      <strong>
+                        {nextSession
+                          ? formatTime(nextSession.eventDate, timeZone)
+                          : "TBC"}
+                      </strong>
+                      <small>
+                        {formatDateRange(
+                          item.startDate,
+                          item.endDate,
+                          timeZone
+                        )}
+                      </small>
                     </div>
                     <div className="wts-discovery-card-main">
-                      <p>{categoryDefinition(item.category).icon} {item.competition}</p>
+                      <p>
+                        {categoryDefinition(item.category).icon}{" "}
+                        {item.competition}
+                      </p>
                       <h3>{item.title}</h3>
-                      <span>{nextSession ? (live ? "Live: " : "Next: ") + (nextSession.stage || "Session") : "Schedule"}{item.venue ? " · " + item.venue : ""}</span>
+                      <span>
+                        {nextSession
+                          ? (live ? "Live: " : "Next: ") +
+                            (nextSession.stage || "Session")
+                          : "Schedule"}
+                        {item.venue ? " · " + item.venue : ""}
+                      </span>
                     </div>
-                    <span className={"wts-result-access " + accessClass(item.access)}>{item.access}</span>
+                    <span
+                      className={
+                        "wts-result-access " + accessClass(item.access)
+                      }
+                    >
+                      {item.access}
+                    </span>
                     <div className="wts-discovery-card-open">
-                      <span>{item.category === "motorsports" ? "Open weekend" : "Open event"}</span>
+                      <span>
+                        {item.category === "motorsports"
+                          ? "Open weekend"
+                          : "Open event"}
+                      </span>
                       <b aria-hidden="true">›</b>
                     </div>
                   </Link>
@@ -754,18 +1109,43 @@ export default function HomeDiscovery({
 
               const event = item.event;
               return (
-                <Link className="wts-discovery-card" href={event.detailPath} key={item.id}>
+                <Link
+                  className="wts-discovery-card"
+                  href={event.detailPath}
+                  key={item.id}
+                >
                   <div className="wts-discovery-card-time">
-                    <span className={"wts-result-status " + statusClass(event)}>{statusLabel(event)}</span>
-                    <strong>{event.status === "live" ? "LIVE" : formatTime(event.eventDate, timeZone)}</strong>
-                    <small>{formatShortDate(event.eventDate, timeZone)}</small>
+                    <span
+                      className={
+                        "wts-result-status " + statusClass(event)
+                      }
+                    >
+                      {statusLabel(event)}
+                    </span>
+                    <strong>
+                      {event.status === "live"
+                        ? "LIVE"
+                        : formatTime(event.eventDate, timeZone)}
+                    </strong>
+                    <small>
+                      {formatShortDate(event.eventDate, timeZone)}
+                    </small>
                   </div>
                   <div className="wts-discovery-card-main">
-                    <p>{categoryDefinition(categoryForSport(event.sport)).icon} {event.competition}</p>
+                    <p>
+                      {categoryDefinition(categoryForSport(event.sport)).icon}{" "}
+                      {event.competition}
+                    </p>
                     <h3>{event.title}</h3>
                     <span>{event.stage || event.venue || "Event"}</span>
                   </div>
-                  <span className={"wts-result-access " + accessClass(event.access)}>{event.access}</span>
+                  <span
+                    className={
+                      "wts-result-access " + accessClass(event.access)
+                    }
+                  >
+                    {event.access}
+                  </span>
                   <div className="wts-discovery-card-open">
                     <span>Open</span>
                     <b aria-hidden="true">›</b>
@@ -777,7 +1157,11 @@ export default function HomeDiscovery({
         )}
 
         {resultItems.length > visibleLimit ? (
-          <button className="wts-discovery-show-more" type="button" onClick={() => setVisibleLimit((current) => current + 20)}>
+          <button
+            className="wts-discovery-show-more"
+            type="button"
+            onClick={() => setVisibleLimit((current) => current + 20)}
+          >
             Show more
           </button>
         ) : null}
@@ -787,16 +1171,29 @@ export default function HomeDiscovery({
         <div
           className="wts-team-picker-backdrop"
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setTeamPickerOpen(false);
+            if (event.target === event.currentTarget) {
+              setTeamPickerOpen(false);
+            }
           }}
         >
-          <section className="wts-team-picker" role="dialog" aria-modal="true" aria-labelledby="wts-team-picker-title">
+          <section
+            className="wts-team-picker"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="wts-team-picker-title"
+          >
             <div className="wts-team-picker-header">
               <div>
                 <p>Optional filter</p>
                 <h2 id="wts-team-picker-title">Choose a team</h2>
               </div>
-              <button type="button" aria-label="Close team selector" onClick={() => setTeamPickerOpen(false)}>×</button>
+              <button
+                type="button"
+                aria-label="Close team selector"
+                onClick={() => setTeamPickerOpen(false)}
+              >
+                ×
+              </button>
             </div>
             <label className="wts-team-picker-search">
               <span aria-hidden="true">⌕</span>
@@ -823,7 +1220,9 @@ export default function HomeDiscovery({
               {filteredTeamOptions.map((option) => (
                 <button
                   type="button"
-                  className={effectiveTeam === option.value ? "is-active" : undefined}
+                  className={
+                    effectiveTeam === option.value ? "is-active" : undefined
+                  }
                   key={option.value}
                   onClick={() => {
                     setSelectedTeam(option.value);
@@ -832,10 +1231,14 @@ export default function HomeDiscovery({
                   }}
                 >
                   <span>{option.label}</span>
-                  {effectiveTeam === option.value ? <b aria-hidden="true">✓</b> : null}
+                  {effectiveTeam === option.value ? (
+                    <b aria-hidden="true">✓</b>
+                  ) : null}
                 </button>
               ))}
-              {filteredTeamOptions.length === 0 ? <p>No team found.</p> : null}
+              {filteredTeamOptions.length === 0 ? (
+                <p>No team found.</p>
+              ) : null}
             </div>
           </section>
         </div>
