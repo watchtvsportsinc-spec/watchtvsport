@@ -58,8 +58,7 @@ function RaceCard({ item, completed = false }: { item: WeekendView; completed?: 
   return (
     <article className="wts-ufc-event-row">
       <Link className="wts-ufc-event-main" href={href}>
-        <div className="wts-discovery-card-time">
-          <span className="wts-result-status">Grand Prix</span>
+        <div className="wts-discovery-card-time wts-motorsport-event-time">
           <strong>
             {completed ? "—" : exactNext ? <LocalTime date={exactNext} display="time" /> : "TBC"}
           </strong>
