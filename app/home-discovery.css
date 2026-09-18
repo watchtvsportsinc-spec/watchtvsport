@@ -768,24 +768,22 @@
     border-radius:14px;
   }
   .wts-discovery-card{
-    grid-template-columns:58px minmax(0,1fr) 34px;
-    grid-template-areas:
-      "time main open"
-      "time access open";
-    gap:4px 7px;
-    min-height:66px;
-    padding:8px 8px;
+    grid-template-columns:54px minmax(0,1fr) auto 30px;
+    grid-template-areas:"time main access open";
+    gap:5px;
+    min-height:0;
+    padding:5px 7px;
   }
   .wts-discovery-card-time{grid-area:time}
   .wts-discovery-card-main{grid-area:main}
   .wts-result-access{grid-area:access}
   .wts-discovery-card-open{
     grid-area:open;
-    width:34px;
-    min-width:34px;
-    height:100%;
-    min-height:46px;
-    align-self:stretch;
+    width:30px;
+    min-width:30px;
+    height:34px;
+    min-height:34px;
+    align-self:center;
     padding:0;
     border-radius:10px;
   }
@@ -799,9 +797,11 @@
     font-size:7.5px;
   }
   .wts-result-access{
-    min-height:20px;
-    padding:3px 6px;
-    font-size:7px;
+    min-height:18px;
+    padding:2px 5px;
+    font-size:6.5px;
+    line-height:1;
+    white-space:nowrap;
   }
   .wts-result-status{
     min-height:19px;
