@@ -7,7 +7,6 @@ import EventSessionSchedule, {
 } from "@/components/EventSessionSchedule";
 import FavoriteButton from "@/components/FavoriteButton";
 import LocalTime from "@/components/LocalTime";
-import ParticipantSportVisual from "@/components/ParticipantSportVisual";
 import { getAllEvents, type EventData } from "@/lib/events";
 import { getPublicCompetitionBroadcastRights } from "@/lib/public-broadcast-rights";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
@@ -28,6 +27,22 @@ function cardEvents(events: EventData[], slug: string) {
       (event) => event.sport === "ufc" && event.eventGroupSlug === slug
     )
     .sort((a, b) => (a.sequenceNumber ?? 999) - (b.sequenceNumber ?? 999));
+}
+
+function countryFlag(code?: string): string {
+  if (!code || !/^[A-Za-z]{2}$/.test(code)) return "•";
+  return String.fromCodePoint(
+    ...code
+      .toUpperCase()
+      .split("")
+      .map((letter) => 127397 + letter.charCodeAt(0))
+  );
+}
+
+function formatBoutSegment(value: string): string {
+  return value
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 function schemaStatus(sessions: EventData[]): string {
@@ -253,42 +268,40 @@ export default async function UfcEventPage({
             <p>{bouts.length}</p>
           </div>
 
-          {bouts.map((bout) => (
-            <article className="v2-versus-card" key={bout.id}>
-              <div>
-                <div>
-                  <ParticipantSportVisual
-                    sport="ufc"
-                    label={bout.fighter1.name}
-                    countryCode={bout.fighter1.countryCode}
-                    visual={bout.fighter1.visual}
-                    size="md"
-                  />
-                  <strong>{bout.fighter1.name}</strong>
-                  <small>{bout.fighter1.countryCode ?? "Fighter"}</small>
+          <div className="wts-ufc-bout-list">
+            {bouts.map((bout) => (
+              <article className="wts-ufc-bout-row" key={bout.id}>
+                <div className="wts-ufc-bout-meta">
+                  <span className={bout.titleBout ? "is-title" : undefined}>
+                    {bout.titleBout ? "Title bout" : formatBoutSegment(bout.segment)}
+                  </span>
+                  <strong>{bout.weightClass ?? "Confirmed bout"}</strong>
                 </div>
 
-                <b>VS</b>
-
-                <div>
-                  <ParticipantSportVisual
-                    sport="ufc"
-                    label={bout.fighter2.name}
-                    countryCode={bout.fighter2.countryCode}
-                    visual={bout.fighter2.visual}
-                    size="md"
-                  />
-                  <strong>{bout.fighter2.name}</strong>
-                  <small>{bout.fighter2.countryCode ?? "Fighter"}</small>
+                <div className="wts-ufc-fighter is-left">
+                  <span className="wts-ufc-fighter-flag" aria-hidden="true">
+                    {countryFlag(bout.fighter1.countryCode)}
+                  </span>
+                  <div>
+                    <strong>{bout.fighter1.name}</strong>
+                    <small>{bout.fighter1.countryCode ?? "Fighter"}</small>
+                  </div>
                 </div>
-              </div>
 
-              <p className="v2-timezone-note">
-                {bout.titleBout ? "Title bout · " : ""}
-                {bout.weightClass ?? "Confirmed bout"}
-              </p>
-            </article>
-          ))}
+                <div className="wts-ufc-vs" aria-hidden="true">VS</div>
+
+                <div className="wts-ufc-fighter is-right">
+                  <div>
+                    <strong>{bout.fighter2.name}</strong>
+                    <small>{bout.fighter2.countryCode ?? "Fighter"}</small>
+                  </div>
+                  <span className="wts-ufc-fighter-flag" aria-hidden="true">
+                    {countryFlag(bout.fighter2.countryCode)}
+                  </span>
+                </div>
+              </article>
+            ))}
+          </div>
         </section>
       ) : null}
 
