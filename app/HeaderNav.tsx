@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { buildSearchSuggestions, type SearchSuggestion } from "@/lib/search-suggestions";
+import { favoriteKey } from "@/lib/favorites";
+import { toggleFavorite, useFavorites } from "@/lib/favorites-client";
 
 const links = [
   { href: "/events", label: "Events" },
@@ -48,6 +50,8 @@ export default function HeaderNav() {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [mobileSearchExpanded, setMobileSearchExpanded] = useState(false);
+  const favorites = useFavorites();
+  const favoriteKeys = useMemo(() => new Set(favorites.items.map((item) => favoriteKey(item))), [favorites.items]);
 
   const matches = useMemo(() => {
     if (!query.trim()) return [];
@@ -180,22 +184,50 @@ export default function HeaderNav() {
           />
           {open && matches.length > 0 ? (
             <ul id="wts-header-search-results" className="wts-header-search-results" role="listbox">
-              {matches.map((suggestion, index) => (
-                <li key={suggestion.id} id={`wts-header-search-result-${index}`} role="option" aria-selected={index === activeIndex}>
-                  <button
-                    className={index === activeIndex ? "is-active" : undefined}
-                    type="button"
-                    onMouseDown={(event) => event.preventDefault()}
-                    onClick={() => goToSuggestion(suggestion)}
+              {matches.map((suggestion, index) => {
+                const favorite = suggestion.favorite;
+                const isSaved = favorite ? favoriteKeys.has(favoriteKey(favorite)) : false;
+                return (
+                  <li
+                    className={favorite ? "has-favorite-action" : undefined}
+                    key={suggestion.id}
+                    id={`wts-header-search-result-${index}`}
+                    role="option"
+                    aria-selected={index === activeIndex}
                   >
-                    <span>
-                      <strong>{suggestion.label}</strong>
-                      <small>{suggestion.kind}</small>
-                    </span>
-                    <b aria-hidden="true">›</b>
-                  </button>
-                </li>
-              ))}
+                    <button
+                      className={`wts-header-search-result-main${index === activeIndex ? " is-active" : ""}`}
+                      type="button"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => goToSuggestion(suggestion)}
+                    >
+                      <span>
+                        <strong>{suggestion.label}</strong>
+                        <small>{suggestion.kind}</small>
+                      </span>
+                      <b aria-hidden="true">›</b>
+                    </button>
+                    {favorite ? (
+                      <button
+                        className={`wts-header-search-favorite${isSaved ? " is-saved" : ""}`}
+                        type="button"
+                        aria-pressed={isSaved}
+                        aria-label={isSaved ? `Remove ${favorite.label} from favorites` : `Add ${favorite.label} to favorites`}
+                        title={isSaved ? "Remove from favorites" : "Add to favorites"}
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          toggleFavorite(favorite);
+                          setOpen(true);
+                        }}
+                      >
+                        <span aria-hidden="true">{isSaved ? "★" : "☆"}</span>
+                      </button>
+                    ) : null}
+                  </li>
+                );
+              })}
             </ul>
           ) : null}
         </form>
