@@ -486,49 +486,45 @@
 }
 
 
-/* Reusable combat event hero - verified MMA asset */
+/* Reusable combat event hero */
 .wts-combat-event-hero{
   position:relative;
   isolation:isolate;
   overflow:hidden;
+  min-height:320px;
   border-color:rgba(96,165,250,.28);
-  background:#06111d !important;
+  background-color:#06111d !important;
+  background-image:
+    linear-gradient(
+      90deg,
+      rgba(3,10,18,.72) 0%,
+      rgba(3,10,18,.38) 24%,
+      rgba(3,10,18,.18) 50%,
+      rgba(3,10,18,.38) 76%,
+      rgba(3,10,18,.72) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(3,10,18,.18) 0%,
+      rgba(3,10,18,.06) 46%,
+      rgba(3,10,18,.42) 100%
+    ),
+    url('/mma-hero-bg-wide.webp') !important;
+  background-position:center center !important;
+  background-size:cover !important;
+  background-repeat:no-repeat !important;
+  box-shadow:inset 0 0 54px rgba(0,0,0,.20);
 }
-.wts-combat-arena-backdrop,
-.wts-combat-arena-foreground,
-.wts-combat-arena-overlay{
-  position:absolute !important;
-  inset:0 !important;
-  pointer-events:none;
-}
-.wts-combat-arena-backdrop{
-  z-index:0;
-  object-fit:cover;
-  object-position:center;
-  filter:blur(18px) brightness(1.55) saturate(1.12);
-  transform:scale(1.08);
-  opacity:.92;
-}
-.wts-combat-arena-foreground{
-  z-index:1;
-  object-fit:contain;
-  object-position:center;
-  filter:brightness(1.7) contrast(1.08) saturate(1.12);
-  transform:scale(.90);
-  opacity:.98;
-}
-.wts-combat-arena-overlay{
-  z-index:2;
-  background:
-    linear-gradient(90deg,rgba(2,8,15,.18),rgba(2,8,15,.02) 34%,rgba(2,8,15,.02) 66%,rgba(2,8,15,.18)),
-    linear-gradient(180deg,rgba(2,8,15,.02),rgba(2,8,15,.20));
-  box-shadow:inset 0 0 48px rgba(0,0,0,.16);
+.wts-combat-event-hero::before,
+.wts-combat-event-hero::after{
+  content:none !important;
+  display:none !important;
 }
 .wts-combat-hero-header,
 .wts-combat-main-event,
 .wts-combat-event-program{
   position:relative;
-  z-index:3;
+  z-index:1;
 }
 .wts-combat-hero-header{
   display:flex;
@@ -537,55 +533,58 @@
   gap:16px;
 }
 .wts-combat-event-kicker{
-  margin:0 0 6px;
+  margin:0 0 7px;
   color:#62bdff;
   font-size:9px;
   font-weight:950;
-  letter-spacing:.12em;
+  letter-spacing:.13em;
   text-transform:uppercase;
 }
 .wts-combat-hero-header h1{
   margin:0;
-  font-size:clamp(28px,4.8vw,54px);
+  color:#fff;
+  font-size:clamp(34px,4.4vw,58px);
   line-height:.98;
   letter-spacing:-.045em;
-  text-shadow:0 2px 14px rgba(0,0,0,.65);
+  text-shadow:0 3px 16px rgba(0,0,0,.72);
 }
 .wts-combat-main-event{
   display:grid;
-  grid-template-columns:minmax(0,1fr) 54px minmax(0,1fr);
+  grid-template-columns:minmax(0,1fr) 58px minmax(0,1fr);
   grid-template-areas:
     "label label label"
     "red vs blue";
   align-items:center;
-  gap:12px 14px;
+  gap:12px 18px;
   margin-top:22px;
-  border-top:1px solid rgba(255,255,255,.13);
-  border-bottom:1px solid rgba(255,255,255,.13);
-  background:rgba(2,10,18,.15);
-  padding:16px 0;
+  padding:15px 0 16px;
+  border-top:1px solid rgba(255,255,255,.14);
+  border-bottom:1px solid rgba(255,255,255,.14);
+  background:rgba(2,10,18,.16);
 }
 .wts-combat-main-event-label{
   grid-area:label;
   display:flex;
   align-items:center;
-  justify-content:flex-start;
-  gap:8px;
+  gap:9px;
 }
 .wts-combat-main-event-label span{
+  display:inline-flex;
   width:max-content;
-  border:1px solid rgba(240,181,52,.35);
+  align-items:center;
+  border:1px solid rgba(240,181,52,.40);
   border-radius:999px;
-  background:rgba(202,141,22,.13);
+  background:rgba(202,141,22,.14);
   color:#ffd16e;
-  padding:3px 8px;
+  padding:3px 9px;
   font-size:7px;
   font-weight:950;
   letter-spacing:.08em;
 }
 .wts-combat-main-event-label strong{
-  color:#edf4fa;
+  color:#f3f8fc;
   font-size:10px;
+  font-weight:800;
 }
 .wts-combat-main-fighter{
   display:flex;
@@ -596,13 +595,13 @@
 }
 .wts-combat-main-fighter.is-red{
   grid-area:red;
-  padding-left:12px;
   border-left:3px solid #ef4444;
+  padding-left:12px;
 }
 .wts-combat-main-fighter.is-blue{
   grid-area:blue;
-  padding-right:12px;
   border-right:3px solid #3b82f6;
+  padding-right:12px;
   text-align:right;
 }
 .wts-combat-main-fighter>div{
@@ -619,11 +618,11 @@
 .wts-combat-main-fighter strong{
   overflow:hidden;
   color:#fff;
-  font-size:clamp(18px,2.4vw,30px);
+  font-size:clamp(20px,2.5vw,32px);
   line-height:1.02;
   text-overflow:ellipsis;
   white-space:nowrap;
-  text-shadow:0 2px 12px rgba(0,0,0,.75);
+  text-shadow:0 3px 14px rgba(0,0,0,.78);
 }
 .wts-combat-main-flag{
   display:grid;
@@ -633,8 +632,9 @@
   place-items:center;
   border:1px solid rgba(255,255,255,.14);
   border-radius:50%;
-  background:rgba(5,20,34,.82);
+  background:rgba(5,20,34,.84);
   font-size:20px;
+  box-shadow:0 3px 10px rgba(0,0,0,.24);
 }
 .wts-combat-main-vs{
   grid-area:vs;
@@ -643,26 +643,28 @@
   height:42px;
   place-items:center;
   justify-self:center;
-  border:1px solid rgba(96,165,250,.28);
+  border:1px solid rgba(96,165,250,.32);
   border-radius:50%;
   background:rgba(7,27,45,.88);
-  color:#9ab2c7;
+  color:#b7ccdc;
   font-size:10px;
   font-weight:950;
+  box-shadow:0 3px 12px rgba(0,0,0,.24);
 }
 .wts-combat-event-program{
   display:grid;
-  grid-template-columns:minmax(240px,.9fr) minmax(0,1.4fr);
-  gap:16px;
-  align-items:center;
+  grid-template-columns:minmax(250px,.9fr) minmax(0,1.4fr);
+  gap:18px;
+  align-items:end;
   margin-top:16px;
 }
 .wts-combat-program-meta{
   display:flex;
   flex-wrap:wrap;
-  gap:8px 18px;
+  gap:8px 20px;
   color:#d1dde7;
   font-size:10px;
+  text-shadow:0 2px 8px rgba(0,0,0,.8);
 }
 .wts-combat-program-meta span{
   display:grid;
@@ -672,13 +674,13 @@
   color:#63bdff;
   font-size:7px;
   font-weight:950;
-  letter-spacing:.07em;
+  letter-spacing:.08em;
   text-transform:uppercase;
 }
 .wts-combat-program-sessions{
   display:flex;
   justify-content:flex-end;
-  gap:7px;
+  gap:8px;
   overflow-x:auto;
   scrollbar-width:none;
 }
@@ -687,15 +689,15 @@
   min-width:112px;
   display:grid;
   gap:3px;
-  border:1px solid rgba(102,170,235,.28);
+  border:1px solid rgba(102,170,235,.30);
   border-radius:11px;
-  background:rgba(5,18,31,.72);
+  background:rgba(4,16,28,.80);
   padding:8px 10px;
-  box-shadow:0 4px 18px rgba(0,0,0,.18);
+  box-shadow:0 4px 18px rgba(0,0,0,.22);
 }
 .wts-combat-program-sessions>span.is-main{
-  border-color:rgba(66,180,255,.64);
-  background:rgba(10,82,136,.38);
+  border-color:rgba(66,180,255,.68);
+  background:rgba(10,82,136,.48);
 }
 .wts-combat-program-sessions b{
   color:#eef6fc;
@@ -710,23 +712,10 @@
 }
 
 @media(max-width:760px){
-  .wts-combat-arena-backdrop{
-    filter:blur(14px) brightness(1.4) saturate(1.08);
-    transform:scale(1.10);
-  }
-  .wts-combat-arena-foreground{
-    object-fit:cover;
-    transform:scale(.96);
-    filter:brightness(1.55) contrast(1.06) saturate(1.08);
-  }
-  .wts-combat-arena-image{
-    width:108%;
-    height:100%;
-    object-fit:cover;
-    filter:brightness(1.62) contrast(1.08) saturate(1.10);
-  }
-  .wts-combat-arena-backdrop{
-    filter:blur(14px) brightness(1.30) saturate(1.08);
+  .wts-combat-event-hero{
+    min-height:0;
+    background-position:center center !important;
+    box-shadow:inset 0 0 34px rgba(0,0,0,.22);
   }
   .wts-combat-hero-header h1{
     font-size:32px;
@@ -741,20 +730,13 @@
     padding:12px 0;
   }
   .wts-combat-main-event-label{
-    grid-area:label;
-    display:flex;
-    align-items:center;
-    gap:8px;
+    gap:7px;
   }
-  .wts-combat-main-fighter.is-red{grid-area:red}
-  .wts-combat-main-fighter.is-blue{grid-area:blue}
   .wts-combat-main-vs{
-    grid-area:vs;
     width:30px;
     height:30px;
   }
   .wts-combat-main-fighter{
-    justify-content:center;
     gap:7px;
   }
   .wts-combat-main-fighter.is-red{
