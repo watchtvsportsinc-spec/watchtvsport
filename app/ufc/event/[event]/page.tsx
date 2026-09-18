@@ -2,11 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import BroadcastOffers from "@/components/BroadcastOffers";
+import CombatEventHero from "@/components/CombatEventHero";
 import EventSessionSchedule, {
   type EventSessionScheduleItem,
 } from "@/components/EventSessionSchedule";
-import FavoriteButton from "@/components/FavoriteButton";
-import LocalTime from "@/components/LocalTime";
 import { getAllEvents, type EventData } from "@/lib/events";
 import { getPublicCompetitionBroadcastRights } from "@/lib/public-broadcast-rights";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
@@ -27,16 +26,6 @@ function cardEvents(events: EventData[], slug: string) {
       (event) => event.sport === "ufc" && event.eventGroupSlug === slug
     )
     .sort((a, b) => (a.sequenceNumber ?? 999) - (b.sequenceNumber ?? 999));
-}
-
-function countryFlag(code?: string): string {
-  if (!code || !/^[A-Za-z]{2}$/.test(code)) return "•";
-  return String.fromCodePoint(
-    ...code
-      .toUpperCase()
-      .split("")
-      .map((letter) => 127397 + letter.charCodeAt(0))
-  );
 }
 
 function formatBoutSegment(value: string): string {
@@ -221,79 +210,33 @@ export default async function UfcEventPage({
         ]}
       />
 
-      <section
-        className="v2-calendar-hero wts-ufc-event-hero"
-        aria-labelledby="ufc-event-title"
-      >
-        <div className="wts-ufc-hero-header">
-          <div>
-            <p className="wts-ufc-event-kicker">UFC · Fight Night</p>
-            <h1 id="ufc-event-title">{first.eventGroupName}</h1>
-          </div>
-          <FavoriteButton favorite={favorite} />
-        </div>
-
-        {mainBout ? (
-          <div className="wts-ufc-main-event">
-            <div className="wts-ufc-main-event-label">
-              <span>{mainBout.titleBout ? "TITLE FIGHT" : "MAIN EVENT"}</span>
-              <strong>{mainBout.weightClass ?? "Main Event"}</strong>
-            </div>
-
-            <div className="wts-ufc-main-fighter is-red">
-              <span className="wts-ufc-main-flag" aria-hidden="true">
-                {countryFlag(mainBout.fighter1.countryCode)}
-              </span>
-              <div>
-                <small>{mainBout.fighter1.countryCode ?? "Fighter"}</small>
-                <strong>{mainBout.fighter1.name}</strong>
-              </div>
-            </div>
-
-            <div className="wts-ufc-main-vs" aria-hidden="true">VS</div>
-
-            <div className="wts-ufc-main-fighter is-blue">
-              <div>
-                <small>{mainBout.fighter2.countryCode ?? "Fighter"}</small>
-                <strong>{mainBout.fighter2.name}</strong>
-              </div>
-              <span className="wts-ufc-main-flag" aria-hidden="true">
-                {countryFlag(mainBout.fighter2.countryCode)}
-              </span>
-            </div>
-          </div>
-        ) : null}
-
-        <div className="wts-ufc-event-program">
-          <div className="wts-ufc-program-meta">
-            <span>
-              <b>Venue</b>
-              {first.venue ?? "Venue TBC"}
-              {first.country ? " · " + first.country : ""}
-            </span>
-            <span>
-              <b>Main Card</b>
-              <LocalTime date={main.eventDate} showTimeZone />
-            </span>
-          </div>
-
-          <div className="wts-ufc-program-sessions" aria-label="Fight night program">
-            {sessions.map((session) => (
-              <span
-                className={session.sessionType === "main_card" ? "is-main" : undefined}
-                key={session.id}
-              >
-                <b>
-                  {session.stage ??
-                    session.sessionType?.replaceAll("_", " ") ??
-                    "Session"}
-                </b>
-                <LocalTime date={session.eventDate} />
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
+      <CombatEventHero
+        promotionLabel="MMA"
+        eventName={first.eventGroupName ?? first.title}
+        venue={first.venue}
+        country={first.country}
+        mainCardDate={main.eventDate}
+        mainBout={
+          mainBout
+            ? {
+                fighter1: mainBout.fighter1,
+                fighter2: mainBout.fighter2,
+                titleBout: mainBout.titleBout,
+                weightClass: mainBout.weightClass,
+              }
+            : undefined
+        }
+        sessions={sessions.map((session) => ({
+          id: session.id,
+          label:
+            session.stage ??
+            session.sessionType?.replaceAll("_", " ") ??
+            "Session",
+          eventDate: session.eventDate,
+          isMain: session.sessionType === "main_card",
+        }))}
+        favorite={favorite}
+      />
 
       <EventSessionSchedule
         eyebrow="Fight night schedule"
