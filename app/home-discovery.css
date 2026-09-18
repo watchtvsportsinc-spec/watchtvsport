@@ -240,6 +240,14 @@
   cursor:pointer;
 }
 .wts-filter-pills-dynamic button>span{font-size:13px}
+.wts-filter-chip-prefix{
+  color:#6f8ca6;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.03em;
+  text-transform:uppercase;
+}
+.wts-filter-pills-dynamic button.is-active .wts-filter-chip-prefix{color:#d9eeff}
 .wts-filter-pills-dynamic button.is-active{
   border-color:#0d8cff;
   background:#0d84f4;
