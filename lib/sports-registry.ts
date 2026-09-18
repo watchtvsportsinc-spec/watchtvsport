@@ -77,7 +77,7 @@ export const sportsRegistry: SportRegistryEntry[] = [
     participantPages: "teams-and-nations",
     competitionPages: true,
     eventPages: true,
-    discovery: { family: "american-football", familyLabel: "American football", icon: "🏈", secondaryLabel: "Competition", groupEvents: false, teamFilter: true },
+    discovery: { family: "american-football", familyLabel: "American Football", icon: "🏈", secondaryLabel: "Competition", groupEvents: false, teamFilter: true },
   },
   {
     id: "rugby",
