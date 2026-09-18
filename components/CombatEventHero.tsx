@@ -1,3 +1,5 @@
+import Image from "next/image";
+import mmaArenaBackground from "../public/mma-combat-arena-bg-dezoom.webp";
 import FavoriteButton from "@/components/FavoriteButton";
 import LocalTime from "@/components/LocalTime";
 import type { FavoriteCandidate } from "@/lib/favorites";
@@ -58,6 +60,25 @@ export default function CombatEventHero({
       className="v2-calendar-hero wts-combat-event-hero"
       aria-labelledby="combat-event-title"
     >
+      <Image
+        src={mmaArenaBackground}
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="wts-combat-arena-backdrop"
+        aria-hidden="true"
+      />
+      <Image
+        src={mmaArenaBackground}
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="wts-combat-arena-foreground"
+        aria-hidden="true"
+      />
+      <div className="wts-combat-arena-overlay" aria-hidden="true" />
       <div className="wts-combat-hero-header">
         <div>
           <p className="wts-combat-event-kicker">
