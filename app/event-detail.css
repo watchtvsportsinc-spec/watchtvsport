@@ -493,27 +493,12 @@
   overflow:hidden;
   min-height:320px;
   border-color:rgba(96,165,250,.28);
-  background-color:#06111d !important;
-  background-image:
-    linear-gradient(
-      90deg,
-      rgba(3,10,18,.42) 0%,
-      rgba(3,10,18,.18) 24%,
-      rgba(3,10,18,.06) 50%,
-      rgba(3,10,18,.18) 76%,
-      rgba(3,10,18,.42) 100%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(3,10,18,.06) 0%,
-      rgba(3,10,18,.02) 46%,
-      rgba(3,10,18,.24) 100%
-    ),
-    url('/ufc-event-arena-bg.avif') !important;
+  background-color:#06111d;
+  background-image:url('/mma-combat-arena-bg-dezoom.webp') !important;
   background-position:center center !important;
   background-size:cover !important;
   background-repeat:no-repeat !important;
-  box-shadow:inset 0 0 54px rgba(0,0,0,.20);
+  box-shadow:0 24px 64px rgba(0,0,0,.22);
 }
 .wts-combat-event-hero::before,
 .wts-combat-event-hero::after{
