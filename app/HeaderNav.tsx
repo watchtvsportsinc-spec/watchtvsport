@@ -234,11 +234,11 @@ export default function HeaderNav() {
 
         <Link
           aria-label="Open favorites"
+          title="Favorites"
           className={`wts-nav-favorites${pathname === "/favorites" ? " is-active" : ""}`}
           href="/favorites"
         >
           <span aria-hidden="true">★</span>
-          <span>Favorites</span>
         </Link>
       </div>
     </nav>
