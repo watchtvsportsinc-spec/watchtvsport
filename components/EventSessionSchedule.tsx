@@ -164,11 +164,17 @@ export default function EventSessionSchedule({
                 <article className="wts-event-session" id={session.id} key={session.id}>
                   <div className="wts-event-session-time">
                     <strong>TBC</strong>
-                    <span className="wts-event-session-status is-scheduled">Upcoming</span>
+                    <span className={"wts-event-session-status is-" + (session.status ?? "scheduled")}>
+                      {statusLabel(session.status)}
+                    </span>
                   </div>
                   <div className="wts-event-session-main">
                     <h4>{session.label}</h4>
-                    <span>Exact start time pending</span>
+                    <span>
+                      {session.status === "finished"
+                        ? "Archived session time not yet imported"
+                        : "Exact start time pending"}
+                    </span>
                   </div>
                 </article>
               ))}

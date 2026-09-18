@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
-import RaceSeriesPage, { buildRaceSeriesMetadata } from "@/components/RaceSeriesPage";
+import { buildRaceSeriesMetadata } from "@/components/RaceSeriesPage";
+import MotoGpPage from "@/components/MotoGpPage";
 import SportHubPage, { buildSportHubMetadata } from "@/components/SportHubPage";
 
 type PageProps = { params: Promise<{ sport: string }> };
@@ -27,6 +28,6 @@ export default async function SportPage({ params }: PageProps) {
   const { sport } = await params;
   if (REDIRECTS[sport]) permanentRedirect(REDIRECTS[sport]);
   if (!SUPPORTED.has(sport)) notFound();
-  if (sport === "motogp") return <RaceSeriesPage sport="motogp" />;
+  if (sport === "motogp") return <MotoGpPage />;
   return <SportHubPage sport={sport} />;
 }

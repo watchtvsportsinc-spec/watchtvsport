@@ -7,6 +7,7 @@ import {
 import { clubSlug } from "./club-aliases";
 import { championsLeague202627LeaguePhase } from "../source/champions-league-2026-27-league-phase";
 import { formula1Season2026Sessions } from "../source/formula-1-2026-season";
+import { motogp2026TimedSessions } from "../source/motogp-2026-season";
 import { ufc2026UpcomingSessions } from "../source/ufc-2026-upcoming";
 import { withPriorityBroadcasts } from "./priority-broadcasts";
 import { withBroadcastLanguageDefaults } from "./broadcast-language-defaults";
@@ -128,6 +129,7 @@ export function getAllEvents(): EventData[] {
   return [
     ...championsLeague202627LeaguePhase.map(prepareEvent),
     ...formula1Season2026Sessions.map(prepareEvent),
+    ...motogp2026TimedSessions.map(prepareEvent),
     ...ufc2026UpcomingSessions.map(prepareEvent),
     ...getAllMatches().map(mapMatchToEvent).map(prepareEvent),
   ];
