@@ -16,6 +16,35 @@ function eventWeekendSlug(detailPath: string, fallback?: string): string | undef
   return detailPath.match(/^\/formula-1\/grand-prix\/([^#?]+)/)?.[1];
 }
 
+function countryFlagCode(country?: string): string | null {
+  if (!country) return null;
+
+  const codes: Record<string, string> = {
+    Australia: "au",
+    China: "cn",
+    Japan: "jp",
+    "United States": "us",
+    Canada: "ca",
+    Monaco: "mc",
+    Spain: "es",
+    Austria: "at",
+    "Great Britain": "gb",
+    Belgium: "be",
+    Hungary: "hu",
+    Netherlands: "nl",
+    Italy: "it",
+    Azerbaijan: "az",
+    Bahrain: "bh",
+    Singapore: "sg",
+    Mexico: "mx",
+    Brazil: "br",
+    Qatar: "qa",
+    "United Arab Emirates": "ae",
+  };
+
+  return codes[country] ?? null;
+}
+
 export default async function Formula1Page() {
   const now = Date.now();
   const snapshot = await getPublicEventsSnapshot({ sport: "formula-1", limit: 500 });
@@ -100,10 +129,6 @@ export default async function Formula1Page() {
         <div className="wts-f1-race-list">
           {weekends.map((weekend, index) => (
             <article className="wts-f1-race-card" key={weekend.id}>
-              <div className="wts-f1-race-number" aria-hidden="true">
-                {String(index + 1).padStart(2, "0")}
-              </div>
-
               <div className="wts-f1-race-copy">
                 <div className="wts-f1-race-topline">
                   <span className={weekend.isLive ? "is-live" : index === 0 ? "is-next" : ""}>
@@ -113,6 +138,14 @@ export default async function Formula1Page() {
                 </div>
 
                 <h3>
+                  {countryFlagCode(weekend.country) ? (
+                    <img
+                      className="wts-f1-country-flag"
+                      src={`/flags/${countryFlagCode(weekend.country)}.png`}
+                      alt=""
+                      aria-hidden="true"
+                    />
+                  ) : null}
                   <Link href={`/formula-1/grand-prix/${weekend.slug}`}>
                     {weekend.name}
                   </Link>
