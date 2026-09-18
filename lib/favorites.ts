@@ -1,3 +1,6 @@
+import { clubSlug, resolveClubSlug } from "./club-aliases";
+import { sportsRegistry } from "./sports-registry";
+
 export const FAVORITES_SCHEMA_VERSION = 1 as const;
 export const FAVORITES_STORAGE_KEY = "watchtvsport:favorites:v1";
 export const FAVORITES_CHANGED_EVENT = "watchtvsport:favorites-changed";
@@ -77,12 +80,72 @@ function safeInternalHref(value: unknown): string | undefined {
   return href;
 }
 
-function migrateLegacyParticipantId(kind: FavoriteKind, entityId: string): string {
+function normalizedLabel(value: string): string {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+}
+
+function sportFromParticipantLabel(label: string): { sport: string; name: string } | null {
+  const match = label.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+  if (!match) return null;
+
+  const suffix = normalizedLabel(match[2]);
+  const sport = sportsRegistry.find((item) =>
+    [item.defaultLabel, ...Object.values(item.labels)]
+      .filter((value): value is string => Boolean(value))
+      .some((value) => normalizedLabel(value) === suffix)
+  );
+
+  return sport ? { sport: sport.slug, name: match[1].trim() } : null;
+}
+
+function canonicalClubId(sport: string, value: string): string {
+  const slug = sport === "football" ? resolveClubSlug(value) : clubSlug(value);
+  return `club:${sport}:${slug}`;
+}
+
+function clubIdFromHref(href?: string): string | null {
+  if (!href) return null;
+  const path = href.split(/[?#]/, 1)[0];
+
+  const legacyFootball = path.match(/^\/football\/club\/([^/]+)$/);
+  if (legacyFootball) return canonicalClubId("football", legacyFootball[1]);
+
+  const universal = path.match(/^\/sports\/([^/]+)\/club\/([^/]+)$/);
+  if (universal) return canonicalClubId(universal[1], universal[2]);
+
+  return null;
+}
+
+function migrateLegacyParticipantId(
+  kind: FavoriteKind,
+  entityId: string,
+  label: string,
+  href?: string
+): string {
   if (kind !== "participant") return entityId;
-  if (/^club:[^:]+$/.test(entityId)) {
-    return entityId.replace(/^club:/, "club:football:");
+  if (entityId.startsWith("national-team:")) return entityId;
+
+  const currentClub = entityId.match(/^club:([^:]+):(.+)$/);
+  if (currentClub) return canonicalClubId(currentClub[1], currentClub[2]);
+
+  const hrefClub = clubIdFromHref(href);
+  if (hrefClub) return hrefClub;
+
+  const legacyFootball = entityId.match(/^club:([^:]+)$/);
+  if (legacyFootball) return canonicalClubId("football", legacyFootball[1]);
+
+  const labelledParticipant = sportFromParticipantLabel(label);
+  if (labelledParticipant) {
+    return canonicalClubId(labelledParticipant.sport, labelledParticipant.name);
   }
+
   return entityId;
+}
+
+function participantHrefFromId(entityId: string): string | undefined {
+  const club = entityId.match(/^club:([^:]+):(.+)$/);
+  if (!club) return undefined;
+  return `/sports/${club[1]}/club/${club[2]}`;
 }
 
 function sanitizeEventContext(value: unknown): FavoriteEventContext | undefined {
@@ -115,12 +178,13 @@ function sanitizeFavoriteItem(value: unknown): FavoriteItem | null {
 
   if (!isFavoriteKind(kind) || !rawEntityId || !isTechnicalId(rawEntityId) || !label || !savedAt) return null;
 
-  const entityId = migrateLegacyParticipantId(kind, rawEntityId);
+  const rawHref = safeInternalHref(candidate.href);
+  const entityId = migrateLegacyParticipantId(kind, rawEntityId, label, rawHref);
   const parsedDate = new Date(savedAt);
   if (Number.isNaN(parsedDate.getTime())) return null;
 
   const event = kind === "event" ? sanitizeEventContext(candidate.event) : undefined;
-  const href = safeInternalHref(candidate.href);
+  const href = rawHref ?? (kind === "participant" ? participantHrefFromId(entityId) : undefined);
 
   return {
     kind,
