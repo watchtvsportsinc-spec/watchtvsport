@@ -16,6 +16,14 @@ export type SportRegistryEntry = {
   participantPages: "teams-and-nations" | "none";
   competitionPages: boolean;
   eventPages: boolean;
+  discovery: {
+    family: string;
+    familyLabel: string;
+    icon: string;
+    secondaryLabel: "Competition" | "Tournament" | "Series" | "Organization";
+    groupEvents: boolean;
+    teamFilter: boolean;
+  };
 };
 
 export const sportsRegistry: SportRegistryEntry[] = [
@@ -30,6 +38,7 @@ export const sportsRegistry: SportRegistryEntry[] = [
     participantPages: "teams-and-nations",
     competitionPages: true,
     eventPages: true,
+    discovery: { family: "football", familyLabel: "Football", icon: "⚽", secondaryLabel: "Competition", groupEvents: false, teamFilter: true },
   },
   {
     id: "basketball",
@@ -42,6 +51,7 @@ export const sportsRegistry: SportRegistryEntry[] = [
     participantPages: "teams-and-nations",
     competitionPages: true,
     eventPages: true,
+    discovery: { family: "basketball", familyLabel: "Basketball", icon: "🏀", secondaryLabel: "Competition", groupEvents: false, teamFilter: true },
   },
   {
     id: "ice-hockey",
@@ -54,6 +64,7 @@ export const sportsRegistry: SportRegistryEntry[] = [
     participantPages: "teams-and-nations",
     competitionPages: true,
     eventPages: true,
+    discovery: { family: "hockey", familyLabel: "Hockey", icon: "🏒", secondaryLabel: "Competition", groupEvents: false, teamFilter: true },
   },
   {
     id: "american-football",
@@ -66,6 +77,7 @@ export const sportsRegistry: SportRegistryEntry[] = [
     participantPages: "teams-and-nations",
     competitionPages: true,
     eventPages: true,
+    discovery: { family: "american-football", familyLabel: "American football", icon: "🏈", secondaryLabel: "Competition", groupEvents: false, teamFilter: true },
   },
   {
     id: "rugby",
@@ -78,6 +90,7 @@ export const sportsRegistry: SportRegistryEntry[] = [
     participantPages: "teams-and-nations",
     competitionPages: true,
     eventPages: true,
+    discovery: { family: "rugby", familyLabel: "Rugby", icon: "🏉", secondaryLabel: "Competition", groupEvents: false, teamFilter: true },
   },
   {
     id: "baseball",
@@ -90,6 +103,7 @@ export const sportsRegistry: SportRegistryEntry[] = [
     participantPages: "teams-and-nations",
     competitionPages: true,
     eventPages: true,
+    discovery: { family: "baseball", familyLabel: "Baseball", icon: "⚾", secondaryLabel: "Competition", groupEvents: false, teamFilter: true },
   },
   {
     id: "formula-1",
@@ -102,6 +116,7 @@ export const sportsRegistry: SportRegistryEntry[] = [
     participantPages: "none",
     competitionPages: true,
     eventPages: true,
+    discovery: { family: "motorsports", familyLabel: "Motorsports", icon: "🏁", secondaryLabel: "Series", groupEvents: true, teamFilter: false },
   },
   {
     id: "motogp",
@@ -114,6 +129,7 @@ export const sportsRegistry: SportRegistryEntry[] = [
     participantPages: "none",
     competitionPages: true,
     eventPages: true,
+    discovery: { family: "motorsports", familyLabel: "Motorsports", icon: "🏁", secondaryLabel: "Series", groupEvents: true, teamFilter: false },
   },
   {
     id: "ufc",
@@ -126,6 +142,7 @@ export const sportsRegistry: SportRegistryEntry[] = [
     participantPages: "none",
     competitionPages: true,
     eventPages: true,
+    discovery: { family: "combat", familyLabel: "Combat sports", icon: "🥊", secondaryLabel: "Organization", groupEvents: true, teamFilter: false },
   },
   {
     id: "tennis",
@@ -138,6 +155,7 @@ export const sportsRegistry: SportRegistryEntry[] = [
     participantPages: "none",
     competitionPages: true,
     eventPages: true,
+    discovery: { family: "tennis", familyLabel: "Tennis", icon: "🎾", secondaryLabel: "Tournament", groupEvents: false, teamFilter: false },
   },
   {
     id: "cycling",
@@ -150,6 +168,7 @@ export const sportsRegistry: SportRegistryEntry[] = [
     participantPages: "none",
     competitionPages: true,
     eventPages: true,
+    discovery: { family: "cycling", familyLabel: "Cycling", icon: "🚴", secondaryLabel: "Competition", groupEvents: false, teamFilter: false },
   },
 ];
 

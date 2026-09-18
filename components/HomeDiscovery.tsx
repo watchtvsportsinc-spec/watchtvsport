@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, type ReactNode, useEffect, useMemo, useState } from "react";
+import SearchAutocomplete from "@/components/SearchAutocomplete";
 import { useFavorites } from "@/lib/favorites-client";
+import type { SearchSuggestion } from "@/lib/search-suggestions";
+import { getSportBySlug, sportsRegistry } from "@/lib/sports-registry";
 
 export type HomeDiscoveryParticipant = {
   id: string;
@@ -38,6 +41,7 @@ export type HomeDiscoveryInitialState = {
   sport?: string;
   competition?: string;
   team?: string;
+  access?: string;
 };
 
 type Period = "live" | "upcoming" | "date";
@@ -82,35 +86,35 @@ type GroupResult = {
 
 type ResultItem = EventResult | GroupResult;
 
-const CATEGORY_DEFINITIONS: CategoryDefinition[] = [
-  { id: "football", label: "Football", icon: "⚽", sports: ["football", "soccer"] },
-  { id: "basketball", label: "Basketball", icon: "🏀", sports: ["basketball"] },
-  { id: "hockey", label: "Hockey", icon: "🏒", sports: ["hockey", "ice-hockey"] },
-  { id: "tennis", label: "Tennis", icon: "🎾", sports: ["tennis"] },
-  { id: "motorsports", label: "Motorsports", icon: "🏁", sports: ["formula-1", "motogp", "motorsports", "wec", "indycar", "formula-e"] },
-  { id: "combat", label: "Combat sports", icon: "🥊", sports: ["ufc", "mma", "boxing", "pfl", "one"] },
-  { id: "american-football", label: "American football", icon: "🏈", sports: ["american-football"] },
-  { id: "baseball", label: "Baseball", icon: "⚾", sports: ["baseball"] },
-  { id: "rugby", label: "Rugby", icon: "🏉", sports: ["rugby"] },
-  { id: "cycling", label: "Cycling", icon: "🚴", sports: ["cycling"] },
-];
-
-const CATEGORY_BY_SPORT = new Map(
-  CATEGORY_DEFINITIONS.flatMap((category) => category.sports.map((sport) => [sport, category.id] as const))
+const CATEGORY_DEFINITIONS: CategoryDefinition[] = Array.from(
+  sportsRegistry.reduce((categories, sport) => {
+    const id = sport.discovery.family;
+    const current = categories.get(id);
+    if (current) current.sports.push(sport.slug);
+    else categories.set(id, {
+      id,
+      label: sport.discovery.familyLabel,
+      icon: sport.discovery.icon,
+      sports: [sport.slug],
+    });
+    return categories;
+  }, new Map<string, CategoryDefinition>()).values()
 );
 
-const GROUPED_CATEGORIES = new Set(["motorsports", "combat"]);
-const TEAM_FILTER_CATEGORIES = new Set([
-  "football",
-  "basketball",
-  "hockey",
-  "american-football",
-  "baseball",
-  "rugby",
-]);
-
 function categoryForSport(sport: string): string {
-  return CATEGORY_BY_SPORT.get(sport) ?? sport;
+  return getSportBySlug(sport)?.discovery.family ?? sport;
+}
+
+function categoryGroupsEvents(category: string): boolean {
+  return sportsRegistry.some(
+    (sport) => sport.discovery.family === category && sport.discovery.groupEvents
+  );
+}
+
+function categorySupportsTeams(category: string): boolean {
+  return sportsRegistry.some(
+    (sport) => sport.discovery.family === category && sport.discovery.teamFilter
+  );
 }
 
 function fallbackLabel(value: string): string {
@@ -296,10 +300,14 @@ export default function HomeDiscovery({
   events,
   timeZone,
   initial,
+  searchSuggestions,
+  favoritesSlot,
 }: {
   events: HomeDiscoveryEvent[];
   timeZone: string;
   initial: HomeDiscoveryInitialState;
+  searchSuggestions: SearchSuggestion[];
+  favoritesSlot?: ReactNode;
 }) {
   const [now] = useState(() => new Date());
   const today = dateKey(now, timeZone);
@@ -326,6 +334,11 @@ export default function HomeDiscovery({
   const [selectedTeam, setSelectedTeam] = useState(initial.team || "");
   const [teamPickerOpen, setTeamPickerOpen] = useState(false);
   const [teamQuery, setTeamQuery] = useState("");
+  const [competitionPickerOpen, setCompetitionPickerOpen] = useState(false);
+  const [competitionQuery, setCompetitionQuery] = useState("");
+  const [accessFilter, setAccessFilter] = useState<"All" | "Free" | "Paid">(
+    initial.access === "Free" || initial.access === "Paid" ? initial.access : "All"
+  );
   const [showMoreSports, setShowMoreSports] = useState(false);
   const [visibleLimit, setVisibleLimit] = useState(20);
   const favorites = useFavorites();
@@ -372,7 +385,7 @@ export default function HomeDiscovery({
         (event) => categoryForSport(event.sport) === category
       );
 
-      if (GROUPED_CATEGORIES.has(category)) {
+      if (categoryGroupsEvents(category)) {
         const sports = Array.from(new Set(eventsForCategory.map((event) => event.sport)));
         for (const sport of sports) {
           options.push({
@@ -432,7 +445,7 @@ export default function HomeDiscovery({
   );
 
   const singleTeamCategory =
-    effectiveCategories.length === 1 && TEAM_FILTER_CATEGORIES.has(effectiveCategories[0])
+    effectiveCategories.length === 1 && categorySupportsTeams(effectiveCategories[0])
       ? effectiveCategories[0]
       : "";
 
@@ -486,8 +499,23 @@ export default function HomeDiscovery({
     [favorites.items]
   );
 
+  const scopeEvents = useMemo(() => {
+    const categorySet = new Set(effectiveCategories);
+    return events
+      .filter((event) => effectiveCategories.length === 0 || categorySet.has(categoryForSport(event.sport)))
+      .filter((event) => {
+        if (effectiveSubfilterKeys.length === 0) return true;
+        const category = categoryForSport(event.sport);
+        const eventFilterKey = categoryGroupsEvents(category)
+          ? category + "::" + event.sport
+          : category + "::" + event.competitionSlug;
+        return effectiveSubfilterSet.has(eventFilterKey);
+      })
+      .filter((event) => !effectiveTeam || event.participant1?.id === effectiveTeam || event.participant2?.id === effectiveTeam);
+  }, [effectiveCategories, effectiveSubfilterKeys.length, effectiveSubfilterSet, effectiveTeam, events]);
+
   const periodEvents = useMemo(() => {
-    return events.filter((event) => {
+    return scopeEvents.filter((event) => {
       const eventTime = Date.parse(event.eventDate);
       if (!Number.isFinite(eventTime)) return false;
       if (period === "live") return event.status === "live";
@@ -497,42 +525,13 @@ export default function HomeDiscovery({
       if (event.status === "live") return true;
       return event.status !== "finished" && eventTime >= now.getTime();
     });
-  }, [events, now, period, selectedDate, timeZone]);
+  }, [now, period, scopeEvents, selectedDate, timeZone]);
 
   const filteredEvents = useMemo(() => {
-    const categorySet = new Set(effectiveCategories);
-
     return periodEvents
-      .filter(
-        (event) =>
-          effectiveCategories.length === 0 ||
-          categorySet.has(categoryForSport(event.sport))
-      )
-      .filter((event) => {
-        if (effectiveSubfilterKeys.length === 0) return true;
-
-        const category = categoryForSport(event.sport);
-        const eventFilterKey = GROUPED_CATEGORIES.has(category)
-          ? category + "::" + event.sport
-          : category + "::" + event.competitionSlug;
-
-        return effectiveSubfilterSet.has(eventFilterKey);
-      })
-      .filter((event) => {
-        if (!effectiveTeam) return true;
-        return (
-          event.participant1?.id === effectiveTeam ||
-          event.participant2?.id === effectiveTeam
-        );
-      })
+      .filter((event) => accessFilter === "All" || event.access === accessFilter)
       .sort((a, b) => Date.parse(a.eventDate) - Date.parse(b.eventDate));
-  }, [
-    effectiveCategories,
-    effectiveSubfilterKeys.length,
-    effectiveSubfilterSet,
-    effectiveTeam,
-    periodEvents,
-  ]);
+  }, [accessFilter, periodEvents]);
 
   const allGroups = useMemo(() => {
     const groups = new Map<string, HomeDiscoveryEvent[]>();
@@ -554,7 +553,7 @@ export default function HomeDiscovery({
 
     for (const event of filteredEvents) {
       const category = categoryForSport(event.sport);
-      if (event.eventGroupId && GROUPED_CATEGORIES.has(category)) {
+      if (event.eventGroupId && categoryGroupsEvents(category)) {
         const list = groupedMatches.get(event.eventGroupId) ?? [];
         list.push(event);
         groupedMatches.set(event.eventGroupId, list);
@@ -624,18 +623,18 @@ export default function HomeDiscovery({
   }, [allGroups, effectiveCategories, favorites.items, filteredEvents, now]);
 
   const liveCount = useMemo(
-    () => events.filter((event) => event.status === "live").length,
-    [events]
+    () => scopeEvents.filter((event) => event.status === "live").length,
+    [scopeEvents]
   );
   const upcomingCount = useMemo(
     () =>
-      events.filter(
+      scopeEvents.filter(
         (event) =>
           event.status === "live" ||
           (event.status !== "finished" &&
             Date.parse(event.eventDate) >= now.getTime())
       ).length,
-    [events, now]
+    [scopeEvents, now]
   );
 
   const selectedCategoryLabels = effectiveCategories.map(
@@ -643,18 +642,14 @@ export default function HomeDiscovery({
   );
   const selectedSubfilterLabels = subfilterOptions
     .filter((option) => effectiveSubfilterSet.has(option.key))
-    .map((option) =>
-      effectiveCategories.length > 1
-        ? categoryDefinition(option.category).label + " · " + option.label
-        : option.label
-    );
+    .map((option) => option.label);
   const selectedTeamLabel = teamOptions.find(
     (option) => option.value === effectiveTeam
   )?.label;
 
   const resultTitle =
     [
-      joinLabels(selectedCategoryLabels),
+      selectedSubfilterLabels.length === 0 ? joinLabels(selectedCategoryLabels) : "",
       joinLabels(selectedSubfilterLabels),
       selectedTeamLabel,
     ]
@@ -693,16 +688,41 @@ export default function HomeDiscovery({
       : availableCategories.slice(0, 6);
   const hasMoreSports = availableCategories.length > 6;
 
-  const secondaryLabel =
-    effectiveCategories.length > 1
-      ? "Competitions / series"
-      : effectiveCategories[0] === "motorsports"
-        ? "Series"
-        : effectiveCategories[0] === "combat"
-          ? "Organization"
-          : effectiveCategories[0] === "tennis"
-            ? "Tournament"
-            : "Competition";
+  const favoriteCompetitionIds = useMemo(
+    () => new Set(
+      favorites.items
+        .filter((item) => item.kind === "competition")
+        .map((item) => item.entityId.split(":").at(-1) || item.entityId)
+    ),
+    [favorites.items]
+  );
+  const orderedSubfilterOptions = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const event of categoryEvents) {
+      counts.set(event.competitionSlug, (counts.get(event.competitionSlug) ?? 0) + 1);
+    }
+    return [...subfilterOptions].sort((a, b) => {
+      const favoriteDifference = Number(favoriteCompetitionIds.has(b.value)) - Number(favoriteCompetitionIds.has(a.value));
+      const selectedDifference = Number(effectiveSubfilterSet.has(b.key)) - Number(effectiveSubfilterSet.has(a.key));
+      return favoriteDifference || selectedDifference || (counts.get(b.value) ?? 0) - (counts.get(a.value) ?? 0) || a.label.localeCompare(b.label);
+    });
+  }, [categoryEvents, effectiveSubfilterSet, favoriteCompetitionIds, subfilterOptions]);
+  const primarySubfiltersByCategory = effectiveCategories.map((category) => {
+    const options = orderedSubfilterOptions.filter((option) => option.category === category);
+    return {
+      category,
+      options: options.length > 5 ? options.slice(0, 4) : options,
+      hasMore: options.length > 5,
+    };
+  });
+  const filteredCompetitionOptions = orderedSubfilterOptions.filter((option) => {
+    const query = competitionQuery.trim().toLowerCase();
+    return !query || option.label.toLowerCase().includes(query) || categoryDefinition(option.category).label.toLowerCase().includes(query);
+  });
+
+  const secondaryLabel = effectiveCategories.length > 1
+    ? "Competitions / series"
+    : sportsRegistry.find((sport) => sport.discovery.family === effectiveCategories[0])?.discovery.secondaryLabel ?? "Competition";
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -728,6 +748,9 @@ export default function HomeDiscovery({
     if (effectiveTeam) params.set("team", effectiveTeam);
     else params.delete("team");
 
+    if (accessFilter !== "All") params.set("access", accessFilter);
+    else params.delete("access");
+
     params.delete("view");
     params.delete("page");
 
@@ -741,18 +764,22 @@ export default function HomeDiscovery({
     effectiveCategories,
     effectiveSubfilterKeys,
     effectiveTeam,
+    accessFilter,
     period,
     selectedDate,
   ]);
 
   useEffect(() => {
-    if (!teamPickerOpen) return;
+    if (!teamPickerOpen && !competitionPickerOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setTeamPickerOpen(false);
+      if (event.key === "Escape") {
+        setTeamPickerOpen(false);
+        setCompetitionPickerOpen(false);
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [teamPickerOpen]);
+  }, [competitionPickerOpen, teamPickerOpen]);
 
   function toggleCategory(category: string) {
     const current = effectiveCategories;
@@ -769,6 +796,7 @@ export default function HomeDiscovery({
     setSelectedSubfilters(retainedSubfilters);
     setSelectedTeam("");
     setTeamPickerOpen(false);
+    setCompetitionPickerOpen(false);
     setTeamQuery("");
     setVisibleLimit(20);
   }
@@ -778,6 +806,7 @@ export default function HomeDiscovery({
     setSelectedSubfilters([]);
     setSelectedTeam("");
     setTeamPickerOpen(false);
+    setCompetitionPickerOpen(false);
     setTeamQuery("");
     setVisibleLimit(20);
   }
@@ -813,6 +842,7 @@ export default function HomeDiscovery({
     setSelectedTeam("");
     setTeamPickerOpen(false);
     setTeamQuery("");
+    setAccessFilter("All");
     setVisibleLimit(20);
   }
 
@@ -833,7 +863,20 @@ export default function HomeDiscovery({
         </Link>
       </div>
 
+      {favoritesSlot}
+
       <div className="wts-discovery-panel">
+        <div className="wts-discovery-search">
+          <div>
+            <strong>Know what you want?</strong>
+            <span>Search a team, competition, Grand Prix or event.</span>
+          </div>
+          <SearchAutocomplete
+            suggestions={searchSuggestions}
+            timeZone={timeZone}
+            searchPath="/events"
+          />
+        </div>
         <div className="wts-period-row" aria-label="Time filters">
           <button
             className={period === "live" ? "is-active is-live" : "is-live"}
@@ -963,11 +1006,8 @@ export default function HomeDiscovery({
                 <strong>{secondaryLabel}</strong>
                 <small>multiple allowed</small>
               </div>
-              <div
-                className="wts-filter-pills-dynamic"
-                role="group"
-                aria-label="Secondary filters"
-              >
+              <div className="wts-secondary-filter-content">
+                <div className="wts-filter-pills-dynamic" role="group" aria-label="All competition filters">
                 <button
                   type="button"
                   className={
@@ -980,25 +1020,35 @@ export default function HomeDiscovery({
                 >
                   All selected sports
                 </button>
-                {subfilterOptions.map((option) => {
-                  const active = effectiveSubfilterSet.has(option.key);
-                  return (
-                    <button
-                      type="button"
-                      className={active ? "is-active" : undefined}
-                      aria-pressed={active}
-                      key={option.key}
-                      onClick={() => toggleSubfilter(option.key)}
-                    >
-                      {effectiveCategories.length > 1 ? (
-                        <small className="wts-filter-chip-prefix">
-                          {categoryDefinition(option.category).label}
-                        </small>
-                      ) : null}
-                      {option.label}
-                    </button>
-                  );
-                })}
+                </div>
+                <div className="wts-competition-groups">
+                  {primarySubfiltersByCategory.map(({ category, options, hasMore }) => {
+                    const definition = categoryDefinition(category);
+                    return (
+                      <div className="wts-competition-group" key={category}>
+                        <strong><span aria-hidden="true">{definition.icon}</span>{definition.label}</strong>
+                        <div className="wts-filter-pills-dynamic" role="group" aria-label={definition.label + " " + secondaryLabel.toLowerCase()}>
+                          {options.map((option) => {
+                            const active = effectiveSubfilterSet.has(option.key);
+                            return (
+                              <button type="button" className={active ? "is-active" : undefined} aria-pressed={active} key={option.key} onClick={() => toggleSubfilter(option.key)}>
+                                {option.label}
+                              </button>
+                            );
+                          })}
+                          {hasMore ? (
+                            <button type="button" className="wts-filter-more" onClick={() => {
+                              setCompetitionQuery("");
+                              setCompetitionPickerOpen(true);
+                            }}>
+                              More <span aria-hidden="true">＋</span>
+                            </button>
+                          ) : null}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           ) : null}
@@ -1040,6 +1090,30 @@ export default function HomeDiscovery({
               </div>
             </div>
           ) : null}
+
+          <div className="wts-filter-level is-child">
+            <div className="wts-filter-level-label">
+              <span>{selectedCompetitionOptions.length > 0 && teamOptions.length > 0 ? "4" : "3"}</span>
+              <strong>Access</strong>
+              <small>optional</small>
+            </div>
+            <div className="wts-filter-pills-dynamic" role="group" aria-label="Access type">
+              {(["All", "Free", "Paid"] as const).map((access) => (
+                <button
+                  type="button"
+                  className={accessFilter === access ? "is-active" : undefined}
+                  aria-pressed={accessFilter === access}
+                  key={access}
+                  onClick={() => {
+                    setAccessFilter(access);
+                    setVisibleLimit(20);
+                  }}
+                >
+                  {access === "All" ? "All access" : access + " available"}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1075,15 +1149,23 @@ export default function HomeDiscovery({
           </div>
         ) : (
           <div className="wts-discovery-list">
-            {resultItems.slice(0, visibleLimit).map((item) => {
+            {resultItems.slice(0, visibleLimit).map((item, index, visibleItems) => {
+              const itemDate = dateKey(new Date(item.sortTime), timeZone);
+              const previousDate = index > 0
+                ? dateKey(new Date(visibleItems[index - 1].sortTime), timeZone)
+                : "";
+              const dateHeading = itemDate !== previousDate ? (
+                <h3 className="wts-discovery-date-heading">{formatLongDateKey(itemDate)}</h3>
+              ) : null;
               if (item.kind === "group") {
                 const nextSession = item.nextSession;
                 const live = Boolean(nextSession?.status === "live");
                 return (
+                  <Fragment key={item.id}>
+                    {dateHeading}
                   <Link
                     className="wts-discovery-card is-group"
                     href={item.detailPath}
-                    key={item.id}
                   >
                     <div className="wts-discovery-card-time">
                       <span
@@ -1143,15 +1225,17 @@ export default function HomeDiscovery({
                       <b aria-hidden="true">›</b>
                     </div>
                   </Link>
+                  </Fragment>
                 );
               }
 
               const event = item.event;
               return (
+                <Fragment key={item.id}>
+                  {dateHeading}
                 <Link
                   className="wts-discovery-card"
                   href={event.detailPath}
-                  key={item.id}
                 >
                   <div className="wts-discovery-card-time">
                     <span
@@ -1190,6 +1274,7 @@ export default function HomeDiscovery({
                     <b aria-hidden="true">›</b>
                   </div>
                 </Link>
+                </Fragment>
               );
             })}
           </div>
@@ -1205,6 +1290,47 @@ export default function HomeDiscovery({
           </button>
         ) : null}
       </div>
+
+      {competitionPickerOpen ? (
+        <div
+          className="wts-team-picker-backdrop"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setCompetitionPickerOpen(false);
+          }}
+        >
+          <section className="wts-team-picker" role="dialog" aria-modal="true" aria-labelledby="wts-competition-picker-title">
+            <div className="wts-team-picker-header">
+              <div>
+                <p>Multiple choices allowed</p>
+                <h2 id="wts-competition-picker-title">Choose competitions or series</h2>
+              </div>
+              <button type="button" aria-label="Close competition selector" onClick={() => setCompetitionPickerOpen(false)}>×</button>
+            </div>
+            <label className="wts-team-picker-search">
+              <span aria-hidden="true">⌕</span>
+              <input autoFocus type="search" value={competitionQuery} onChange={(event) => setCompetitionQuery(event.target.value)} placeholder="Search competitions…" />
+            </label>
+            <div className="wts-team-picker-list">
+              {filteredCompetitionOptions.map((option) => {
+                const active = effectiveSubfilterSet.has(option.key);
+                return (
+                  <button type="button" className={active ? "is-active" : undefined} key={option.key} onClick={() => toggleSubfilter(option.key)}>
+                    <span>
+                      <strong>{option.label}</strong>
+                      <small>{categoryDefinition(option.category).label}{favoriteCompetitionIds.has(option.value) ? " · ★ Favorite" : ""}</small>
+                    </span>
+                    <b aria-hidden="true">{active ? "✓" : "+"}</b>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="wts-team-picker-footer">
+              <button type="button" onClick={clearSubfilters}>Clear selection</button>
+              <button type="button" className="is-primary" onClick={() => setCompetitionPickerOpen(false)}>Show results</button>
+            </div>
+          </section>
+        </div>
+      ) : null}
 
       {teamPickerOpen ? (
         <div

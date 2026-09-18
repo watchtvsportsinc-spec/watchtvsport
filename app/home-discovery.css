@@ -68,6 +68,20 @@
   box-shadow:0 20px 55px rgba(0,0,0,.2),inset 0 1px rgba(255,255,255,.025);
   overflow:hidden;
 }
+.wts-discovery-search{
+  display:grid;
+  grid-template-columns:minmax(180px,.65fr) minmax(320px,1.35fr);
+  align-items:center;
+  gap:18px;
+  padding:14px;
+  border-bottom:1px solid rgba(92,172,248,.14);
+  background:rgba(8,31,51,.48);
+}
+.wts-discovery-search>div:first-child{display:grid;gap:3px}
+.wts-discovery-search>div:first-child strong{font-size:12px}
+.wts-discovery-search>div:first-child span{color:#7894ad;font-size:10px}
+.wts-discovery-search .wts-search{width:100%}
+.wts-discovery-search .wts-search-root{width:100%}
 .wts-period-row{
   display:flex;
   align-items:center;
@@ -256,6 +270,34 @@
 .wts-filter-pills-dynamic .wts-filter-more{
   color:#67bdff;
 }
+.wts-secondary-filter-content{
+  display:grid;
+  min-width:0;
+  gap:8px;
+}
+.wts-competition-groups{
+  display:grid;
+  gap:7px;
+}
+.wts-competition-group{
+  display:grid;
+  grid-template-columns:118px minmax(0,1fr);
+  align-items:center;
+  gap:9px;
+  min-width:0;
+  padding:7px 9px;
+  border:1px solid rgba(95,171,243,.12);
+  border-radius:12px;
+  background:rgba(3,14,25,.38);
+}
+.wts-competition-group>strong{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  color:#91abc2;
+  font-size:9px;
+}
+.wts-competition-group>strong span{font-size:13px}
 .wts-team-filter-inline{
   display:flex;
   align-items:center;
@@ -338,6 +380,18 @@
   overflow:hidden;
   background:rgba(3,13,23,.45);
 }
+.wts-discovery-date-heading{
+  margin:0;
+  padding:9px 13px 7px;
+  border-top:1px solid rgba(92,172,248,.13);
+  background:rgba(13,42,66,.38);
+  color:#82bde9;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.wts-discovery-date-heading:first-child{border-top:0}
 .wts-discovery-card{
   display:grid;
   grid-template-columns:100px minmax(0,1fr) 90px 96px;
@@ -594,6 +648,7 @@
 .wts-home-v4>.wts-home-favorites{
   margin-top:14px;
 }
+.wts-discovery>.wts-home-favorites{margin:0}
 @media(max-width:760px){
   .wts-home-v4{
     width:100%;
@@ -628,6 +683,12 @@
   .wts-discovery-results{
     border-radius:18px;
   }
+  .wts-discovery-search{
+    grid-template-columns:1fr;
+    gap:8px;
+    padding:10px 9px;
+  }
+  .wts-discovery-search>div:first-child span{display:none}
   .wts-period-row{
     padding:10px 9px 7px;
   }
@@ -679,6 +740,14 @@
     padding:6px 10px;
     font-size:9px;
   }
+  .wts-secondary-filter-content{gap:6px}
+  .wts-competition-groups{gap:6px}
+  .wts-competition-group{
+    grid-template-columns:1fr;
+    gap:5px;
+    padding:7px;
+  }
+  .wts-competition-group>strong{font-size:9px}
   .wts-team-filter-inline{width:100%}
   .wts-team-select{
     min-width:0;

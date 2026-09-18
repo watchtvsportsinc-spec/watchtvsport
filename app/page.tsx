@@ -5,6 +5,7 @@ import TimezoneSync from "@/components/TimezoneSync";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 import { parseCalendarFilters } from "@/lib/calendar";
 import type { EventData } from "@/lib/events";
+import { buildSearchSuggestions } from "@/lib/search-suggestions";
 
 type HomePageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
@@ -80,6 +81,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   const snapshot = await getPublicEventsSnapshot({
     from: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(),
+    to: new Date(now.getTime() + 120 * 24 * 60 * 60 * 1000).toISOString(),
     limit: 500,
   });
 
@@ -123,16 +125,17 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       <HomeDiscovery
         events={events}
         timeZone={calendarFilters.timeZone}
+        searchSuggestions={buildSearchSuggestions(snapshot.events)}
+        favoritesSlot={<HomeFavoritesStrip />}
         initial={{
           when: firstValue(params.when),
           date: firstValue(params.date),
           sport: firstValue(params.sport),
           competition: firstValue(params.competition),
           team: firstValue(params.team),
+          access: firstValue(params.access),
         }}
       />
-
-      <HomeFavoritesStrip />
     </main>
   );
 }
