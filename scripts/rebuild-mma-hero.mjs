@@ -1,16 +1,16 @@
 import { readdir, readFile, writeFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 
-const chunksDir = join(process.cwd(), "assets", "mma", "approved-bg");
+const chunksDir = join(process.cwd(), "assets", "ufc", "arena-bg-900");
 const publicDir = join(process.cwd(), "public");
-const output = join(publicDir, "mma-hero-approved.jpg");
+const output = join(publicDir, "ufc-arena-bg.webp");
 
 const names = (await readdir(chunksDir))
   .filter((name) => /^part\d+\.b64$/.test(name))
   .sort();
 
 if (!names.length) {
-  throw new Error("No MMA hero image chunks found.");
+  throw new Error("No UFC arena image chunks found.");
 }
 
 const chunks = await Promise.all(
@@ -19,12 +19,15 @@ const chunks = await Promise.all(
 
 const image = Buffer.from(chunks.join("").replace(/\s+/g, ""), "base64");
 
-if (image.length !== 66818) {
-  throw new Error(`Unexpected MMA hero asset size: ${image.length} bytes`);
+if (image.length !== 24392) {
+  throw new Error(`Unexpected UFC arena asset size: ${image.length} bytes`);
 }
 
-if (image[0] !== 0xff || image[1] !== 0xd8 || image.at(-2) !== 0xff || image.at(-1) !== 0xd9) {
-  throw new Error("Rebuilt MMA hero asset is not a valid JPEG envelope.");
+if (
+  image.toString("ascii", 0, 4) !== "RIFF" ||
+  image.toString("ascii", 8, 12) !== "WEBP"
+) {
+  throw new Error("Rebuilt UFC arena asset is not a valid WebP file.");
 }
 
 await mkdir(publicDir, { recursive: true });
