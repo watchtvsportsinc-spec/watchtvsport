@@ -99,6 +99,24 @@ export default async function UfcPage() {
         Number(b.live) - Number(a.live) ||
         Date.parse(a.mainDate) - Date.parse(b.mainDate),
     );
+  const liveCards = cards.filter((card) => card.live).length;
+  const nextCard = cards.find((card) => !card.live) ?? cards[0];
+  const confirmedListings = cards.reduce((sum, card) => sum + card.confirmedListings, 0);
+  const heroStats = [
+    { icon: "event" as const, value: cards.length, label: "UPCOMING EVENTS" },
+    { icon: "calendar" as const, value: confirmedListings, label: "TV LISTINGS" },
+    ...(liveCards > 0
+      ? [{ icon: "live" as const, value: liveCards, label: "LIVE NOW", tone: "live" as const }]
+      : nextCard
+        ? [{
+            icon: "next" as const,
+            value: "NEXT",
+            label: "UP NEXT",
+            detail: `${nextCard.name} · ${new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(new Date(nextCard.mainDate))}`,
+            tone: "next" as const,
+          }]
+        : []),
+  ];
 
   return (
     <main id="main-content" className={styles.page}>
@@ -124,6 +142,7 @@ export default async function UfcPage() {
         backdrop="/ufc-arena-bg.webp"
         titleId="ufc-title"
         backgroundPosition="center center"
+        stats={heroStats}
       />
 
       <section

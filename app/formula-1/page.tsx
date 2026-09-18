@@ -115,6 +115,23 @@ export default async function Formula1Page() {
 
   const seasonLabels = Array.from(new Set(weekends.map((weekend) => weekend.season).filter(Boolean)));
   const seasonLabel = seasonLabels.length === 1 ? seasonLabels[0] : "Current season";
+  const liveWeekends = weekends.filter((weekend) => weekend.isLive).length;
+  const nextWeekend = weekends.find((weekend) => !weekend.isLive) ?? weekends[0];
+  const heroStats = [
+    { icon: "competition" as const, value: weekends.length, label: "REMAINING GP" },
+    { icon: "calendar" as const, value: events.length, label: "SESSIONS" },
+    ...(liveWeekends > 0
+      ? [{ icon: "live" as const, value: liveWeekends, label: "LIVE NOW", tone: "live" as const }]
+      : nextWeekend
+        ? [{
+            icon: "next" as const,
+            value: "NEXT",
+            label: "UP NEXT",
+            detail: `${nextWeekend.name} · ${new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(new Date(nextWeekend.nextSession ?? nextWeekend.firstSession))}`,
+            tone: "next" as const,
+          }]
+        : []),
+  ];
 
   return <main id="main-content" className={styles.page}>
     {snapshot.warning ? <p className="v2-data-warning" role="status">{snapshot.warning}</p> : null}
@@ -126,6 +143,7 @@ export default async function Formula1Page() {
       backdrop="/formula-1-hero-bg.webp"
       titleId="f1-title"
       backgroundPosition="72% 100%"
+      stats={heroStats}
     />
     <section className="v2-results wts-f1-results" aria-labelledby="grand-prix-title">
       <div className="v2-results-heading">

@@ -47,6 +47,117 @@
   font-size:14px;
   line-height:1.6;
 }
+.stats{
+  position:absolute;
+  z-index:2;
+  left:34px;
+  right:34px;
+  bottom:22px;
+  display:flex;
+  align-items:stretch;
+  max-width:850px;
+}
+.stat{
+  display:grid;
+  min-width:0;
+  grid-template-columns:28px minmax(0,auto);
+  align-items:center;
+  gap:9px;
+  padding-right:24px;
+}
+.stat+.stat{
+  margin-left:24px;
+  padding-left:24px;
+  border-left:1px solid rgba(155,190,219,.28);
+}
+.statIcon{
+  display:grid;
+  width:28px;
+  height:28px;
+  place-items:center;
+  color:#eef7ff;
+  font-size:22px;
+  font-weight:900;
+  line-height:1;
+}
+.statText{
+  display:grid;
+  min-width:0;
+  gap:2px;
+}
+.statTop{
+  display:flex;
+  min-width:0;
+  align-items:baseline;
+  gap:7px;
+}
+.statTop strong{
+  color:#fff;
+  font-size:19px;
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+.statTop small{
+  color:#d3e1ec;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.statDetail{
+  overflow:hidden;
+  max-width:320px;
+  color:#c4d5e3;
+  font-size:9px;
+  line-height:1.25;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.live .statIcon,
+.live .statTop strong,
+.live .statTop small{
+  color:#ff6767;
+}
+.next .statIcon,
+.next .statTop strong{
+  color:#76c6ff;
+}
+@media(max-width:760px){
+  .stats{
+    left:18px;
+    right:18px;
+    bottom:14px;
+  }
+  .stat{
+    grid-template-columns:22px minmax(0,auto);
+    gap:6px;
+    padding-right:12px;
+  }
+  .stat+.stat{
+    margin-left:12px;
+    padding-left:12px;
+  }
+  .statIcon{
+    width:22px;
+    height:22px;
+    font-size:17px;
+  }
+  .statTop{
+    display:grid;
+    gap:1px;
+  }
+  .statTop strong{
+    font-size:15px;
+  }
+  .statTop small{
+    font-size:6px;
+  }
+  .statDetail{
+    max-width:150px;
+    font-size:7px;
+  }
+}
 @media(max-width:560px){
   .hero{
     height:var(--wts-standard-content-hero-height,235px);
@@ -59,9 +170,45 @@
     font-size:36px;
   }
   .description{
+    display:-webkit-box;
+    overflow:hidden;
     margin-top:7px;
     font-size:11px;
     line-height:1.42;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+  }
+  .stats{
+    left:15px;
+    right:15px;
+    bottom:12px;
+  }
+  .stat{
+    flex:1 1 0;
+    grid-template-columns:18px minmax(0,1fr);
+    gap:5px;
+    padding-right:7px;
+  }
+  .stat+.stat{
+    margin-left:7px;
+    padding-left:7px;
+  }
+  .statIcon{
+    width:18px;
+    height:18px;
+    font-size:14px;
+  }
+  .statTop strong{
+    font-size:13px;
+  }
+  .statTop small{
+    overflow:hidden;
+    max-width:72px;
+    font-size:5.5px;
+    text-overflow:ellipsis;
+  }
+  .statDetail{
+    display:none;
   }
 }
 @media(prefers-reduced-data:reduce){

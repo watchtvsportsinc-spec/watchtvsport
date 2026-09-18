@@ -48,13 +48,26 @@ export default async function SportHubPage({sport,canonical}:{sport:string;canon
  for(const row of map.values()){row.freeCountries=freeByCompetition.get(row.slug)?.size??0;row.paidCountries=paidByCompetition.get(row.slug)?.size??0;}
  const competitions=Array.from(map.values());
  const groups=CATEGORY_ORDER.map(category=>({category,label:CATEGORY_LABELS[category],items:competitions.filter(c=>c.category===category)})).filter(g=>g.items.length);
- const current=events.filter(e=>e.status==="live"||(e.status!=="finished"&&Date.parse(e.eventDate)>=now)).sort((a,b)=>(a.status==="live"?-1:0)-(b.status==="live"?-1:0)||Date.parse(a.eventDate)-Date.parse(b.eventDate)).slice(0,5);
+ const currentEvents=events.filter(e=>e.status==="live"||(e.status!=="finished"&&Date.parse(e.eventDate)>=now)).sort((a,b)=>(a.status==="live"?-1:0)-(b.status==="live"?-1:0)||Date.parse(a.eventDate)-Date.parse(b.eventDate));
+ const current=currentEvents.slice(0,5);
+ const liveCount=currentEvents.filter(e=>e.status==="live").length;
+ const upcomingCount=currentEvents.filter(e=>e.status!=="live").length;
+ const nextEvent=currentEvents.find(e=>e.status!=="live")??currentEvents[0];
+ const heroStats=[
+  {icon:"competition" as const,value:competitions.length,label:sport==="tennis"?"TOURNAMENTS":"COMPETITIONS"},
+  {icon:"calendar" as const,value:upcomingCount,label:"UPCOMING"},
+  ...(liveCount>0
+    ? [{icon:"live" as const,value:liveCount,label:"LIVE NOW",tone:"live" as const}]
+    : nextEvent
+      ? [{icon:"next" as const,value:"NEXT",label:"UP NEXT",detail:`${nextEvent.title} · ${new Intl.DateTimeFormat("en",{month:"short",day:"numeric"}).format(new Date(nextEvent.eventDate))}`,tone:"next" as const}]
+      : []),
+ ];
  const title=cfg.title||getSportLabel(sport);const canonicalPath=canonical??`/sports/${sport}`;
  const jsonLd={"@context":"https://schema.org","@type":"CollectionPage",name:`${title} competitions and TV schedules`,url:`https://watchtvsport.com${canonicalPath}`,description:cfg.about,about:{"@type":"Thing",name:title}};
  return <main id="main-content" className={styles.page}>
   <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(jsonLd)}}/>
   <Breadcrumbs items={[{label:"Home",href:"/"},{label:"Sports",href:"/sports"},{label:title}]}/>
-  <SportHero eyebrow={cfg.eyebrow} title={title} description={cfg.description} backdrop={cfg.backdrop} titleId={`${sport}-title`} />
+  <SportHero eyebrow={cfg.eyebrow} title={title} description={cfg.description} backdrop={cfg.backdrop} titleId={`${sport}-title`} stats={heroStats} />
   {current.length>0?<section id="next" className={styles.current} aria-labelledby={`${sport}-current-title`}><div className={styles.heading}><div><p>What matters now</p><h2 id={`${sport}-current-title`}>Live & next</h2></div><Link href="/events#sports-filters">Full schedule →</Link></div><div className={styles.currentGrid}>{current.map(event=>{const confirmed=event.broadcasts.filter(b=>b.coverageStatus==="confirmed");const freeCountries=new Set(confirmed.filter(b=>b.access==="Free").map(b=>b.countryCode)).size;return <Link href={event.detailPath} key={event.id}><span className={event.status==="live"?styles.liveBadge:dayKey(event.eventDate)===today?styles.todayBadge:styles.statusBadge}>{event.status==="live"?"LIVE":dayKey(event.eventDate)===today?"TODAY":"UPCOMING"}</span><small>{displayCompetitionName(sport,event.competitionSlug,event.competition)}</small><strong>{event.title}</strong><span>{event.status==="live"?"Live now":new Intl.DateTimeFormat("en",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}).format(new Date(event.eventDate))}</span><em>{confirmed.length} confirmed{freeCountries?` · free in ${freeCountries}`:""}</em></Link>})}</div></section>:null}
   <aside className={styles.monetizationSlot} data-monetization-slot="sport-hub-top" aria-label="Partner placement reserved"><span>Partner placement</span><strong>Reserved for relevant broadcaster or connectivity offers</strong></aside>
   <section id="competitions" className={styles.section} aria-labelledby={`${sport}-competitions-title`}><div className={styles.heading}><div><p>Choose where to go next</p><h2 id={`${sport}-competitions-title`}>Competitions & tournaments</h2></div><span>{competitions.length} available</span></div>
