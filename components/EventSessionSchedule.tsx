@@ -15,6 +15,7 @@ type Props = {
   eyebrow: string;
   title: string;
   emptyText?: string;
+  showStatus?: boolean;
 };
 
 function dateKey(value: string, timeZone: string): string {
@@ -62,6 +63,7 @@ export default function EventSessionSchedule({
   eyebrow,
   title,
   emptyText = "Schedule details are pending.",
+  showStatus = true,
 }: Props) {
   const [timeZone, setTimeZone] = useState("UTC");
 
@@ -136,9 +138,11 @@ export default function EventSessionSchedule({
                 <article className="wts-event-session" id={session.id} key={session.id}>
                   <div className="wts-event-session-time">
                     <strong>{session.eventDate ? formatTime(session.eventDate, timeZone) : "TBC"}</strong>
-                    <span className={"wts-event-session-status is-" + (session.status ?? "scheduled")}>
-                      {statusLabel(session.status)}
-                    </span>
+                    {showStatus ? (
+                      <span className={"wts-event-session-status is-" + (session.status ?? "scheduled")}>
+                        {statusLabel(session.status)}
+                      </span>
+                    ) : null}
                   </div>
                   <div className="wts-event-session-main">
                     <h4>{session.label}</h4>
@@ -164,9 +168,11 @@ export default function EventSessionSchedule({
                 <article className="wts-event-session" id={session.id} key={session.id}>
                   <div className="wts-event-session-time">
                     <strong>TBC</strong>
-                    <span className={"wts-event-session-status is-" + (session.status ?? "scheduled")}>
-                      {statusLabel(session.status)}
-                    </span>
+                    {showStatus ? (
+                      <span className={"wts-event-session-status is-" + (session.status ?? "scheduled")}>
+                        {statusLabel(session.status)}
+                      </span>
+                    ) : null}
                   </div>
                   <div className="wts-event-session-main">
                     <h4>{session.label}</h4>
