@@ -853,3 +853,20 @@
 .wts-team-picker-group-label:first-child{
   margin-top:2px !important;
 }
+
+
+/* Star-only home favorites shortcut */
+.wts-discovery-favorites-link {
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  min-height: 42px;
+  padding: 0;
+  gap: 0;
+  border-radius: 12px;
+  font-size: 0;
+}
+
+.wts-discovery-favorites-link span {
+  font-size: 20px;
+}
