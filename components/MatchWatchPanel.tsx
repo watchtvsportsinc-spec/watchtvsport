@@ -89,6 +89,7 @@ export default function MatchWatchPanel({
 
   const freeBroadcasts = filteredBroadcasts.filter((broadcast) => broadcast.access === "Free");
   const paidBroadcasts = filteredBroadcasts.filter((broadcast) => broadcast.access === "Paid");
+  const hasPaidAffiliateLinks = paidBroadcasts.some((broadcast) => Boolean(broadcast.affiliateUrl));
 
   const confirmedKeys = useMemo(
     () => new Set(broadcasts.map((broadcast) => normalizedKey(broadcast.countryCode, broadcast.broadcaster))),
@@ -112,7 +113,7 @@ export default function MatchWatchPanel({
           key={`${broadcast.countryCode}-${broadcast.broadcaster}-${broadcast.access}-${index}`}
           href={broadcast.affiliateUrl || broadcast.url}
           target="_blank"
-          rel="noopener noreferrer"
+          rel={broadcast.affiliateUrl ? "noopener noreferrer sponsored" : "noopener noreferrer"}
         >
           <span className="v2-match-broadcaster-country">{broadcast.countryName}</span>
           <span className="v2-match-broadcaster-service">
@@ -178,6 +179,11 @@ export default function MatchWatchPanel({
                     <strong>About paid broadcasts</strong>
                     <span>A subscription or payment is required. Availability may depend on your location and subscription.</span>
                   </aside>
+                  {hasPaidAffiliateLinks ? (
+                    <p className="v2-match-affiliate-note">
+                      Some links to paid services are affiliate links. If you subscribe through one, WatchTVSport may earn a commission at no extra cost to you. This helps support the site.
+                    </p>
+                  ) : null}
                 </section>
               ) : null}
 
