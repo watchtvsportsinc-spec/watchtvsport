@@ -167,6 +167,8 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
   const heroImage = profile?.heroImageUrl || sportBackdrop(sport);
   const canonicalPath = canonicalClubPath(sport, club);
   const canonicalUrl = absoluteUrl(canonicalPath);
+  const verifiedParticipantId = verified.participantId;
+  const verifiedVisual = verified.visual;
 
   const clubSlugs = Array.from(new Set(
     upcoming.flatMap((event) => [participantSlug(event.participant1), participantSlug(event.participant2)]
@@ -180,7 +182,7 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
   function visualForParticipant(participant?: Participant) {
     if (!participant) return null;
     if (participant.visualProfile) return participant.visualProfile;
-    if (participantMatches(participant, verified.participantId, club)) return verified.visual;
+    if (participantMatches(participant, verifiedParticipantId, club)) return verifiedVisual;
     const slug = participantSlug(participant);
     return slug ? participantProfiles.get(slug)?.visual ?? null : null;
   }
@@ -315,7 +317,6 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
                     emptyTitle="Broadcasters not confirmed yet"
                     emptyCopy="Confirmed official viewing options will appear here when verified."
                     showMethodologyLink
-                    defaultOpen
                   />
                 </article>
               );
