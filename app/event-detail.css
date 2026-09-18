@@ -484,3 +484,253 @@
     font-size:15px;
   }
 }
+
+
+/* UFC fight-night poster hero */
+.wts-ufc-event-hero{
+  position:relative;
+  overflow:hidden;
+  border-color:rgba(96,165,250,.22);
+  background:
+    linear-gradient(90deg,rgba(99,17,28,.22),rgba(4,16,28,.94) 28%,rgba(4,16,28,.94) 72%,rgba(14,71,130,.22)),
+    linear-gradient(180deg,rgba(8,25,42,.98),rgba(4,16,28,.98)),
+    url('/sports/ufc.webp') center/cover no-repeat;
+}
+.wts-ufc-event-hero::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 15% 50%,rgba(239,68,68,.11),transparent 28%),
+    radial-gradient(circle at 85% 50%,rgba(59,130,246,.11),transparent 28%);
+}
+.wts-ufc-hero-header,
+.wts-ufc-main-event,
+.wts-ufc-event-program{
+  position:relative;
+  z-index:1;
+}
+.wts-ufc-hero-header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+}
+.wts-ufc-event-kicker{
+  margin:0 0 6px;
+  color:#62bdff;
+  font-size:9px;
+  font-weight:950;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.wts-ufc-hero-header h1{
+  margin:0;
+  font-size:clamp(28px,4.8vw,54px);
+  line-height:.98;
+  letter-spacing:-.045em;
+}
+.wts-ufc-main-event{
+  display:grid;
+  grid-template-columns:124px minmax(0,1fr) 54px minmax(0,1fr);
+  align-items:center;
+  gap:14px;
+  margin-top:22px;
+  border-top:1px solid rgba(255,255,255,.07);
+  border-bottom:1px solid rgba(255,255,255,.07);
+  padding:16px 0;
+}
+.wts-ufc-main-event-label{
+  display:grid;
+  align-content:center;
+  gap:4px;
+}
+.wts-ufc-main-event-label span{
+  width:max-content;
+  border:1px solid rgba(240,181,52,.35);
+  border-radius:999px;
+  background:rgba(202,141,22,.11);
+  color:#ffd16e;
+  padding:3px 8px;
+  font-size:7px;
+  font-weight:950;
+  letter-spacing:.08em;
+}
+.wts-ufc-main-event-label strong{
+  color:#d9e6f1;
+  font-size:10px;
+}
+.wts-ufc-main-fighter{
+  display:flex;
+  min-width:0;
+  align-items:center;
+  gap:12px;
+}
+.wts-ufc-main-fighter.is-red{
+  padding-left:12px;
+  border-left:3px solid #ef4444;
+}
+.wts-ufc-main-fighter.is-blue{
+  justify-content:flex-end;
+  padding-right:12px;
+  border-right:3px solid #3b82f6;
+  text-align:right;
+}
+.wts-ufc-main-fighter>div{
+  min-width:0;
+  display:grid;
+  gap:2px;
+}
+.wts-ufc-main-fighter small{
+  color:#7d96ac;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.07em;
+}
+.wts-ufc-main-fighter strong{
+  overflow:hidden;
+  color:#fff;
+  font-size:clamp(18px,2.4vw,30px);
+  line-height:1.02;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.wts-ufc-main-flag{
+  display:grid;
+  width:38px;
+  height:38px;
+  flex:0 0 38px;
+  place-items:center;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:50%;
+  background:rgba(5,20,34,.8);
+  font-size:20px;
+}
+.wts-ufc-main-vs{
+  display:grid;
+  width:42px;
+  height:42px;
+  place-items:center;
+  justify-self:center;
+  border:1px solid rgba(96,165,250,.22);
+  border-radius:50%;
+  background:rgba(7,27,45,.86);
+  color:#8aa2b8;
+  font-size:10px;
+  font-weight:950;
+}
+.wts-ufc-event-program{
+  display:grid;
+  grid-template-columns:minmax(240px,.9fr) minmax(0,1.4fr);
+  gap:16px;
+  align-items:center;
+  margin-top:16px;
+}
+.wts-ufc-program-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px 18px;
+  color:#a4b7c8;
+  font-size:10px;
+}
+.wts-ufc-program-meta span{
+  display:grid;
+  gap:2px;
+}
+.wts-ufc-program-meta b{
+  color:#63bdff;
+  font-size:7px;
+  font-weight:950;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+}
+.wts-ufc-program-sessions{
+  display:flex;
+  justify-content:flex-end;
+  gap:7px;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.wts-ufc-program-sessions::-webkit-scrollbar{display:none}
+.wts-ufc-program-sessions>span{
+  min-width:112px;
+  display:grid;
+  gap:3px;
+  border:1px solid rgba(102,170,235,.15);
+  border-radius:11px;
+  background:rgba(5,18,31,.74);
+  padding:8px 10px;
+}
+.wts-ufc-program-sessions>span.is-main{
+  border-color:rgba(66,180,255,.45);
+  background:rgba(10,82,136,.22);
+}
+.wts-ufc-program-sessions b{
+  color:#dbe8f3;
+  font-size:8px;
+  text-transform:capitalize;
+}
+.wts-ufc-program-sessions span span{
+  color:#63bdff;
+  font-size:9px;
+  font-weight:850;
+}
+
+@media(max-width:760px){
+  .wts-ufc-hero-header h1{
+    font-size:32px;
+  }
+  .wts-ufc-main-event{
+    grid-template-columns:1fr 34px 1fr;
+    grid-template-areas:
+      "label label label"
+      "red vs blue";
+    gap:10px;
+    margin-top:16px;
+    padding:12px 0;
+  }
+  .wts-ufc-main-event-label{
+    grid-area:label;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .wts-ufc-main-fighter.is-red{grid-area:red}
+  .wts-ufc-main-fighter.is-blue{grid-area:blue}
+  .wts-ufc-main-vs{
+    grid-area:vs;
+    width:30px;
+    height:30px;
+  }
+  .wts-ufc-main-fighter{
+    gap:7px;
+  }
+  .wts-ufc-main-fighter.is-red{
+    padding-left:8px;
+  }
+  .wts-ufc-main-fighter.is-blue{
+    padding-right:8px;
+  }
+  .wts-ufc-main-fighter strong{
+    font-size:15px;
+    white-space:normal;
+  }
+  .wts-ufc-main-flag{
+    width:30px;
+    height:30px;
+    flex-basis:30px;
+    font-size:16px;
+  }
+  .wts-ufc-event-program{
+    grid-template-columns:1fr;
+    gap:10px;
+    margin-top:12px;
+  }
+  .wts-ufc-program-sessions{
+    justify-content:flex-start;
+  }
+  .wts-ufc-program-sessions>span{
+    min-width:104px;
+  }
+}
