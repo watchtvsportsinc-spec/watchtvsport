@@ -920,3 +920,92 @@
     font-size:19px !important;
   }
 }
+
+
+/* Mobile stabilization audit */
+@media(max-width:760px){
+  .wts-discovery-panel,
+  .wts-discovery-results,
+  .wts-discovery-search,
+  .wts-filter-level,
+  .wts-filter-pills-dynamic,
+  .wts-discovery-list,
+  .wts-discovery-card,
+  .wts-discovery-card-main{
+    min-width:0;
+    max-width:100%;
+  }
+
+  .wts-filter-pills-dynamic,
+  .wts-date-rail{
+    overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .wts-filter-pills-dynamic button,
+  .wts-date-chip,
+  .wts-calendar-control{
+    flex-shrink:0;
+  }
+
+  .wts-discovery-card{
+    grid-template-columns:68px minmax(0,1fr) minmax(30px,max-content) 30px;
+    column-gap:5px;
+    overflow:hidden;
+  }
+
+  .wts-discovery-card-time{
+    width:68px;
+    min-width:68px;
+    overflow:visible;
+  }
+
+  .wts-result-status{
+    max-width:68px;
+    justify-content:center;
+    white-space:nowrap;
+  }
+
+  .wts-discovery-card-main h3,
+  .wts-discovery-card-main p,
+  .wts-discovery-card-main span{
+    max-width:100%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  .wts-result-access-stack{
+    min-width:30px;
+    justify-items:center;
+  }
+
+  .wts-result-access{
+    max-width:44px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .wts-discovery-card-open{
+    justify-self:end;
+  }
+}
+
+@media(max-width:390px){
+  .wts-home-v4{padding-left:7px;padding-right:7px}
+  .wts-discovery-card{
+    grid-template-columns:66px minmax(0,1fr) minmax(28px,max-content) 28px;
+    padding-left:5px;
+    padding-right:5px;
+    column-gap:4px;
+  }
+  .wts-discovery-card-time{
+    width:66px;
+    min-width:66px;
+  }
+  .wts-result-status{max-width:66px}
+  .wts-discovery-card-open{
+    width:28px;
+    min-width:28px;
+  }
+}
