@@ -221,43 +221,55 @@ export default async function Formula1GrandPrixPage({
         ]}
       />
 
-      <section className="v2-calendar-hero" aria-labelledby="gp-title">
-        <div className="wts-event-hero-top">
-          <div>
-            <p className="v2-eyebrow">Formula 1 Grand Prix</p>
-            <h1 id="gp-title">{first.eventGroupName ?? weekend.name}</h1>
+      <section
+        className="v2-calendar-hero wts-f1-hero wts-f1-grand-prix-hero"
+        aria-labelledby="gp-title"
+      >
+        <img
+          className="wts-f1-hero-image"
+          src="/formula-1-hero-bg.webp"
+          alt=""
+          aria-hidden="true"
+        />
+        <div className="wts-f1-hero-shade" aria-hidden="true" />
+        <div className="wts-f1-hero-content">
+          <div className="wts-event-hero-top">
+            <div>
+              <p className="v2-eyebrow">Formula 1 Grand Prix</p>
+              <h1 id="gp-title">{first.eventGroupName ?? weekend.name}</h1>
+            </div>
+            <div className="wts-event-hero-actions">
+              <FavoriteButton favorite={favorite} />
+            </div>
           </div>
-          <div className="wts-event-hero-actions">
-            <FavoriteButton favorite={favorite} />
+
+          <div className="wts-event-hero-meta">
+            <span>{editionLabel}</span>
+            <span>{first.country ?? weekend.country}</span>
+            <span>{first.venue ?? weekend.venue}</span>
           </div>
-        </div>
 
-        <div className="wts-event-hero-meta">
-          <span>{editionLabel}</span>
-          <span>{first.country ?? weekend.country}</span>
-          <span>{first.venue ?? weekend.venue}</span>
-        </div>
-
-        <p className="v2-hero-copy">
-          The whole race weekend is grouped on this page: practice,
-          qualifying, sprint sessions when applicable, and the race. Broadcast
-          availability can differ by session.
-        </p>
-
-        {race ? (
-          <p className="v2-signature">
-            Race start: <LocalTime date={race.eventDate} showTimeZone />
+          <p className="v2-hero-copy">
+            The whole race weekend is grouped on this page: practice,
+            qualifying, sprint sessions when applicable, and the race. Broadcast
+            availability can differ by session.
           </p>
-        ) : null}
 
-        {editionYear !== currentYear ? (
-          <Link
-            className="wts-event-hero-secondary"
-            href={`/formula-1/grand-prix/${grandPrix}/${editionYear}`}
-          >
-            Open {editionYear} edition →
-          </Link>
-        ) : null}
+          {race ? (
+            <p className="v2-signature">
+              Race start: <LocalTime date={race.eventDate} showTimeZone />
+            </p>
+          ) : null}
+
+          {editionYear !== currentYear ? (
+            <Link
+              className="wts-event-hero-secondary"
+              href={`/formula-1/grand-prix/${grandPrix}/${editionYear}`}
+            >
+              Open {editionYear} edition →
+            </Link>
+          ) : null}
+        </div>
       </section>
 
       <EventSessionSchedule
