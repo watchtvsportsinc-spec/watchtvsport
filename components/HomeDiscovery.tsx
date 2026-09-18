@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useFavorites } from "@/lib/favorites-client";
 
 export type HomeDiscoveryParticipant = {
   id: string;
@@ -76,6 +77,7 @@ type GroupResult = {
   endDate: string;
   nextSession?: HomeDiscoveryEvent;
   access: "Free" | "Paid" | "Access TBC" | "Access varies";
+  isFavorite: boolean;
 };
 
 type ResultItem = EventResult | GroupResult;
@@ -326,6 +328,7 @@ export default function HomeDiscovery({
   const [teamQuery, setTeamQuery] = useState("");
   const [showMoreSports, setShowMoreSports] = useState(false);
   const [visibleLimit, setVisibleLimit] = useState(20);
+  const favorites = useFavorites();
 
   const dateChoices = useMemo(
     () => Array.from({ length: 7 }, (_, index) => addDays(today, index)),
@@ -473,6 +476,16 @@ export default function HomeDiscovery({
       ? selectedTeam
       : "";
 
+  const favoriteParticipantIds = useMemo(
+    () =>
+      new Set(
+        favorites.items
+          .filter((item) => item.kind === "participant")
+          .map((item) => item.entityId)
+      ),
+    [favorites.items]
+  );
+
   const periodEvents = useMemo(() => {
     return events.filter((event) => {
       const eventTime = Date.parse(event.eventDate);
@@ -569,6 +582,13 @@ export default function HomeDiscovery({
       const nextSession = liveSession ?? futureSession ?? matchingSessions[0] ?? first;
       const category = categoryForSport(first.sport);
 
+      const detailPath = stripHash(first.detailPath);
+      const isFavorite = favorites.items.some((favorite) => {
+        const favoritePath = stripHash(favorite.href || favorite.event?.detailPath || "");
+        if (favoritePath && favoritePath === detailPath) return true;
+        return fullSessions.some((session) => favorite.entityId === session.id);
+      });
+
       output.push({
         kind: "group",
         id: groupId,
@@ -577,7 +597,7 @@ export default function HomeDiscovery({
         ),
         category,
         title: first.eventGroupName || first.title,
-        detailPath: stripHash(first.detailPath),
+        detailPath,
         competition: first.competition,
         venue: first.venue,
         country: first.country,
@@ -585,11 +605,23 @@ export default function HomeDiscovery({
         endDate: last.eventDate,
         nextSession,
         access: uniqueAccess(fullSessions),
+        isFavorite,
       });
     }
 
-    return output.sort((a, b) => a.sortTime - b.sortTime);
-  }, [allGroups, filteredEvents, now]);
+    const prioritizeGrandPrixFavorites =
+      effectiveCategories.length === 1 &&
+      effectiveCategories[0] === "motorsports";
+
+    return output.sort((a, b) => {
+      if (prioritizeGrandPrixFavorites) {
+        const aFavorite = a.kind === "group" && a.category === "motorsports" && a.isFavorite;
+        const bFavorite = b.kind === "group" && b.category === "motorsports" && b.isFavorite;
+        if (aFavorite !== bFavorite) return aFavorite ? -1 : 1;
+      }
+      return a.sortTime - b.sortTime;
+    });
+  }, [allGroups, effectiveCategories, favorites.items, filteredEvents, now]);
 
   const liveCount = useMemo(
     () => events.filter((event) => event.status === "live").length,
@@ -644,6 +676,12 @@ export default function HomeDiscovery({
 
   const filteredTeamOptions = teamOptions.filter((option) =>
     option.label.toLowerCase().includes(teamQuery.trim().toLowerCase())
+  );
+  const favoriteTeamOptions = filteredTeamOptions.filter((option) =>
+    favoriteParticipantIds.has(option.value)
+  );
+  const otherTeamOptions = filteredTeamOptions.filter(
+    (option) => !favoriteParticipantIds.has(option.value)
   );
 
   const hiddenSelectionExists = availableCategories
@@ -1078,6 +1116,7 @@ export default function HomeDiscovery({
                       <p>
                         {categoryDefinition(item.category).icon}{" "}
                         {item.competition}
+                        {item.isFavorite ? <strong className="wts-result-favorite-mark">★ Favorite</strong> : null}
                       </p>
                       <h3>{item.title}</h3>
                       <span>
@@ -1206,6 +1245,29 @@ export default function HomeDiscovery({
               />
             </label>
             <div className="wts-team-picker-list">
+              {favoriteTeamOptions.length > 0 ? (
+                <>
+                  <p className="wts-team-picker-group-label">★ Favorites</p>
+                  {favoriteTeamOptions.map((option) => (
+                    <button
+                      type="button"
+                      className={
+                        effectiveTeam === option.value ? "is-active" : undefined
+                      }
+                      key={"favorite:" + option.value}
+                      onClick={() => {
+                        setSelectedTeam(option.value);
+                        setTeamPickerOpen(false);
+                        setVisibleLimit(20);
+                      }}
+                    >
+                      <span>{option.label}</span>
+                      <b aria-hidden="true">★</b>
+                    </button>
+                  ))}
+                  <p className="wts-team-picker-group-label">All teams</p>
+                </>
+              ) : null}
               <button
                 type="button"
                 className={!effectiveTeam ? "is-active" : undefined}
@@ -1217,7 +1279,7 @@ export default function HomeDiscovery({
                 <span>All teams</span>
                 {!effectiveTeam ? <b aria-hidden="true">✓</b> : null}
               </button>
-              {filteredTeamOptions.map((option) => (
+              {otherTeamOptions.map((option) => (
                 <button
                   type="button"
                   className={
