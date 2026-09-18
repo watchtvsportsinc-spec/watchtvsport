@@ -84,6 +84,7 @@ type GroupResult = {
   nextSession?: HomeDiscoveryEvent;
   access: "Free" | "Paid" | "Access TBC" | "Access varies";
   accessOptions: Array<"Free" | "Paid">;
+  sessionLabels: string[];
   isFavorite: boolean;
 };
 
@@ -588,14 +589,23 @@ export default function HomeDiscovery({
 
   const resultItems = useMemo<ResultItem[]>(() => {
     const output: ResultItem[] = [];
-    const groupedMatches = new Map<string, HomeDiscoveryEvent[]>();
+    const groupedMatches = new Map<
+      string,
+      { groupId: string; localDate: string; sessions: HomeDiscoveryEvent[] }
+    >();
 
     for (const event of filteredEvents) {
-      const groupKey = groupedEventKey(event);
-      if (groupKey) {
-        const list = groupedMatches.get(groupKey) ?? [];
-        list.push(event);
-        groupedMatches.set(groupKey, list);
+      const groupId = groupedEventKey(event);
+      if (groupId) {
+        const localDate = dateKey(new Date(event.eventDate), timeZone);
+        const dailyKey = groupId + "@@" + localDate;
+        const current = groupedMatches.get(dailyKey) ?? {
+          groupId,
+          localDate,
+          sessions: [],
+        };
+        current.sessions.push(event);
+        groupedMatches.set(dailyKey, current);
         continue;
       }
 
@@ -607,18 +617,30 @@ export default function HomeDiscovery({
       });
     }
 
-    for (const [groupId, matchingSessions] of groupedMatches) {
+    for (const [dailyKey, dailyGroup] of groupedMatches) {
+      const { groupId, sessions: matchingSessions } = dailyGroup;
+      matchingSessions.sort(
+        (a, b) => Date.parse(a.eventDate) - Date.parse(b.eventDate)
+      );
+
       const fullSessions = allGroups.get(groupId) ?? matchingSessions;
-      const first = fullSessions[0];
-      const last = fullSessions[fullSessions.length - 1] ?? first;
-      const liveSession = fullSessions.find((event) => event.status === "live");
-      const futureSession = fullSessions.find(
+      const first = matchingSessions[0];
+      const last = matchingSessions[matchingSessions.length - 1] ?? first;
+      const liveSession = matchingSessions.find((event) => event.status === "live");
+      const futureSession = matchingSessions.find(
         (event) =>
           event.status !== "finished" &&
           Date.parse(event.eventDate) >= now.getTime()
       );
       const nextSession = liveSession ?? futureSession ?? matchingSessions[0] ?? first;
       const category = categoryForSport(first.sport);
+      const sessionLabels = Array.from(
+        new Set(
+          matchingSessions
+            .map((event) => event.stage || (event.sessionType ? fallbackLabel(event.sessionType) : ""))
+            .filter(Boolean)
+        )
+      );
 
       const detailPath = stripHash(first.detailPath);
       const isFavorite = favorites.items.some((favorite) => {
@@ -630,7 +652,7 @@ export default function HomeDiscovery({
 
       output.push({
         kind: "group",
-        id: groupId,
+        id: dailyKey,
         sortTime: Math.min(
           ...matchingSessions.map((event) => Date.parse(event.eventDate))
         ),
@@ -643,8 +665,9 @@ export default function HomeDiscovery({
         startDate: first.eventDate,
         endDate: last.eventDate,
         nextSession,
-        access: uniqueAccess(fullSessions),
-        accessOptions: availableAccess(fullSessions),
+        access: uniqueAccess(matchingSessions),
+        accessOptions: availableAccess(matchingSessions),
+        sessionLabels,
         isFavorite,
       });
     }
@@ -1244,8 +1267,10 @@ export default function HomeDiscovery({
                       </p>
                       <h3>{item.title}</h3>
                       <span>
-                        {groupedEventSummary(item.category)}
-                        {nextSession
+                        {item.sessionLabels.length > 0
+                          ? item.sessionLabels.join(" · ")
+                          : groupedEventSummary(item.category)}
+                        {nextSession && item.sessionLabels.length > 1
                           ? " · " + (live ? "Live" : "Next") + ": " + (nextSession.stage || "Session")
                           : ""}
                         {item.venue ? " · " + item.venue : ""}
