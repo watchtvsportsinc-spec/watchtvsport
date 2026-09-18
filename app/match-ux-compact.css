@@ -412,3 +412,50 @@
     font-size: 8px;
   }
 }
+
+
+/* Prevent the broadcaster action text from colliding with the Paid/Free badge on narrow screens. */
+@media (max-width: 559px) {
+  .v2-match-broadcaster-row {
+    grid-template-columns: minmax(58px, .68fr) minmax(0, 1.15fr) auto 26px !important;
+  }
+
+  .v2-match-broadcaster-action {
+    width: 26px;
+    min-width: 26px;
+    overflow: hidden;
+    font-size: 0 !important;
+    text-align: center;
+  }
+
+  .v2-match-broadcaster-action > span {
+    display: inline-block;
+    font-size: 14px !important;
+  }
+}
+
+@media (min-width: 560px) {
+  .v2-match-broadcaster-row {
+    grid-template-columns: 108px minmax(0, 1.7fr) auto minmax(96px, auto) !important;
+  }
+
+  .v2-match-broadcaster-action {
+    width: auto;
+    min-width: 0;
+    overflow: visible;
+    font-size: 9px;
+  }
+}
+
+.v2-match-affiliate-note {
+  margin: 4px 2px 0;
+  color: #7189a1;
+  font-size: 7.5px;
+  line-height: 1.35;
+}
+
+@media (min-width: 560px) {
+  .v2-match-affiliate-note {
+    font-size: 8.5px;
+  }
+}
