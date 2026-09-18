@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment, type ReactNode, useEffect, useMemo, useState } from "react";
+import { Fragment, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import SearchAutocomplete from "@/components/SearchAutocomplete";
 import { useFavorites } from "@/lib/favorites-client";
 import type { SearchSuggestion } from "@/lib/search-suggestions";
@@ -89,6 +89,20 @@ type GroupResult = {
 };
 
 type ResultItem = EventResult | GroupResult;
+
+const HOME_RETURN_STORAGE_KEY = "watchtvsport:home-return:v1";
+const HOME_RETURN_MAX_AGE_MS = 30 * 60 * 1000;
+
+type HomeReturnState = {
+  url: string;
+  scrollY: number;
+  visibleLimit: number;
+  savedAt: number;
+};
+
+function currentHomeStateUrl(): string {
+  return window.location.pathname + window.location.search;
+}
 
 const CATEGORY_DEFINITIONS: CategoryDefinition[] = Array.from(
   sportsRegistry.reduce((categories, sport) => {
@@ -387,6 +401,7 @@ export default function HomeDiscovery({
   );
   const [showMoreSports, setShowMoreSports] = useState(false);
   const [visibleLimit, setVisibleLimit] = useState(20);
+  const restoredHomeStateRef = useRef(false);
   const favorites = useFavorites();
 
   const dateChoices = useMemo(
@@ -845,6 +860,48 @@ export default function HomeDiscovery({
   ]);
 
   useEffect(() => {
+    if (restoredHomeStateRef.current) return;
+    restoredHomeStateRef.current = true;
+
+    try {
+      const raw = window.sessionStorage.getItem(HOME_RETURN_STORAGE_KEY);
+      if (!raw) return;
+
+      const saved = JSON.parse(raw) as Partial<HomeReturnState>;
+      const isFresh =
+        typeof saved.savedAt === "number" &&
+        Date.now() - saved.savedAt <= HOME_RETURN_MAX_AGE_MS;
+      const sameUrl =
+        typeof saved.url === "string" && saved.url === currentHomeStateUrl();
+
+      if (!isFresh || !sameUrl) {
+        window.sessionStorage.removeItem(HOME_RETURN_STORAGE_KEY);
+        return;
+      }
+
+      if (typeof saved.visibleLimit === "number" && saved.visibleLimit > 20) {
+        setVisibleLimit(Math.min(500, Math.max(20, Math.trunc(saved.visibleLimit))));
+      }
+
+      const scrollY =
+        typeof saved.scrollY === "number" && Number.isFinite(saved.scrollY)
+          ? Math.max(0, saved.scrollY)
+          : 0;
+
+      window.sessionStorage.removeItem(HOME_RETURN_STORAGE_KEY);
+      window.setTimeout(() => {
+        window.requestAnimationFrame(() => {
+          window.requestAnimationFrame(() => {
+            window.scrollTo({ top: scrollY, left: 0, behavior: "auto" });
+          });
+        });
+      }, 60);
+    } catch {
+      window.sessionStorage.removeItem(HOME_RETURN_STORAGE_KEY);
+    }
+  }, []);
+
+  useEffect(() => {
     if (!teamPickerOpen && !competitionPickerOpen) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -921,6 +978,20 @@ export default function HomeDiscovery({
     setVisibleLimit(20);
   }
 
+  function rememberHomePosition() {
+    try {
+      const state: HomeReturnState = {
+        url: currentHomeStateUrl(),
+        scrollY: Math.max(0, window.scrollY),
+        visibleLimit,
+        savedAt: Date.now(),
+      };
+      window.sessionStorage.setItem(HOME_RETURN_STORAGE_KEY, JSON.stringify(state));
+    } catch {
+      // Navigation must never depend on sessionStorage availability.
+    }
+  }
+
   return (
     <section className="wts-discovery" aria-labelledby="wts-discovery-title">
       <div className="wts-discovery-intro">
@@ -937,6 +1008,7 @@ export default function HomeDiscovery({
           href="/favorites"
           aria-label="Open favorites"
           title="Favorites"
+          onClick={rememberHomePosition}
         >
           <span aria-hidden="true">★</span>
         </Link>
@@ -954,6 +1026,7 @@ export default function HomeDiscovery({
             suggestions={searchSuggestions}
             timeZone={timeZone}
             searchPath="/events"
+            onNavigate={rememberHomePosition}
           />
         </div>
         <div className="wts-period-row" aria-label="Time filters">
@@ -1245,6 +1318,7 @@ export default function HomeDiscovery({
                   <Link
                     className="wts-discovery-card is-group"
                     href={item.detailPath}
+                    onClick={rememberHomePosition}
                   >
                     <div className="wts-discovery-card-time">
                       <span
@@ -1318,6 +1392,7 @@ export default function HomeDiscovery({
                 <Link
                   className="wts-discovery-card"
                   href={event.detailPath}
+                  onClick={rememberHomePosition}
                 >
                   <div className="wts-discovery-card-time">
                     <span
