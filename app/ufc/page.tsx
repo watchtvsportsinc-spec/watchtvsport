@@ -120,8 +120,10 @@ export default async function UfcPage() {
         className={styles.hero}
         aria-labelledby="ufc-title"
         style={{
-          backgroundImage:
-            "linear-gradient(90deg,rgba(3,10,18,.97),rgba(3,12,22,.70)),url('/sports/ufc.webp')",
+          backgroundImage: "url('/mma-combat-arena-bg-dezoom.webp')",
+          backgroundPosition: "center center",
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat",
         }}
       >
         <p>Combat sports · Organization</p>
