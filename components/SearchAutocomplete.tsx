@@ -13,6 +13,7 @@ type Props = {
   timeZone?: string;
   suggestions: SearchSuggestion[];
   searchPath?: string;
+  onNavigate?: () => void;
 };
 
 const GROUP_ORDER: SearchSuggestion["kind"][] = [
@@ -110,6 +111,7 @@ export default function SearchAutocomplete({
   timeZone,
   suggestions,
   searchPath = "/",
+  onNavigate,
 }: Props) {
   const router = useRouter();
   const instanceId = useId().replaceAll(":", "");
@@ -160,6 +162,7 @@ export default function SearchAutocomplete({
   }
 
   function selectSuggestion(suggestion: SearchSuggestion) {
+    onNavigate?.();
     setQuery(suggestion.value);
     setOpen(false);
     setActiveIndex(-1);
@@ -167,6 +170,7 @@ export default function SearchAutocomplete({
   }
 
   function submitSearch() {
+    onNavigate?.();
     const params = new URLSearchParams({ view: "all" });
     const trimmed = query.trim();
     if (trimmed) params.set("q", trimmed);
