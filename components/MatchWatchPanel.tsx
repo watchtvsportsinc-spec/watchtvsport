@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { getBroadcasterLogo } from "@/lib/broadcaster-logos";
 import type { BroadcastInfo } from "@/lib/matches";
 
 type Props = {
@@ -35,27 +34,16 @@ function broadcastLanguages(broadcast: BroadcastInfo) {
 
 function compactBroadcastMeta(broadcast: BroadcastInfo) {
   const languages = broadcastLanguages(broadcast);
-  if (languages.length) return languages.map(languageLabel).join(" · ");
-  const type = broadcast.broadcastType?.trim();
-  return type && type.toLowerCase() !== "live" ? type : "Language pending";
+  return languages.length ? languages.map(languageLabel).join(" · ") : "Language pending";
 }
 
-export default function MatchWatchPanel({
-  broadcasts,
-  emptyTitle,
-  emptyCopy,
-  showMethodologyLink = false,
-  verificationText,
-  defaultOpen = false,
-}: Props) {
+export default function MatchWatchPanel({ broadcasts, emptyTitle, emptyCopy, showMethodologyLink = false, verificationText }: Props) {
   const [accessFilter, setAccessFilter] = useState<"All" | "Free" | "Paid">("All");
   const [languageFilter, setLanguageFilter] = useState("all");
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-
   const countryCount = new Set(broadcasts.map((broadcast) => broadcast.countryCode)).size;
-  const broadcasterLabel = `${broadcasts.length} broadcaster${broadcasts.length === 1 ? "" : "s"}`;
-  const countryLabel = `${countryCount} countr${countryCount === 1 ? "y" : "ies"}`;
-  const summaryLabel = broadcasts.length ? `${broadcasterLabel} · ${countryLabel}` : "Pending";
+  const summaryLabel = broadcasts.length
+    ? `${broadcasts.length} broadcaster${broadcasts.length === 1 ? "" : "s"} · ${countryCount} countr${countryCount === 1 ? "y" : "ies"}`
+    : "Pending";
 
   const availableLanguages = useMemo(() => {
     return Array.from(new Set(broadcasts.flatMap(broadcastLanguages))).sort((a, b) => languageLabel(a).localeCompare(languageLabel(b)));
@@ -65,21 +53,44 @@ export default function MatchWatchPanel({
     return [...broadcasts]
       .filter((broadcast) => accessFilter === "All" || broadcast.access === accessFilter)
       .filter((broadcast) => languageFilter === "all" || broadcastLanguages(broadcast).includes(languageFilter))
-      .sort((a, b) => {
-        const countryOrder = a.countryName.localeCompare(b.countryName);
-        return countryOrder || a.broadcaster.localeCompare(b.broadcaster);
-      });
+      .sort((a, b) => a.countryName.localeCompare(b.countryName) || a.broadcaster.localeCompare(b.broadcaster));
   }, [broadcasts, accessFilter, languageFilter]);
 
+  const freeBroadcasts = filteredBroadcasts.filter((broadcast) => broadcast.access === "Free");
+  const paidBroadcasts = filteredBroadcasts.filter((broadcast) => broadcast.access === "Paid");
+
+  function broadcasterRows(items: BroadcastInfo[]) {
+    return items.map((broadcast, index) => {
+      const meta = compactBroadcastMeta(broadcast);
+
+      return (
+        <a
+          className="v2-match-broadcaster-row"
+          key={`${broadcast.countryCode}-${broadcast.broadcaster}-${broadcast.access}-${index}`}
+          href={broadcast.affiliateUrl || broadcast.url}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span className="v2-match-broadcaster-country">{broadcast.countryName}</span>
+          <span className="v2-match-broadcaster-service">
+            <strong>{broadcast.broadcaster}</strong>
+            <small className={meta === "Language pending" ? "is-pending" : ""}>{meta}</small>
+          </span>
+          <span className={broadcast.access === "Free" ? "v2-chip is-free" : "v2-chip is-paid"}>{broadcast.access}</span>
+          <span className="v2-match-broadcaster-action">Official site <span aria-hidden="true">↗</span></span>
+        </a>
+      );
+    });
+  }
+
   return (
-    <details className="v2-match-watch" open={isOpen} onToggle={(event) => setIsOpen(event.currentTarget.open)}>
-      <summary>
+    <section className="v2-match-watch" aria-labelledby="confirmed-broadcasters-title">
+      <header className="v2-match-watch-heading">
         <span className="v2-match-watch-copy">
-          <strong>TV guide</strong>
+          <strong id="confirmed-broadcasters-title">Confirmed for this match</strong>
           <small>{summaryLabel}</small>
         </span>
-        <span className="v2-match-watch-chevron" aria-hidden="true">›</span>
-      </summary>
+      </header>
 
       <div className="v2-match-watch-body">
         {broadcasts.length === 0 ? (
@@ -90,70 +101,47 @@ export default function MatchWatchPanel({
           </div>
         ) : (
           <>
-            {(availableLanguages.length > 0 || broadcasts.some((broadcast) => broadcast.access === "Free") || broadcasts.some((broadcast) => broadcast.access === "Paid")) ? (
-              <div className="v2-match-broadcast-filters" aria-label="Broadcaster filters">
-                <div className="v2-match-access-filter" role="group" aria-label="Access type">
-                  {(["All", "Free", "Paid"] as const).map((value) => (
-                    <button
-                      type="button"
-                      key={value}
-                      className={accessFilter === value ? "is-active" : ""}
-                      onClick={() => setAccessFilter(value)}
-                    >
-                      {value}
-                    </button>
-                  ))}
-                </div>
-                {availableLanguages.length > 0 ? (
-                  <select aria-label="Commentary language" value={languageFilter} onChange={(event) => setLanguageFilter(event.target.value)}>
-                    <option value="all">All languages</option>
-                    {availableLanguages.map((language) => <option key={language} value={language}>{languageLabel(language)}</option>)}
-                  </select>
-                ) : null}
+            <div className="v2-match-broadcast-filters" aria-label="Broadcaster filters">
+              <div className="v2-match-access-filter" role="group" aria-label="Access type">
+                {(["All", "Free", "Paid"] as const).map((value) => (
+                  <button type="button" key={value} className={accessFilter === value ? "is-active" : ""} onClick={() => setAccessFilter(value)}>{value}</button>
+                ))}
               </div>
+              {availableLanguages.length > 0 ? (
+                <select aria-label="Commentary language" value={languageFilter} onChange={(event) => setLanguageFilter(event.target.value)}>
+                  <option value="all">All languages</option>
+                  {availableLanguages.map((language) => <option key={language} value={language}>{languageLabel(language)}</option>)}
+                </select>
+              ) : null}
+            </div>
+
+            {freeBroadcasts.length ? (
+              <section className="v2-match-broadcaster-group" aria-labelledby="free-broadcasters-title">
+                <h3 id="free-broadcasters-title">Free broadcasters</h3>
+                <div className="v2-match-broadcaster-list">{broadcasterRows(freeBroadcasts)}</div>
+                <aside className="v2-match-access-notice is-free">
+                  <strong>About free broadcasts</strong>
+                  <span>Free broadcasts may only be available in the broadcaster&apos;s territory. You may need to create a free account or sign in.</span>
+                </aside>
+              </section>
             ) : null}
 
-            <div className="v2-match-broadcaster-list">
-              {filteredBroadcasts.map((broadcast, index) => {
-                const meta = compactBroadcastMeta(broadcast);
-                const logo = getBroadcasterLogo(broadcast.broadcaster);
-                const logoClassName = [
-                  "v2-match-broadcaster-logo",
-                  logo?.compact ? "is-wide" : "",
-                  logo?.darkStyle === "invert" ? "is-inverted" : "",
-                  logo?.darkStyle === "knockout" ? "is-knockout" : "",
-                ].filter(Boolean).join(" ");
+            {paidBroadcasts.length ? (
+              <section className="v2-match-broadcaster-group" aria-labelledby="paid-broadcasters-title">
+                <h3 id="paid-broadcasters-title">Paid broadcasters</h3>
+                <div className="v2-match-broadcaster-list">{broadcasterRows(paidBroadcasts)}</div>
+                <aside className="v2-match-access-notice is-paid">
+                  <strong>About paid broadcasts</strong>
+                  <span>A subscription or payment is required. Availability may depend on your location and subscription.</span>
+                </aside>
+              </section>
+            ) : null}
 
-                return (
-                  <a
-                    className="v2-match-broadcaster-row"
-                    key={`${broadcast.countryCode}-${broadcast.broadcaster}-${broadcast.access}-${index}`}
-                    href={broadcast.affiliateUrl || broadcast.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <span className="v2-match-broadcaster-country">{broadcast.countryName}</span>
-                    <span className="v2-match-broadcaster-service">
-                      {logo ? (
-                        <span className={logoClassName}>
-                          <img src={logo.src} alt={broadcast.broadcaster} />
-                        </span>
-                      ) : (
-                        <strong>{broadcast.broadcaster}</strong>
-                      )}
-                      <small className={meta === "Language pending" ? "is-pending" : ""}>{meta}</small>
-                    </span>
-                    <span className={broadcast.access === "Free" ? "v2-chip is-free" : "v2-chip is-paid"}>{broadcast.access}</span>
-                    <span className="v2-match-broadcaster-arrow" aria-hidden="true">›</span>
-                  </a>
-                );
-              })}
-            </div>
             {filteredBroadcasts.length === 0 ? <p className="v2-match-filter-empty">No broadcaster matches these filters.</p> : null}
           </>
         )}
-        {verificationText ? <p className="v2-verification-note">✓ {verificationText}</p> : null}
+        {verificationText ? <p className="v2-verification-note">{verificationText}</p> : null}
       </div>
-    </details>
+    </section>
   );
 }
