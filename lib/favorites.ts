@@ -37,7 +37,7 @@ export type FavoriteLookup = {
   eventIds: string[];
   participantIds: string[];
   competitionIds: string[];
-  groupIds: string[];
+  groupIds?: string[];
 };
 
 export type FavoriteEventSummary = {
