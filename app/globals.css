@@ -991,14 +991,328 @@
   }
 }
 
-/* Formula 1 hub hero */
+/* Formula 1 hub hero + Grand Prix list */
 .v2-calendar-hero.wts-f1-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 260px;
+  background: #07131f !important;
+}
+
+.wts-f1-hero-image {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+.wts-f1-hero-shade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
   background:
     linear-gradient(
       90deg,
-      rgba(2, 9, 17, 0.84) 0%,
-      rgba(3, 12, 22, 0.66) 48%,
-      rgba(3, 13, 23, 0.48) 100%
+      rgba(2, 9, 17, 0.88) 0%,
+      rgba(3, 12, 22, 0.72) 45%,
+      rgba(3, 13, 23, 0.52) 100%
     ),
-    url("/formula-1-hero-bg.webp") center center / cover no-repeat !important;
+    linear-gradient(180deg, rgba(2, 9, 17, 0.12), rgba(2, 9, 17, 0.32));
+}
+
+.wts-f1-hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+}
+
+.wts-f1-hero .v2-eyebrow,
+.wts-f1-hero h1,
+.wts-f1-hero .v2-hero-copy {
+  text-shadow: 0 3px 18px rgba(0, 0, 0, 0.78);
+}
+
+.wts-f1-results {
+  margin-top: 22px;
+}
+
+.wts-f1-race-list {
+  display: grid;
+  gap: 10px;
+}
+
+.wts-f1-race-card {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  min-height: 118px;
+  border: 1px solid rgba(96, 165, 250, 0.15);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(37, 99, 235, 0.08), transparent 32%),
+    linear-gradient(145deg, rgba(8, 24, 39, 0.98), rgba(5, 18, 30, 0.98));
+  padding: 14px 16px;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.wts-f1-race-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(96, 165, 250, 0.34);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
+}
+
+.wts-f1-race-number {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  border-radius: 12px;
+  background: rgba(8, 31, 51, 0.8);
+  color: #60a5fa;
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+
+.wts-f1-race-copy {
+  min-width: 0;
+}
+
+.wts-f1-race-topline {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  color: #7f96aa;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.wts-f1-race-topline > span:first-child {
+  display: inline-flex;
+  flex: 0 0 auto;
+  min-height: 21px;
+  align-items: center;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.08);
+  color: #78c5ff;
+  padding: 2px 8px;
+  font-size: 8px;
+  font-weight: 950;
+}
+
+.wts-f1-race-topline > span:first-child.is-next {
+  border-color: rgba(59, 130, 246, 0.42);
+  background: rgba(37, 99, 235, 0.16);
+  color: #8fd0ff;
+}
+
+.wts-f1-race-topline > span:first-child.is-live {
+  border-color: rgba(248, 113, 113, 0.42);
+  background: rgba(220, 38, 38, 0.14);
+  color: #ff9ba3;
+}
+
+.wts-f1-race-topline > span:last-child {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wts-f1-race-copy h3 {
+  margin: 0;
+  font-size: clamp(18px, 2.2vw, 24px);
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+}
+
+.wts-f1-race-copy h3 a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.wts-f1-race-copy h3 a:hover {
+  color: #8fd0ff;
+}
+
+.wts-f1-race-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin-top: 10px;
+}
+
+.wts-f1-race-meta > span {
+  display: grid;
+  gap: 2px;
+  color: #a1b3c4;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.wts-f1-race-meta b {
+  color: #5db8f7;
+  font-size: 7px;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.wts-f1-race-side {
+  display: grid;
+  min-width: 180px;
+  justify-items: end;
+  gap: 10px;
+}
+
+.wts-f1-race-access {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.wts-f1-race-access span {
+  display: inline-flex;
+  min-height: 22px;
+  align-items: center;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+.wts-f1-race-access .is-free {
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  background: rgba(16, 185, 129, 0.09);
+  color: #73e5ba;
+}
+
+.wts-f1-race-access .is-paid {
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  background: rgba(245, 158, 11, 0.09);
+  color: #ffd36f;
+}
+
+.wts-f1-race-link {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(96, 165, 250, 0.25);
+  border-radius: 10px;
+  background: rgba(7, 35, 57, 0.82);
+  color: #eef7ff;
+  padding: 0 12px;
+  font-size: 10px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.wts-f1-race-link b {
+  color: #5db8f7;
+  font-size: 13px;
+}
+
+.wts-f1-race-link:hover {
+  border-color: rgba(96, 165, 250, 0.5);
+  background: rgba(12, 57, 91, 0.9);
+}
+
+@media (max-width: 720px) {
+  .v2-calendar-hero.wts-f1-hero {
+    min-height: 220px;
+  }
+
+  .wts-f1-hero-image {
+    object-position: 60% center;
+  }
+
+  .wts-f1-hero-shade {
+    background: rgba(2, 9, 17, 0.68);
+  }
+
+  .wts-f1-race-card {
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 10px;
+    min-height: 0;
+    padding: 11px;
+  }
+
+  .wts-f1-race-number {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    font-size: 11px;
+  }
+
+  .wts-f1-race-copy h3 {
+    font-size: 17px;
+  }
+
+  .wts-f1-race-meta {
+    gap: 7px 14px;
+    margin-top: 8px;
+  }
+
+  .wts-f1-race-side {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    justify-items: start;
+    gap: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 9px;
+  }
+
+  .wts-f1-race-access {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 420px) {
+  .wts-f1-race-topline {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .wts-f1-race-topline > span:last-child {
+    max-width: 100%;
+  }
+
+  .wts-f1-race-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .wts-f1-race-meta > span:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .wts-f1-race-side {
+    grid-template-columns: 1fr;
+  }
+
+  .wts-f1-race-link {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
