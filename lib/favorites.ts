@@ -6,7 +6,7 @@ export const FAVORITES_STORAGE_KEY = "watchtvsport:favorites:v1";
 export const FAVORITES_CHANGED_EVENT = "watchtvsport:favorites-changed";
 export const MAX_FAVORITES = 200;
 
-export type FavoriteKind = "event" | "participant" | "competition";
+export type FavoriteKind = "event" | "participant" | "competition" | "group";
 
 export type FavoriteEventContext = {
   detailPath: string;
@@ -37,6 +37,7 @@ export type FavoriteLookup = {
   eventIds: string[];
   participantIds: string[];
   competitionIds: string[];
+  groupIds: string[];
 };
 
 export type FavoriteEventSummary = {
@@ -67,7 +68,7 @@ function safeString(value: unknown, maxLength: number): string {
 }
 
 function isFavoriteKind(value: unknown): value is FavoriteKind {
-  return value === "event" || value === "participant" || value === "competition";
+  return value === "event" || value === "participant" || value === "competition" || value === "group";
 }
 
 function isTechnicalId(value: string): boolean {
@@ -238,12 +239,14 @@ export function buildFavoriteLookup(items: FavoriteItem[]): FavoriteLookup {
   const eventIds: string[] = [];
   const participantIds: string[] = [];
   const competitionIds: string[] = [];
+  const groupIds: string[] = [];
 
   for (const item of items) {
     if (item.kind === "event") eventIds.push(item.entityId);
     if (item.kind === "participant") participantIds.push(item.entityId);
     if (item.kind === "competition") competitionIds.push(item.entityId);
+    if (item.kind === "group") groupIds.push(item.entityId);
   }
 
-  return { eventIds, participantIds, competitionIds };
+  return { eventIds, participantIds, competitionIds, groupIds };
 }
