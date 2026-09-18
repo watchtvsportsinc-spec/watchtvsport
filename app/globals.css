@@ -92,10 +92,10 @@
 
 .v2-calendar {
   box-sizing: border-box;
-  width: min(100%, 1100px);
+  width: min(100%, 1220px);
   min-height: 70vh;
   margin: 0 auto;
-  padding: 24px 16px 48px;
+  padding: 24px 18px 48px;
   color: #ffffff;
   font-size: 16px;
 }
