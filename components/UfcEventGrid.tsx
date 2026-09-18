@@ -1,16 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import FavoriteButton from "@/components/FavoriteButton";
-import LocalTime from "@/components/LocalTime";
-import {
-  FAVORITES_CHANGED_EVENT,
-  FAVORITES_STORAGE_KEY,
-  favoriteKey,
-  parseFavoritesSnapshot,
-} from "@/lib/favorites";
-import styles from "@/components/sport-hub.module.css";
 
 export type UfcHubCard = {
   id: string;
@@ -27,19 +19,51 @@ export type UfcHubCard = {
   live: boolean;
 };
 
-function favoriteId(card: UfcHubCard) {
-  return favoriteKey({
-    kind: "group",
-    entityId: card.id,
-  });
+function dateKey(value: string, timeZone: string): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date(value));
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return values.year + "-" + values.month + "-" + values.day;
 }
 
-function loadFavoriteIds(): Set<string> {
-  if (typeof window === "undefined") return new Set();
-  const snapshot = parseFavoritesSnapshot(
-    window.localStorage.getItem(FAVORITES_STORAGE_KEY),
-  );
-  return new Set(snapshot.items.map((item) => favoriteKey(item)));
+function dateKeyAsUtcDate(value: string): Date {
+  return new Date(value + "T12:00:00Z");
+}
+
+function formatHeading(value: string): string {
+  return new Intl.DateTimeFormat("en", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(dateKeyAsUtcDate(value));
+}
+
+function formatTime(value: string, timeZone: string): string {
+  return new Intl.DateTimeFormat("en", {
+    timeZone,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date(value));
+}
+
+function formatShortDate(value: string, timeZone: string): string {
+  return new Intl.DateTimeFormat("en", {
+    timeZone,
+    month: "short",
+    day: "numeric",
+  }).format(new Date(value));
+}
+
+function sessionSummary(card: UfcHubCard): string {
+  if (card.sessionLabels.length > 0) return card.sessionLabels.join(" · ");
+  return card.sessionCount + " card session" + (card.sessionCount === 1 ? "" : "s");
 }
 
 export default function UfcEventGrid({
@@ -47,112 +71,122 @@ export default function UfcEventGrid({
 }: {
   items: UfcHubCard[];
 }) {
-  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+  const [timeZone, setTimeZone] = useState("UTC");
 
   useEffect(() => {
-    const refresh = () => setFavoriteIds(loadFavoriteIds());
-    refresh();
-    window.addEventListener(FAVORITES_CHANGED_EVENT, refresh);
-    window.addEventListener("storage", refresh);
-    return () => {
-      window.removeEventListener(FAVORITES_CHANGED_EVENT, refresh);
-      window.removeEventListener("storage", refresh);
-    };
+    try {
+      setTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC");
+    } catch {
+      setTimeZone("UTC");
+    }
   }, []);
 
   const ordered = useMemo(
     () =>
-      [...items].sort((a, b) => {
-        const aFavorite = favoriteIds.has(favoriteId(a));
-        const bFavorite = favoriteIds.has(favoriteId(b));
-        if (aFavorite !== bFavorite) return aFavorite ? -1 : 1;
-        if (a.live !== b.live) return a.live ? -1 : 1;
-        return Date.parse(a.mainDate) - Date.parse(b.mainDate);
-      }),
-    [favoriteIds, items],
+      [...items].sort(
+        (a, b) =>
+          Number(b.live) - Number(a.live) ||
+          Date.parse(a.mainDate) - Date.parse(b.mainDate),
+      ),
+    [items],
   );
 
   return (
-    <div className={styles.competitionGrid}>
+    <div className="wts-discovery-list">
       {ordered.map((card, index) => {
-        const saved = favoriteIds.has(favoriteId(card));
-        const cardClass =
-          index === 0 || saved || card.live
-            ? styles.featuredCard
-            : styles.card;
+        const itemDate = dateKey(card.mainDate, timeZone);
+        const previousDate =
+          index > 0 ? dateKey(ordered[index - 1].mainDate, timeZone) : "";
+        const accessOptions = [
+          card.freeCountries > 0 ? "Free" : null,
+          card.paidCountries > 0 ? "Paid" : null,
+        ].filter(Boolean) as Array<"Free" | "Paid">;
 
         return (
-          <article className={cardClass} key={card.id}>
-            <span
-              className={styles.cardVisual}
-              style={{ backgroundImage: "url('/sports/ufc.webp')" }}
-              aria-hidden="true"
-            />
+          <Fragment key={card.id}>
+            {itemDate !== previousDate ? (
+              <h3 className="wts-discovery-date-heading">
+                {formatHeading(itemDate)}
+              </h3>
+            ) : null}
 
-            <div className={styles.cardTopline}>
-              <span
-                className={
-                  card.live
-                    ? `${styles.statusBadge} ${styles.liveBadge}`
-                    : styles.statusBadge
-                }
+            <article className="wts-ufc-event-row">
+              <Link
+                className="wts-discovery-card is-group has-favorite-action"
+                href={"/ufc/event/" + card.slug}
               >
-                {card.live ? "LIVE" : index === 0 ? "NEXT" : "UFC EVENT"}
-              </span>
+                <div className="wts-discovery-card-time">
+                  <span
+                    className={
+                      card.live
+                        ? "wts-result-status is-live"
+                        : "wts-result-status is-upcoming"
+                    }
+                  >
+                    {card.live ? "Live" : "Fight event"}
+                  </span>
+                  <strong>
+                    {card.live ? "LIVE" : formatTime(card.mainDate, timeZone)}
+                  </strong>
+                  <small>{formatShortDate(card.mainDate, timeZone)}</small>
+                </div>
 
-              <FavoriteButton
-                favorite={{
-                  kind: "group",
-                  entityId: card.id,
-                  label: card.name,
-                  href: "/ufc/event/" + card.slug,
-                }}
-              />
-            </div>
+                <div className="wts-discovery-card-main">
+                  <p>
+                    🥊 UFC{card.country ? " · " + card.country : ""}
+                  </p>
+                  <h3>{card.name}</h3>
+                  <span>
+                    {sessionSummary(card)}
+                    {card.venue ? " · " + card.venue : ""}
+                    {card.confirmedListings > 0
+                      ? " · " +
+                        card.confirmedListings +
+                        " confirmed TV option" +
+                        (card.confirmedListings === 1 ? "" : "s")
+                      : ""}
+                  </span>
+                </div>
 
-            <Link
-              className={styles.cardBodyLink}
-              href={"/ufc/event/" + card.slug}
-            >
-              <small>
-                UFC{card.country ? " · " + card.country : ""}
-              </small>
-
-              <strong>{card.name}</strong>
-
-              <span className={styles.nextLine}>
-                <span>
-                  Main Card · <LocalTime date={card.mainDate} />
+                <span className="wts-result-access-stack">
+                  {accessOptions.length > 0 ? (
+                    accessOptions.map((access) => (
+                      <span
+                        className={
+                          "wts-result-access " +
+                          (access === "Free" ? "is-free" : "is-paid")
+                        }
+                        key={access}
+                      >
+                        {access}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="wts-result-access is-tbc">TV TBC</span>
+                  )}
                 </span>
-                <b aria-hidden="true">→</b>
-              </span>
 
-              <span className={styles.dateLine}>
-                {card.venue || "Venue TBC"}
-              </span>
+                <span className="wts-discovery-card-favorite-space" aria-hidden="true" />
 
-              <span className={styles.tvLine}>
-                <b>{card.confirmedListings}</b> confirmed
-                {card.freeCountries > 0 ? (
-                  <em>
-                    free in {card.freeCountries} countr
-                    {card.freeCountries === 1 ? "y" : "ies"}
-                  </em>
-                ) : null}
-                {card.paidCountries > 0 ? (
-                  <em>
-                    paid in {card.paidCountries} countr
-                    {card.paidCountries === 1 ? "y" : "ies"}
-                  </em>
-                ) : null}
-              </span>
+                <div className="wts-discovery-card-open">
+                  <span>View event</span>
+                  <b aria-hidden="true">›</b>
+                </div>
+              </Link>
 
-              <span className={styles.openLink}>
-                {card.sessionCount} card session
-                {card.sessionCount === 1 ? "" : "s"} · View event →
-              </span>
-            </Link>
-          </article>
+              <div className="wts-discovery-card-favorite">
+                <FavoriteButton
+                  compact
+                  favorite={{
+                    kind: "group",
+                    entityId: card.id,
+                    label: card.name,
+                    href: "/ufc/event/" + card.slug,
+                  }}
+                />
+              </div>
+            </article>
+          </Fragment>
         );
       })}
     </div>
