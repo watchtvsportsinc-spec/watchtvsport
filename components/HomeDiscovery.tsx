@@ -875,9 +875,13 @@ export default function HomeDiscovery({
             open a page only when you have found the event you want.
           </p>
         </div>
-        <Link className="wts-discovery-favorites-link" href="/favorites">
+        <Link
+          className="wts-discovery-favorites-link"
+          href="/favorites"
+          aria-label="Open favorites"
+          title="Favorites"
+        >
           <span aria-hidden="true">★</span>
-          Favorites
         </Link>
       </div>
 
