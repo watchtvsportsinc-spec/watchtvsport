@@ -35,8 +35,14 @@ function opponent(event: EventData, participantId: string, slug: string): Partic
   return [event.participant1, event.participant2].find((participant) => participant && !participantMatches(participant, participantId, slug));
 }
 
-function favoriteForParticipant(sport: string, participantId: string, label: string): FavoriteCandidate {
-  return { kind: "participant", entityId: participantId, label: `${label} (${getSportLabel(sport)})` };
+function favoriteForParticipant(sport: string, club: string, label: string): FavoriteCandidate {
+  const slug = sport === "football" ? resolveClubSlug(club) : normalizedSlug(club || label);
+  return {
+    kind: "participant",
+    entityId: `club:${sport}:${slug}`,
+    label: `${label} (${getSportLabel(sport)})`,
+    href: `/sports/${sport}/club/${slug}`,
+  };
 }
 
 function socialLinks(profile: NonNullable<Awaited<ReturnType<typeof getPublicParticipantProfile>>>["profile"]) {
@@ -161,7 +167,7 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
     ? verified.competitions
     : Array.from(new Map(events.map((event) => [event.competitionSlug, { id: event.competitionSlug, slug: event.competitionSlug, name: event.competition }])).values());
   const confirmedListings = upcoming.reduce((sum, event) => sum + event.broadcasts.filter((broadcast) => broadcast.coverageStatus === "confirmed").length, 0);
-  const favorite = favoriteForParticipant(sport, verified.participantId, clubName);
+  const favorite = favoriteForParticipant(sport, club, clubName);
   const links = socialLinks(profile);
   const flagSrc = profile?.countryCode ? `/flags/${profile.countryCode.toLowerCase()}.png` : null;
   const heroImage = profile?.heroImageUrl || sportBackdrop(sport);
