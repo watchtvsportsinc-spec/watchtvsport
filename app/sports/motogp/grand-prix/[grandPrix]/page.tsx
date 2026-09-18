@@ -183,6 +183,7 @@ export default async function MotoGpGrandPrixPage({ params, searchParams }: Page
         eyebrow="Weekend schedule"
         title="Practice, qualifying, Sprint & race"
         sessions={scheduleSessions}
+        showStatus={false}
       />
 
       <BroadcastOffers
