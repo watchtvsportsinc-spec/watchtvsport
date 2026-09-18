@@ -1130,3 +1130,31 @@
     min-width:30px;
   }
 }
+
+
+/* Motorsport event rows: emphasize date/time without a redundant Grand Prix badge */
+.wts-motorsport-event-time{
+  align-content:center;
+  gap:4px;
+}
+.wts-motorsport-event-time strong{
+  color:#dff2ff;
+  font-size:17px;
+  font-weight:950;
+  line-height:1;
+  letter-spacing:-.02em;
+}
+.wts-motorsport-event-time small{
+  color:#90aac0;
+  font-size:10px;
+  font-weight:800;
+  line-height:1.15;
+}
+@media(max-width:760px){
+  .wts-motorsport-event-time strong{
+    font-size:15px;
+  }
+  .wts-motorsport-event-time small{
+    font-size:9px;
+  }
+}
