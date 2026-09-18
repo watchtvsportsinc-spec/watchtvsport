@@ -155,7 +155,9 @@ export default async function Formula1GrandPrixPage({
       const event = events.find(
         (candidate) =>
           candidate.sequenceNumber === session.sequenceNumber ||
-          candidate.sessionType === session.sessionType
+          candidate.stage === session.label ||
+          (session.sessionType !== "practice" &&
+            candidate.sessionType === session.sessionType)
       );
 
       return {
