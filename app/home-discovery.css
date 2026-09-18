@@ -783,7 +783,7 @@
   .wts-discovery-card-main{grid-area:main}
   .wts-result-access-stack{
     grid-area:access;
-    align-self:center;
+    align-self:start;
     align-content:start;
     min-height:38px;
     gap:2px;
