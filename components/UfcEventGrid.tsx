@@ -31,8 +31,6 @@ function favoriteId(card: UfcHubCard) {
   return favoriteKey({
     kind: "group",
     entityId: card.id,
-    label: card.name,
-    href: "/ufc/event/" + card.slug,
   });
 }
 
