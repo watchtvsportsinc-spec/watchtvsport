@@ -44,6 +44,10 @@ function entitySport(item: FavoriteItem): string | null {
   const club = item.entityId.match(/^club:([^:]+):/);
   if (club?.[1]) return club[1];
   if (item.kind === "competition") return item.entityId.split(":")[0] ?? null;
+  if (item.kind === "group") {
+    if (item.entityId.startsWith("f1-") || item.href?.startsWith("/formula-1/")) return "formula-1";
+    if (item.entityId.startsWith("ufc-card:") || item.href?.startsWith("/ufc/")) return "ufc";
+  }
   return item.entityId.startsWith("national-team:") ? "football" : null;
 }
 
@@ -95,6 +99,12 @@ function participantKind(item: FavoriteItem): "Club" | "Nation" | "Team" {
   return "Team";
 }
 
+function groupKind(item: FavoriteItem): string {
+  if (item.entityId.startsWith("f1-") || item.href?.startsWith("/formula-1/grand-prix/")) return "Grand Prix";
+  if (item.entityId.startsWith("ufc-card:") || item.href?.startsWith("/ufc/event/")) return "UFC event";
+  return "Event";
+}
+
 function FollowedItem({ favorite, kind }: { favorite: FavoriteItem; kind: string }) {
   const href = favoriteHref(favorite);
   const label = cleanLabel(favorite.label);
@@ -130,17 +140,19 @@ export default function FavoritesView() {
 
   const participantFavorites = collection.items.filter((item) => item.kind === "participant");
   const competitionFavorites = collection.items.filter((item) => item.kind === "competition");
+  const groupFavorites = collection.items.filter((item) => item.kind === "group");
   const legacyEventFavorites = collection.items.filter((item) => item.kind === "event");
   const currentFeed = feedState?.lookupKey === lookupKey ? feedState.data : null;
   const exactEventById = new Map((currentFeed?.exactEvents ?? []).map((event) => [event.id, event]));
   const isLoading = collection.items.length > 0 && feedState?.lookupKey !== lookupKey;
 
   return <main id="main-content" className="v2-calendar v2-favorites-page">
-    <section className="v2-favorites-hero" aria-labelledby="favorites-title"><p className="v2-eyebrow">Favorites</p><h1 id="favorites-title">What you follow</h1><p className={styles.heroNote}>Your teams, nations and competitions in one place, with their next verified events when available. Favorites are stored on this device for now.</p></section>
-    {collection.items.length === 0 ? <section className="v2-empty-state" aria-labelledby="empty-favorites-title"><h2 id="empty-favorites-title">No favorites yet</h2><p>Follow a club, national team or competition to build your personal sports feed.</p><Link href="/sports">Explore sports</Link></section> : <div className="v2-favorites-content" aria-busy={isLoading}>
+    <section className="v2-favorites-hero" aria-labelledby="favorites-title"><p className="v2-eyebrow">Favorites</p><h1 id="favorites-title">What you follow</h1><p className={styles.heroNote}>Your teams, nations, competitions, Grand Prix and events in one place, with their next verified sessions or matches when available. Favorites are stored on this device for now.</p></section>
+    {collection.items.length === 0 ? <section className="v2-empty-state" aria-labelledby="empty-favorites-title"><h2 id="empty-favorites-title">No favorites yet</h2><p>Follow a club, national team, competition, Grand Prix or event to build your personal sports feed.</p><Link href="/sports">Explore sports</Link></section> : <div className="v2-favorites-content" aria-busy={isLoading}>
       {feedState?.lookupKey === lookupKey && feedState.error ? <div className="v2-favorites-error" role="alert"><div><strong>Could not refresh favorite events.</strong><span>Your followed teams and competitions remain saved on this device.</span></div><button type="button" onClick={() => setRetryNumber((value) => value + 1)}>Try again</button></div> : null}
       <section className="v2-favorites-section" aria-labelledby="teams-title"><div className="v2-favorites-heading"><div><p className="v2-eyebrow">Following</p><h2 id="teams-title">Teams & nations</h2></div><span>{participantFavorites.length}</span></div>{participantFavorites.length > 0 ? <ul className={styles.followList}>{participantFavorites.map((favorite) => <FollowedItem key={`${favorite.kind}:${favorite.entityId}`} favorite={favorite} kind={participantKind(favorite)} />)}</ul> : <p className="v2-favorites-note">You are not following a team or nation yet.</p>}</section>
       <section className="v2-favorites-section" aria-labelledby="competitions-title"><div className="v2-favorites-heading"><div><p className="v2-eyebrow">Following</p><h2 id="competitions-title">Competitions</h2></div><span>{competitionFavorites.length}</span></div>{competitionFavorites.length > 0 ? <ul className={styles.followList}>{competitionFavorites.map((favorite) => <FollowedItem key={`${favorite.kind}:${favorite.entityId}`} favorite={favorite} kind="Competition" />)}</ul> : <p className="v2-favorites-note">You are not following a competition yet.</p>}</section>
+      <section className="v2-favorites-section" aria-labelledby="event-groups-title"><div className="v2-favorites-heading"><div><p className="v2-eyebrow">Following</p><h2 id="event-groups-title">Events & weekends</h2></div><span>{groupFavorites.length}</span></div>{groupFavorites.length > 0 ? <ul className={styles.followList}>{groupFavorites.map((favorite) => <FollowedItem key={`${favorite.kind}:${favorite.entityId}`} favorite={favorite} kind={groupKind(favorite)} />)}</ul> : <p className="v2-favorites-note">You are not following a Grand Prix or event yet.</p>}</section>
       <section className="v2-favorites-section" aria-labelledby="next-events-title"><div className="v2-favorites-heading"><div><p className="v2-eyebrow">Coming up</p><h2 id="next-events-title">Upcoming events from your favorites</h2></div><span>{currentFeed?.upcomingEvents.length ?? 0}</span></div>{isLoading ? <div className="v2-loading" role="status"><span className="v2-loading-dot" aria-hidden="true" />Refreshing favorite events…</div> : currentFeed && currentFeed.upcomingEvents.length > 0 ? <div className={styles.eventList}>{currentFeed.upcomingEvents.map((event) => <FavoriteEventCard key={event.id} event={event} />)}</div> : <div className="v2-favorites-note"><p>No upcoming verified event is currently listed for what you follow.</p><div className={styles.emptyActions}><Link href="/events">Browse upcoming events</Link><Link href="/sports">Discover competitions</Link></div></div>}</section>
       {legacyEventFavorites.length > 0 ? <section className="v2-favorites-section" aria-labelledby="legacy-events-title"><div className="v2-favorites-heading"><div><p className="v2-eyebrow">Legacy</p><h2 id="legacy-events-title">Previously saved matches</h2></div><span>{legacyEventFavorites.length}</span></div><div className={styles.eventList}>{legacyEventFavorites.map((favorite) => <LegacySavedEvent key={favorite.entityId} favorite={favorite} event={exactEventById.get(favorite.entityId)} />)}</div></section> : null}
     </div>}
