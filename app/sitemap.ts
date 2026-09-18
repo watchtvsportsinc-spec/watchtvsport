@@ -6,6 +6,7 @@ import { getAllMatches, type MatchData } from "@/lib/matches";
 import { getPublicCompetitionFixtures, type PublicFixture } from "@/lib/public-fixtures";
 import { shouldIncludeInSitemap } from "@/lib/seo-indexability";
 import { sportsRegistry } from "@/lib/sports-registry";
+import { motogpSeason2026Weekends } from "@/source/motogp-2026-season";
 
 const BASE_URL = "https://watchtvsport.com";
 
@@ -187,6 +188,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ).values(),
   ).map(({ event, year }) => sitemapEntry(`/formula-1/grand-prix/${event.eventGroupSlug}/${year}`));
 
+  const motogpPages = motogpSeason2026Weekends.map((weekend) =>
+    sitemapEntry(`/sports/motogp/grand-prix/${weekend.slug}`),
+  );
+
   const ufcPages = Array.from(
     new Map(
       events
@@ -220,6 +225,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...leagueFixturePages,
     ...f1Pages,
     ...f1EditionPages,
+    ...motogpPages,
     ...ufcPages,
     ...archiveMatchPages,
     ...watchPages,
