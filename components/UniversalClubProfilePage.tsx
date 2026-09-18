@@ -3,8 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import FavoriteButton from "@/components/FavoriteButton";
+import FavoriteAwareClubMatch from "@/components/FavoriteAwareClubMatch";
 import LocalTime from "@/components/LocalTime";
-import MatchWatchPanel from "@/components/MatchWatchPanel";
 import ParticipantSportVisual from "@/components/ParticipantSportVisual";
 import { resolveClubSlug } from "@/lib/club-aliases";
 import type { EventData, Participant } from "@/lib/events";
@@ -29,6 +29,24 @@ function participantMatches(participant: Participant | undefined, participantId:
 function participantSlug(participant?: Participant): string | null {
   if (!participant || participant.type !== "club") return null;
   return participant.slug || resolveClubSlug(participant.name);
+}
+
+function favoriteParticipantId(sport: string, participant?: Participant): string | null {
+  if (!participant) return null;
+  if (participant.type !== "club") return participant.id;
+  const slug = sport === "football"
+    ? resolveClubSlug(participant.name)
+    : participant.slug || normalizedSlug(participant.name);
+  return `club:${sport}:${slug}`;
+}
+
+function confirmedAccess(event: EventData): { free: boolean; paid: boolean; count: number } {
+  const broadcasts = event.broadcasts.filter((broadcast) => broadcast.coverageStatus === "confirmed");
+  return {
+    free: broadcasts.some((broadcast) => broadcast.access === "Free"),
+    paid: broadcasts.some((broadcast) => broadcast.access === "Paid"),
+    count: broadcasts.length,
+  };
 }
 
 function opponent(event: EventData, participantId: string, slug: string): Participant | undefined {
@@ -177,7 +195,7 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
   const verifiedVisual = verified.visual;
 
   const clubSlugs = Array.from(new Set(
-    upcoming.flatMap((event) => [participantSlug(event.participant1), participantSlug(event.participant2)]
+    [...upcoming, ...recent].flatMap((event) => [participantSlug(event.participant1), participantSlug(event.participant2)]
       .filter((slug): slug is string => Boolean(slug))),
   ));
   const profileEntries = await Promise.all(
@@ -294,37 +312,47 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
         {upcoming.length === 0 ? (
           <div className="v2-empty-state" role="status"><h3>No upcoming game currently confirmed</h3><p>New fixtures will appear here automatically as soon as a confirmed schedule is imported.</p></div>
         ) : (
-          <div className="v2-match-next-list">
-            {upcoming.map((event) => {
-              const confirmedBroadcasts = event.broadcasts.filter((broadcast) => broadcast.coverageStatus === "confirmed");
+          <div className={styles.matchList}>
+            {upcoming.map((event, index) => {
+              const access = confirmedAccess(event);
+              const favoriteTeams = [event.participant1, event.participant2]
+                .map((participant) => {
+                  const id = favoriteParticipantId(sport, participant);
+                  return id && participant ? { id, label: participant.name } : null;
+                })
+                .filter((item): item is { id: string; label: string } => Boolean(item));
+
               return (
-                <article key={event.id}>
-                  <Link href={event.detailPath} className="v2-match-next-row">
-                    <span className="v2-match-next-team is-left">
-                      {event.participant1 ? <ParticipantSportVisual sport={sport} label={event.participant1.name} countryCode={event.participant1.countryCode} visual={visualForParticipant(event.participant1)} size="sm" /> : <span className="v2-match-next-tbc">?</span>}
+                <FavoriteAwareClubMatch key={event.id} teams={favoriteTeams} isNext={index === 0}>
+                  <Link href={event.detailPath} className={styles.matchRow}>
+                    <span className={`${styles.matchTeam} ${styles.matchTeamLeft}`}>
+                      {event.participant1 ? <ParticipantSportVisual sport={sport} label={event.participant1.name} countryCode={event.participant1.countryCode} visual={visualForParticipant(event.participant1)} size="sm" /> : <span className={styles.matchTbc}>?</span>}
                       <strong>{event.participant1?.name ?? "TBC"}</strong>
                     </span>
 
-                    <span className="v2-match-next-meta">
-                      <span>{event.competition}</span>
+                    <span className={styles.matchMeta}>
+                      <span className={styles.matchMetaTop}>
+                        {index === 0 ? <b className={styles.nextPill}>Next</b> : null}
+                        <span>{event.competition}</span>
+                      </span>
+                      <span className={styles.matchTime}><LocalTime date={event.eventDate} /></span>
                       <small>{event.stage ?? "Fixture"}</small>
-                      <span className="v2-match-next-time"><LocalTime date={event.eventDate} /></span>
                     </span>
 
-                    <span className="v2-match-next-team is-right">
+                    <span className={`${styles.matchTeam} ${styles.matchTeamRight}`}>
                       <strong>{event.participant2?.name ?? "TBC"}</strong>
-                      {event.participant2 ? <ParticipantSportVisual sport={sport} label={event.participant2.name} countryCode={event.participant2.countryCode} visual={visualForParticipant(event.participant2)} size="sm" /> : <span className="v2-match-next-tbc">?</span>}
+                      {event.participant2 ? <ParticipantSportVisual sport={sport} label={event.participant2.name} countryCode={event.participant2.countryCode} visual={visualForParticipant(event.participant2)} size="sm" /> : <span className={styles.matchTbc}>?</span>}
                     </span>
 
-                    <span className="v2-match-next-arrow" aria-hidden="true">›</span>
+                    <span className={styles.matchAccess} aria-label={access.count ? `${access.count} confirmed broadcaster${access.count === 1 ? "" : "s"}` : "Broadcasters to be confirmed"}>
+                      {access.paid ? <span className="v2-chip is-paid">Paid</span> : null}
+                      {access.free ? <span className="v2-chip is-free">Free</span> : null}
+                      {!access.paid && !access.free ? <span className={styles.tvTbc}>TV TBC</span> : null}
+                    </span>
+
+                    <span className={styles.matchArrow} aria-hidden="true">›</span>
                   </Link>
-                  <MatchWatchPanel
-                    broadcasts={confirmedBroadcasts}
-                    emptyTitle="Broadcasters not confirmed yet"
-                    emptyCopy="Confirmed official viewing options will appear here when verified."
-                    showMethodologyLink
-                  />
-                </article>
+                </FavoriteAwareClubMatch>
               );
             })}
           </div>
@@ -333,8 +361,26 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
 
       {recent.length > 0 ? (
         <section id="recent" className={`${styles.section} ${styles.recentSection}`} aria-labelledby="recent-title">
-          <div className={styles.sectionHeader}><div><p className="v2-eyebrow">Archive</p><h2 id="recent-title">Recent games</h2></div></div>
-          <div className={styles.archiveGrid}>{recent.map((event) => <Link href={event.detailPath} key={event.id}><strong>{event.title}</strong><span><LocalTime date={event.eventDate} /></span><small>{event.competition}</small></Link>)}</div>
+          <div className={styles.sectionHeader}><div><p className="v2-eyebrow">Archive</p><h2 id="recent-title">Recent games</h2></div><span>{recent.length} recent</span></div>
+          <div className={styles.recentList}>
+            {recent.map((event) => (
+              <Link href={event.detailPath} key={event.id} className={styles.recentRow}>
+                <span className={`${styles.recentTeam} ${styles.recentTeamLeft}`}>
+                  {event.participant1 ? <ParticipantSportVisual sport={sport} label={event.participant1.name} countryCode={event.participant1.countryCode} visual={visualForParticipant(event.participant1)} size="sm" /> : null}
+                  <strong>{event.participant1?.name ?? "TBC"}</strong>
+                </span>
+                <span className={styles.recentMeta}>
+                  <span>{event.competition}</span>
+                  <small><LocalTime date={event.eventDate} /></small>
+                </span>
+                <span className={`${styles.recentTeam} ${styles.recentTeamRight}`}>
+                  <strong>{event.participant2?.name ?? "TBC"}</strong>
+                  {event.participant2 ? <ParticipantSportVisual sport={sport} label={event.participant2.name} countryCode={event.participant2.countryCode} visual={visualForParticipant(event.participant2)} size="sm" /> : null}
+                </span>
+                <span className={styles.matchArrow} aria-hidden="true">›</span>
+              </Link>
+            ))}
+          </div>
         </section>
       ) : null}
     </main>
