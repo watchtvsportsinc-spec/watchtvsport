@@ -143,24 +143,26 @@ export default async function UfcPage() {
         className={styles.section}
         aria-labelledby="ufc-events-title"
       >
-        <div className={styles.heading}>
-          <div>
-            <p>Schedule</p>
-            <h2 id="ufc-events-title">Upcoming UFC events</h2>
+        <div className="wts-discovery-results">
+          <div className="wts-discovery-results-heading">
+            <div>
+              <p>Schedule</p>
+              <h2 id="ufc-events-title">Upcoming UFC events</h2>
+            </div>
+            <span>{cards.length} events</span>
           </div>
-          <span>{cards.length} events</span>
-        </div>
 
-        {cards.length > 0 ? (
-          <UfcEventGrid items={cards} />
-        ) : (
-          <div className={styles.empty}>
-            <strong>No upcoming UFC event currently published</strong>
-            <span>
-              Verified fight cards will appear automatically when imported.
-            </span>
-          </div>
-        )}
+          {cards.length > 0 ? (
+            <UfcEventGrid items={cards} />
+          ) : (
+            <div className="wts-discovery-empty">
+              <strong>No upcoming UFC event currently published</strong>
+              <span>
+                Verified fight cards will appear automatically when imported.
+              </span>
+            </div>
+          )}
+        </div>
       </section>
 
       <section className={styles.about}>
