@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import styles from "./country-page.module.css";
 import { getCurrentCountrySummaries } from "@/lib/country-tv";
 import { getAllMatches } from "@/lib/matches";
 
@@ -84,16 +86,17 @@ export default async function CountriesPage() {
   };
 
   return (
-    <main style={{ maxWidth: 1160, margin: "0 auto", padding: "1.5rem 1rem 4rem" }}>
+    <main id="main-content" className={styles.page}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Countries" }]} />
 
-      <header style={{ padding: "1.5rem 0 2rem", maxWidth: 900 }}>
-        <p style={{ color: "#60a5fa", textTransform: "uppercase", letterSpacing: ".12em", fontWeight: 800 }}>Official broadcasters by territory</p>
-        <h1 style={{ margin: ".5rem 0", fontSize: "clamp(2.2rem,6vw,4rem)", lineHeight: 1.02 }}>Sports TV by country</h1>
-        <p style={{ color: "#b8c5d3", lineHeight: 1.75, maxWidth: 780 }}>
+      <header className={styles.hero}>
+        <p>Official broadcasters by territory</p>
+        <h1>Sports TV by country</h1>
+        <p className={styles.heroCopy}>
           Choose a country to see current and upcoming sports events with confirmed official TV or streaming listings. Historical FIFA World Cup 2026 broadcaster records remain available separately below.
         </p>
-        <div style={{ display: "flex", gap: ".75rem", flexWrap: "wrap", color: "#9fb0c3" }}>
+        <div className={styles.heroMeta}>
           <span>{current.countries.length} territories with current verified listings</span>
           <span>·</span>
           <span>{currentEventTerritoryPairs} current event/territory listings</span>

@@ -7,6 +7,7 @@ import { getCurrentCountryGuide } from "@/lib/country-tv";
 import { getAllMatches } from "@/lib/matches";
 import { evaluateSeoEligibility, indexableRobots } from "@/lib/seo-indexability";
 import { getSportLabel } from "@/lib/sports-registry";
+import styles from "../country-page.module.css";
 
 type PageProps = { params: Promise<{ code: string }> };
 
@@ -107,19 +108,19 @@ export default async function CountryPage({ params }: PageProps) {
   };
 
   return (
-    <main id="main-content" style={{ maxWidth: 1100, margin: "0 auto", padding: "1.5rem 1rem 4rem" }}>
+    <main id="main-content" className={styles.page}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Countries", href: "/country" }, { label: name }]} />
 
-      <header style={{ margin: "1.5rem 0 2rem", maxWidth: 850 }}>
-        <p style={{ color: "#60a5fa", textTransform: "uppercase", letterSpacing: ".1em", fontWeight: 800 }}>Country TV guide</p>
-        <h1 style={{ fontSize: "clamp(2rem,6vw,3.7rem)", lineHeight: 1.05, margin: ".5rem 0 1rem" }}>Sports on TV in {name}</h1>
-        <p style={{ color: "#b8c5d3", lineHeight: 1.75 }}>
+      <header className={styles.hero}>
+        <p>Country TV guide</p>
+        <h1>Sports on TV in {name}</h1>
+        <p className={styles.heroCopy}>
           Current listings below are tied to individual verified events and official broadcaster records for this territory. Historical rights are kept separate and are never used to infer current coverage.
         </p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: ".75rem" }}>
-          <Link href="/events" style={{ color: "#fff", background: "#1d4ed8", padding: ".7rem 1rem", borderRadius: 10, textDecoration: "none", fontWeight: 700 }}>All current sports events</Link>
-          <Link href="/methodology" style={{ color: "#60a5fa", padding: ".7rem 0" }}>How listings are verified →</Link>
+        <div className={styles.heroActions}>
+          <Link href="/events">All current sports events</Link>
+          <Link href="/methodology">How listings are verified →</Link>
         </div>
       </header>
 
