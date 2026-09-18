@@ -492,9 +492,9 @@
   overflow:hidden;
   border-color:rgba(96,165,250,.22);
   background:
-    linear-gradient(90deg,rgba(99,17,28,.22),rgba(4,16,28,.94) 28%,rgba(4,16,28,.94) 72%,rgba(14,71,130,.22)),
-    linear-gradient(180deg,rgba(8,25,42,.98),rgba(4,16,28,.98)),
-    url('/hero-stadium-bg.webp') center/cover no-repeat;
+    linear-gradient(90deg,rgba(80,8,18,.34),rgba(2,10,18,.56) 30%,rgba(2,10,18,.56) 70%,rgba(7,48,96,.34)),
+    linear-gradient(180deg,rgba(2,7,13,.22),rgba(2,8,15,.64)),
+    url('/hero-stadium-bg.webp') center 46%/cover no-repeat;
 }
 .wts-combat-event-hero::before{
   content:"";
@@ -502,8 +502,17 @@
   inset:0;
   pointer-events:none;
   background:
-    radial-gradient(circle at 15% 50%,rgba(239,68,68,.11),transparent 28%),
-    radial-gradient(circle at 85% 50%,rgba(59,130,246,.11),transparent 28%);
+    linear-gradient(180deg,rgba(2,8,15,.04),rgba(2,8,15,.28)),
+    radial-gradient(circle at 15% 50%,rgba(239,68,68,.14),transparent 30%),
+    radial-gradient(circle at 85% 50%,rgba(59,130,246,.14),transparent 30%);
+}
+
+.wts-combat-event-hero::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  box-shadow:inset 0 0 90px rgba(0,0,0,.34);
 }
 .wts-combat-hero-header,
 .wts-combat-main-event,
