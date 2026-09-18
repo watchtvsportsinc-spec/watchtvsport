@@ -237,6 +237,7 @@ export function getFavoriteEventFeed(events: EventData[], lookup: FavoriteLookup
   const eventIds = new Set(lookup.eventIds);
   const participantIds = new Set(lookup.participantIds);
   const competitionIds = new Set(lookup.competitionIds);
+  const groupIds = new Set(lookup.groupIds);
 
   const exactEvents = events
     .filter((event) => eventIds.has(event.id))
@@ -247,8 +248,9 @@ export function getFavoriteEventFeed(events: EventData[], lookup: FavoriteLookup
     .filter((event) => {
       if (eventIds.has(event.id)) return false;
       const followsCompetition = competitionIds.has(event.competitionSlug) || competitionIds.has(`${event.sport}:${event.competitionSlug}`);
+      const followsGroup = Boolean(event.eventGroupId && groupIds.has(event.eventGroupId));
       const followsParticipant = [event.participant1, event.participant2].some((participant) => participantFavoriteIds(event, participant).some((id) => participantIds.has(id)));
-      if (!followsCompetition && !followsParticipant) return false;
+      if (!followsCompetition && !followsGroup && !followsParticipant) return false;
       const startTime = new Date(event.eventDate).getTime();
       return event.status === "live" || (event.status !== "finished" && Number.isFinite(startTime) && startTime >= now.getTime());
     })
