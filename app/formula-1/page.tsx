@@ -16,10 +16,36 @@ function eventWeekendSlug(detailPath: string, fallback?: string): string | undef
   return detailPath.match(/^\/formula-1\/grand-prix\/([^#?]+)/)?.[1];
 }
 
-function countryFlagCode(country?: string): string | null {
-  if (!country) return null;
+function grandPrixFlagCode(slug: string, country?: string): string | null {
+  const bySlug: Record<string, string> = {
+    australia: "au",
+    china: "cn",
+    japan: "jp",
+    miami: "us",
+    canada: "ca",
+    monaco: "mc",
+    "barcelona-catalunya": "es",
+    austria: "at",
+    "great-britain": "gb",
+    belgium: "be",
+    hungary: "hu",
+    netherlands: "nl",
+    italy: "it",
+    spain: "es",
+    azerbaijan: "az",
+    bahrain: "bh",
+    singapore: "sg",
+    "united-states": "us",
+    mexico: "mx",
+    brazil: "br",
+    "las-vegas": "us",
+    qatar: "qa",
+    "abu-dhabi": "ae",
+  };
 
-  const codes: Record<string, string> = {
+  if (bySlug[slug]) return bySlug[slug];
+
+  const byCountry: Record<string, string> = {
     Australia: "au",
     China: "cn",
     Japan: "jp",
@@ -42,7 +68,7 @@ function countryFlagCode(country?: string): string | null {
     "United Arab Emirates": "ae",
   };
 
-  return codes[country] ?? null;
+  return country ? byCountry[country] ?? null : null;
 }
 
 export default async function Formula1Page() {
@@ -138,10 +164,10 @@ export default async function Formula1Page() {
                 </div>
 
                 <h3>
-                  {countryFlagCode(weekend.country) ? (
+                  {grandPrixFlagCode(weekend.slug, weekend.country) ? (
                     <img
                       className="wts-f1-country-flag"
-                      src={`/flags/${countryFlagCode(weekend.country)}.png`}
+                      src={`/flags/${grandPrixFlagCode(weekend.slug, weekend.country)}.png`}
                       alt=""
                       aria-hidden="true"
                     />
