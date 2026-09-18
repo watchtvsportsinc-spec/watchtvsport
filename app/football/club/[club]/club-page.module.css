@@ -69,3 +69,79 @@
 @media(min-width:980px){.heroMain{grid-template-columns:128px minmax(0,1fr);gap:22px;padding-top:11px;padding-bottom:10px}.crest{width:128px}.identity h1{font-size:46px}}
 @media(min-width:1180px){.heroMain{grid-template-columns:136px minmax(0,1fr);padding-top:12px;padding-bottom:11px}.crest{width:136px}.identity h1{font-size:48px}}
 @media(max-width:480px){.identity h1{font-size:27px}.heroMain{padding-top:8px;padding-bottom:7px}}
+
+
+/* Club schedule: compact match-page language, with direct access badges. */
+.matchList{display:grid;gap:5px}
+.matchRow{display:grid;grid-template-columns:minmax(0,1fr) 112px minmax(0,1fr) 44px 10px;align-items:center;gap:6px;height:52px;min-height:52px;padding:3px 7px;border:1px solid rgba(88,166,235,.16);border-radius:10px;background:#07131f;color:#fff;text-decoration:none;transition:border-color .15s ease,background .15s ease,box-shadow .15s ease}
+.matchRow:hover{border-color:rgba(88,166,235,.4);background:#091827}
+.matchTeam{display:flex;min-width:0;align-items:center;gap:6px}
+.matchTeam strong{display:-webkit-box;min-width:0;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;font-size:9px;line-height:1.08}
+.matchTeam :global(span[role="img"]){width:36px!important;height:36px!important}
+.matchTeam :global(span[role="img"] svg){width:36px!important;height:36px!important}
+.matchTeamLeft{justify-content:flex-end;text-align:right}
+.matchTeamLeft strong{order:1;text-align:right}
+.matchTeamLeft :global(span[role="img"]){order:2}
+.matchTeamRight{justify-content:flex-start;text-align:left}
+.matchTeamRight :global(span[role="img"]){order:1}
+.matchTeamRight strong{order:2;text-align:left}
+.matchTbc{display:grid;width:32px;height:32px;place-items:center;border:1px solid rgba(96,165,250,.2);border-radius:8px;color:#6f8ba5}
+.matchMeta{display:grid;min-width:0;justify-items:center;gap:1px;text-align:center}
+.matchMetaTop{display:flex;max-width:100%;align-items:center;justify-content:center;gap:4px;overflow:hidden}
+.matchMetaTop>span{overflow:hidden;color:#5db7ff;font-size:6.5px;font-weight:900;letter-spacing:.055em;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}
+.nextPill{flex:0 0 auto;padding:2px 4px;border:1px solid rgba(94,208,160,.3);border-radius:999px;background:rgba(38,146,92,.14);color:#71e3b0;font-size:5.5px;line-height:1;font-weight:950;letter-spacing:.05em;text-transform:uppercase}
+.matchTime{color:#c1d2df;font-size:7.5px;line-height:1.05;font-weight:800}
+.matchTime>span{gap:0!important}
+.matchMeta>small{overflow:hidden;max-width:100%;color:#718ba3;font-size:6.5px;line-height:1.05;text-overflow:ellipsis;white-space:nowrap}
+.matchAccess{display:grid;height:36px;align-content:start;justify-items:start;gap:2px}
+.matchAccess :global(.v2-chip){min-width:34px;justify-content:center;padding:2px 5px;font-size:6px;line-height:1;white-space:nowrap}
+.tvTbc{display:inline-flex;min-height:17px;align-items:center;border:1px solid rgba(139,176,212,.18);border-radius:999px;background:rgba(92,127,159,.08);color:#91a8bd;padding:2px 5px;font-size:5.5px;font-weight:900;white-space:nowrap}
+.matchArrow{color:#7da9cf;font-size:18px;line-height:1;text-align:center}
+:global(.wts-club-match-card){position:relative;min-width:0;border-radius:10px}
+:global(.wts-club-match-card.is-next-match) .matchRow{border-color:rgba(78,171,255,.38);background:linear-gradient(90deg,rgba(10,58,97,.26),#07131f 34%)}
+:global(.wts-club-match-card.is-favorite-team-match) .matchRow{border-color:rgba(96,189,255,.6);box-shadow:inset 3px 0 rgba(80,179,255,.9),0 0 0 1px rgba(55,144,225,.08)}
+:global(.wts-club-match-card.is-favorite-team-match.is-next-match) .matchRow{background:linear-gradient(90deg,rgba(10,76,128,.34),#07131f 40%)}
+:global(.wts-club-favorite-match-star){position:absolute;z-index:3;left:5px;top:5px;display:grid;width:13px;height:13px;place-items:center;border:1px solid rgba(95,184,255,.35);border-radius:50%;background:#08223a;color:#63bdff;font-size:7px;line-height:1;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+:global(.wts-club-match-card.is-favorite-team-match) .matchRow{padding-left:20px}
+
+.recentList{display:grid;gap:4px}
+.recentRow{display:grid;grid-template-columns:minmax(0,1fr) 104px minmax(0,1fr) 10px;align-items:center;gap:5px;height:44px;min-height:44px;padding:2px 7px;border:1px solid rgba(108,170,233,.1);border-radius:9px;background:rgba(7,19,31,.72);color:#cfdbe6;text-decoration:none}
+.recentRow:hover{border-color:rgba(88,166,235,.28);background:#081725}
+.recentTeam{display:flex;min-width:0;align-items:center;gap:5px;opacity:.86}
+.recentTeam strong{overflow:hidden;min-width:0;font-size:8px;line-height:1.1;text-overflow:ellipsis;white-space:nowrap}
+.recentTeam :global(span[role="img"]){width:30px!important;height:30px!important}
+.recentTeam :global(span[role="img"] svg){width:30px!important;height:30px!important}
+.recentTeamLeft{justify-content:flex-end;text-align:right}
+.recentTeamLeft strong{order:1}.recentTeamLeft :global(span[role="img"]){order:2}
+.recentTeamRight{justify-content:flex-start;text-align:left}
+.recentTeamRight :global(span[role="img"]){order:1}.recentTeamRight strong{order:2}
+.recentMeta{display:grid;min-width:0;justify-items:center;gap:1px;text-align:center}
+.recentMeta>span{overflow:hidden;max-width:100%;color:#5aaeff;font-size:6px;font-weight:850;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}
+.recentMeta small{color:#71889d;font-size:6.5px;line-height:1.05}
+.recentMeta small>span{gap:0!important}
+
+@media(min-width:680px){
+  .matchRow{grid-template-columns:minmax(0,1fr) 160px minmax(0,1fr) 52px 12px;height:56px;min-height:56px;gap:9px;padding:4px 9px}
+  .matchTeam{gap:8px}.matchTeam strong{font-size:11px}
+  .matchTeam :global(span[role="img"]){width:40px!important;height:40px!important}.matchTeam :global(span[role="img"] svg){width:40px!important;height:40px!important}
+  .matchMetaTop>span{font-size:8px}.nextPill{font-size:6.5px}.matchTime{font-size:9px}.matchMeta>small{font-size:7.5px}
+  .matchAccess{height:40px}.matchAccess :global(.v2-chip){min-width:40px;font-size:7px}.tvTbc{font-size:6.5px}
+  .recentRow{grid-template-columns:minmax(0,1fr) 150px minmax(0,1fr) 12px;height:48px;min-height:48px;padding:3px 9px}
+  .recentTeam strong{font-size:10px}.recentTeam :global(span[role="img"]){width:34px!important;height:34px!important}.recentTeam :global(span[role="img"] svg){width:34px!important;height:34px!important}
+  .recentMeta>span{font-size:7.5px}.recentMeta small{font-size:8px}
+}
+@media(max-width:480px){
+  .section{padding:8px}.sectionHeader{margin-bottom:6px}.sectionHeader h2{font-size:17px}
+  .matchList{gap:3px}.matchRow{grid-template-columns:minmax(0,1fr) 82px minmax(0,1fr) 38px 8px;gap:3px;height:48px;min-height:48px;padding:2px 4px}
+  :global(.wts-club-match-card.is-favorite-team-match) .matchRow{padding-left:15px}
+  :global(.wts-club-favorite-match-star){left:3px;top:4px;width:11px;height:11px;font-size:6px}
+  .matchTeam{gap:3px}.matchTeam strong{font-size:7.5px}
+  .matchTeam :global(span[role="img"]){width:32px!important;height:32px!important}.matchTeam :global(span[role="img"] svg){width:32px!important;height:32px!important}
+  .matchMetaTop{gap:2px}.matchMetaTop>span{font-size:5.5px}.nextPill{padding:1px 3px;font-size:5px}
+  .matchTime{font-size:6.5px}.matchMeta>small{font-size:5.5px}
+  .matchAccess{height:32px;gap:1px}.matchAccess :global(.v2-chip){min-width:31px;padding:2px 4px;font-size:5.5px}.tvTbc{padding:2px 4px;font-size:5px}
+  .matchArrow{font-size:15px}
+  .recentList{gap:3px}.recentRow{grid-template-columns:minmax(0,1fr) 82px minmax(0,1fr) 8px;gap:3px;height:42px;min-height:42px;padding:2px 4px}
+  .recentTeam{gap:3px}.recentTeam strong{font-size:7px}.recentTeam :global(span[role="img"]){width:28px!important;height:28px!important}.recentTeam :global(span[role="img"] svg){width:28px!important;height:28px!important}
+  .recentMeta>span{font-size:5.5px}.recentMeta small{font-size:6px}
+}
