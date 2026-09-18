@@ -31,6 +31,26 @@ function iconFor(kind: SportHeroStat["icon"]) {
   return "♜";
 }
 
+function renderSportTitle(title: string) {
+  return title.split(" ").map((word, index) => {
+    const firstLetterIndex = word.search(/[A-Za-zÀ-ÖØ-öø-ÿ]/);
+    const spacer = index > 0 ? " " : "";
+
+    if (firstLetterIndex < 0) {
+      return <span key={`${word}-${index}`}>{spacer}{word}</span>;
+    }
+
+    return (
+      <span key={`${word}-${index}`}>
+        {spacer}
+        {word.slice(0, firstLetterIndex)}
+        <span className={styles.titleInitial}>{word[firstLetterIndex]}</span>
+        {word.slice(firstLetterIndex + 1)}
+      </span>
+    );
+  });
+}
+
 export default function SportHero({
   eyebrow,
   title,
@@ -49,7 +69,7 @@ export default function SportHero({
     <section className={styles.hero} aria-labelledby={titleId} style={style}>
       <div className={styles.content}>
         <p className={styles.eyebrow}>{eyebrow}</p>
-        <h1 id={titleId}>{title}</h1>
+        <h1 id={titleId} aria-label={title}>{renderSportTitle(title)}</h1>
         <p className={styles.description}>{description}</p>
       </div>
 
