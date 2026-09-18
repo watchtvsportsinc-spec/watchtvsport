@@ -1010,6 +1010,20 @@
   }
 }
 
+.wts-motorsport-row-kicker{
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+.wts-motorsport-inline-flag{
+  width:14px;
+  height:10px;
+  flex:0 0 auto;
+  border-radius:2px;
+  object-fit:cover;
+  box-shadow:0 0 0 1px rgba(255,255,255,.12);
+}
+
 /* UFC event rows reuse the Home schedule language */
 .wts-ufc-event-row{
   display:grid;

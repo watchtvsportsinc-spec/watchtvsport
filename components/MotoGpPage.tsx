@@ -43,7 +43,6 @@ type WeekendView = {
 
 function RaceCard({ item, completed = false }: { item: WeekendView; completed?: boolean }) {
   const { weekend, exactNext, confirmed, freeCountries, paidCountries } = item;
-
   const href = `/sports/motogp/grand-prix/${weekend.slug}`;
   const favorite = {
     kind: "group" as const,
@@ -51,54 +50,73 @@ function RaceCard({ item, completed = false }: { item: WeekendView; completed?: 
     label: weekend.name,
     href,
   };
+  const accessOptions = [
+    freeCountries > 0 ? "Free" : null,
+    paidCountries > 0 ? "Paid" : null,
+  ].filter(Boolean) as Array<"Free" | "Paid">;
 
   return (
-    <article className="wts-f1-race-card">
-      <div className="wts-f1-race-copy">
-        <div className="wts-f1-race-topline">
-          {weekend.country} · {weekend.venue}
-        </div>
-
-        <h3>
-          <img
-            className="wts-f1-country-flag"
-            src={`/flags/${weekend.flagCode}.png`}
-            alt=""
-            aria-hidden="true"
-          />
-          <Link href={href}>{weekend.name}</Link>
-        </h3>
-
-        <div className="wts-f1-race-meta">
-          <span>
-            <b>{completed ? "Race" : "Next session"}</b>
+    <article className="wts-ufc-event-row">
+      <Link className="wts-ufc-event-main" href={href}>
+        <div className="wts-discovery-card-time">
+          <span className="wts-result-status">Grand Prix</span>
+          <strong>
+            {completed ? "—" : exactNext ? <LocalTime date={exactNext} display="time" /> : "TBC"}
+          </strong>
+          <small>
             {completed ? (
               formatDate(weekend.raceDate)
             ) : exactNext ? (
-              <LocalTime date={exactNext} />
+              <LocalTime date={exactNext} display="date" />
             ) : (
-              "Schedule TBC"
+              formatWeekend(weekend.weekendStart, weekend.weekendEnd)
             )}
-          </span>
-          <span>
-            <b>Weekend</b>
-            {formatWeekend(weekend.weekendStart, weekend.weekendEnd)}
-          </span>
-          <span>
-            <b>TV coverage</b>
-            {confirmed > 0 ? `${confirmed} confirmed listings` : "Pending"}
-          </span>
+          </small>
         </div>
-      </div>
 
-      <div className="wts-f1-race-actions">
-        <div className="wts-f1-race-access" aria-label="Access">
-          {freeCountries > 0 ? <span className="is-free">Free · {freeCountries}</span> : null}
-          {paidCountries > 0 ? <span className="is-paid">Paid · {paidCountries}</span> : null}
+        <div className="wts-discovery-card-main">
+          <p className="wts-motorsport-row-kicker">
+            <img
+              className="wts-motorsport-inline-flag"
+              src={`/flags/${weekend.flagCode}.png`}
+              alt=""
+              aria-hidden="true"
+            />
+            <span>MotoGP · {weekend.country}</span>
+          </p>
+          <h3>{weekend.name}</h3>
+          <span>
+            {[weekend.venue, formatWeekend(weekend.weekendStart, weekend.weekendEnd), confirmed > 0 ? `${confirmed} confirmed TV options` : null]
+              .filter(Boolean)
+              .join(" · ")}
+          </span>
         </div>
-        <FavoriteButton favorite={favorite} />
-        <Link className="wts-f1-race-view" href={href}>
-          View event <b aria-hidden="true">›</b>
+
+        <span className="wts-result-access-stack">
+          {accessOptions.length > 0 ? (
+            accessOptions.map((access) => (
+              <span
+                className={"wts-result-access " + (access === "Free" ? "is-free" : "is-paid")}
+                key={access}
+              >
+                {access}
+              </span>
+            ))
+          ) : (
+            <span className="wts-result-access is-tbc">TV TBC</span>
+          )}
+        </span>
+      </Link>
+
+      <div className="wts-ufc-event-actions">
+        <FavoriteButton compact favorite={favorite} />
+        <Link
+          className="wts-ufc-event-open"
+          href={href}
+          aria-label={`View ${weekend.name}`}
+        >
+          <span>View event</span>
+          <b aria-hidden="true">›</b>
         </Link>
       </div>
     </article>
@@ -175,30 +193,34 @@ export default async function MotoGpPage() {
         stats={heroStats}
       />
 
-      <section className="v2-results wts-f1-results" aria-labelledby="motogp-remaining-title">
-        <div className="v2-results-heading">
-          <div>
-            <p className="v2-eyebrow">2026 season</p>
-            <h2 id="motogp-remaining-title">Remaining races</h2>
+      <section className={styles.section} aria-labelledby="motogp-remaining-title">
+        <div className="wts-discovery-results">
+          <div className="wts-discovery-results-heading">
+            <div>
+              <p>2026 season</p>
+              <h2 id="motogp-remaining-title">Remaining races</h2>
+            </div>
+            <span>{remaining.length} events</span>
           </div>
-          <p>{remaining.length} weekends</p>
-        </div>
-        <div className="wts-f1-race-list">
-          {remaining.map((item) => <RaceCard item={item} key={item.weekend.slug} />)}
+          <div className="wts-discovery-list">
+            {remaining.map((item) => <RaceCard item={item} key={item.weekend.slug} />)}
+          </div>
         </div>
       </section>
 
       {completed.length > 0 ? (
-        <section className="v2-results wts-f1-results" aria-labelledby="motogp-completed-title">
-          <div className="v2-results-heading">
-            <div>
-              <p className="v2-eyebrow">2026 archive</p>
-              <h2 id="motogp-completed-title">Completed races</h2>
+        <section className={styles.section} aria-labelledby="motogp-completed-title">
+          <div className="wts-discovery-results">
+            <div className="wts-discovery-results-heading">
+              <div>
+                <p>2026 archive</p>
+                <h2 id="motogp-completed-title">Completed races</h2>
+              </div>
+              <span>{completed.length} events</span>
             </div>
-            <p>{completed.length} weekends</p>
-          </div>
-          <div className="wts-f1-race-list">
-            {completed.map((item) => <RaceCard completed item={item} key={item.weekend.slug} />)}
+            <div className="wts-discovery-list">
+              {completed.map((item) => <RaceCard completed item={item} key={item.weekend.slug} />)}
+            </div>
           </div>
         </section>
       ) : null}

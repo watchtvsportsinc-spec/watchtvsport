@@ -147,90 +147,103 @@ export default async function Formula1Page() {
       backgroundPosition="72% 100%"
       stats={heroStats}
     />
-    <section className="v2-results wts-f1-results" aria-labelledby="grand-prix-title">
-      <div className="v2-results-heading">
-        <div>
-          <p className="v2-eyebrow">{seasonLabel}</p>
-          <h2 id="grand-prix-title">Remaining races</h2>
+    <section className={styles.section} aria-labelledby="grand-prix-title">
+      <div className="wts-discovery-results">
+        <div className="wts-discovery-results-heading">
+          <div>
+            <p>{seasonLabel}</p>
+            <h2 id="grand-prix-title">Remaining races</h2>
+          </div>
+          <span>{weekends.length} events</span>
         </div>
-        <p>{weekends.length} weekends</p>
-      </div>
 
-      {weekends.length === 0 ? (
-        <div className="v2-empty-state">
-          <h3>No remaining Grand Prix currently published</h3>
-          <p>
-            The next verified Formula 1 season will appear here automatically
-            when its event data is imported.
-          </p>
-        </div>
-      ) : (
-        <div className="wts-f1-race-list">
-          {weekends.map((weekend) => {
-            const href = `/formula-1/grand-prix/${weekend.slug}`;
-            const favorite = {
-              kind: "group" as const,
-              entityId: weekend.id,
-              label: weekend.name,
-              href,
-            };
+        {weekends.length === 0 ? (
+          <div className="wts-discovery-empty">
+            <strong>No remaining Grand Prix currently published</strong>
+            <span>
+              The next verified Formula 1 season will appear here automatically
+              when its event data is imported.
+            </span>
+          </div>
+        ) : (
+          <div className="wts-discovery-list">
+            {weekends.map((weekend) => {
+              const href = `/formula-1/grand-prix/${weekend.slug}`;
+              const favorite = {
+                kind: "group" as const,
+                entityId: weekend.id,
+                label: weekend.name,
+                href,
+              };
+              const accessOptions = [
+                weekend.freeCountries > 0 ? "Free" : null,
+                weekend.paidCountries > 0 ? "Paid" : null,
+              ].filter(Boolean) as Array<"Free" | "Paid">;
+              const flagCode = grandPrixFlagCode(weekend.slug, weekend.country);
+              const nextDate = weekend.nextSession ?? weekend.firstSession;
 
-            return (
-              <article className="wts-f1-race-card" key={weekend.id}>
-                <div className="wts-f1-race-copy">
-                  <div className="wts-f1-race-topline">
-                    {[weekend.country, weekend.venue].filter(Boolean).join(" · ")}
-                  </div>
+              return (
+                <article className="wts-ufc-event-row" key={weekend.id}>
+                  <Link className="wts-ufc-event-main" href={href}>
+                    <div className="wts-discovery-card-time">
+                      <span className="wts-result-status">Grand Prix</span>
+                      <strong><LocalTime date={nextDate} display="time" /></strong>
+                      <small><LocalTime date={nextDate} display="date" /></small>
+                    </div>
 
-                  <h3>
-                    {grandPrixFlagCode(weekend.slug, weekend.country) ? (
-                      <img
-                        className="wts-f1-country-flag"
-                        src={`/flags/${grandPrixFlagCode(weekend.slug, weekend.country)}.png`}
-                        alt=""
-                        aria-hidden="true"
-                      />
-                    ) : null}
-                    <Link href={href}>{weekend.name}</Link>
-                  </h3>
+                    <div className="wts-discovery-card-main">
+                      <p className="wts-motorsport-row-kicker">
+                        {flagCode ? (
+                          <img
+                            className="wts-motorsport-inline-flag"
+                            src={`/flags/${flagCode}.png`}
+                            alt=""
+                            aria-hidden="true"
+                          />
+                        ) : null}
+                        <span>Formula 1{weekend.country ? " · " + weekend.country : ""}</span>
+                      </p>
+                      <h3>{weekend.name}</h3>
+                      <span>
+                        {[weekend.venue, `${weekend.sessionCount} published sessions`, weekend.confirmed > 0 ? `${weekend.confirmed} confirmed TV options` : null]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </span>
+                    </div>
 
-                  <div className="wts-f1-race-meta">
-                    <span>
-                      <b>Next session</b>
-                      <LocalTime date={weekend.nextSession ?? weekend.firstSession} />
+                    <span className="wts-result-access-stack">
+                      {accessOptions.length > 0 ? (
+                        accessOptions.map((access) => (
+                          <span
+                            className={"wts-result-access " + (access === "Free" ? "is-free" : "is-paid")}
+                            key={access}
+                          >
+                            {access}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="wts-result-access is-tbc">TV TBC</span>
+                      )}
                     </span>
-                    <span>
-                      <b>Weekend</b>
-                      {weekend.sessionCount} published sessions
-                    </span>
-                    <span>
-                      <b>TV coverage</b>
-                      {weekend.confirmed > 0
-                        ? `${weekend.confirmed} confirmed listings`
-                        : "Pending"}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="wts-f1-race-actions">
-                  <div className="wts-f1-race-access" aria-label="Access">
-                    {weekend.freeCountries > 0 ? (
-                      <span className="is-free">Free · {weekend.freeCountries}</span>
-                    ) : null}
-                    {weekend.paidCountries > 0 ? (
-                      <span className="is-paid">Paid · {weekend.paidCountries}</span>
-                    ) : null}
-                  </div>
-                  <FavoriteButton favorite={favorite} />
-                  <Link className="wts-f1-race-view" href={href}>
-                    View event <b aria-hidden="true">›</b>
                   </Link>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      )}
+
+                  <div className="wts-ufc-event-actions">
+                    <FavoriteButton compact favorite={favorite} />
+                    <Link
+                      className="wts-ufc-event-open"
+                      href={href}
+                      aria-label={`View ${weekend.name}`}
+                    >
+                      <span>View event</span>
+                      <b aria-hidden="true">›</b>
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </section>
     <div hidden data-monetization-slot="formula-1-series" />
   </main>;
