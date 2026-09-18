@@ -1,7 +1,8 @@
 .page.page.page > :global(.v2-calendar-hero) {
-  background:
-    linear-gradient(90deg, rgba(2, 9, 17, .96) 0%, rgba(3, 12, 22, .78) 52%, rgba(3, 13, 23, .42) 100%),
-    url("/formula-1-grand-prix-hero.webp") center / cover no-repeat !important;
+  background-image: url("/formula-1-hero-bg.webp") !important;
+  background-position: center center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
 }
 
 @media (prefers-reduced-data: reduce) {
