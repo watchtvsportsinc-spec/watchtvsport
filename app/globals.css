@@ -990,3 +990,11 @@
     font-size: 19px;
   }
 }
+
+/* Formula 1 hub hero */
+.v2-calendar-hero.wts-f1-hero {
+  background-image: url("/formula-1-hero-bg.webp") !important;
+  background-position: center center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+}
