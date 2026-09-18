@@ -492,19 +492,37 @@
   isolation:isolate;
   overflow:hidden;
   border-color:rgba(96,165,250,.28);
-  background-color:#06111d !important;
-  background-image:
-    linear-gradient(90deg,rgba(3,10,18,.28),rgba(3,10,18,.08) 34%,rgba(3,10,18,.08) 66%,rgba(3,10,18,.28)),
-    linear-gradient(180deg,rgba(3,10,18,.02),rgba(3,10,18,.20)),
-    url('/mma-combat-arena-bg-dezoom.webp?v=6') !important;
-  background-position:center,center,center center !important;
-  background-size:100% 100%,100% 100%,100% 100% !important;
-  background-repeat:no-repeat !important;
+  background:#06111d !important;
 }
-.wts-combat-event-hero::before,
-.wts-combat-event-hero::after{
-  content:none !important;
-  display:none !important;
+.wts-combat-arena-backdrop,
+.wts-combat-arena-foreground,
+.wts-combat-arena-overlay{
+  position:absolute !important;
+  inset:0 !important;
+  pointer-events:none;
+}
+.wts-combat-arena-backdrop{
+  z-index:0;
+  object-fit:cover;
+  object-position:center;
+  filter:blur(18px) brightness(1.55) saturate(1.12);
+  transform:scale(1.08);
+  opacity:.92;
+}
+.wts-combat-arena-foreground{
+  z-index:1;
+  object-fit:contain;
+  object-position:center;
+  filter:brightness(1.7) contrast(1.08) saturate(1.12);
+  transform:scale(.90);
+  opacity:.98;
+}
+.wts-combat-arena-overlay{
+  z-index:2;
+  background:
+    linear-gradient(90deg,rgba(2,8,15,.18),rgba(2,8,15,.02) 34%,rgba(2,8,15,.02) 66%,rgba(2,8,15,.18)),
+    linear-gradient(180deg,rgba(2,8,15,.02),rgba(2,8,15,.20));
+  box-shadow:inset 0 0 48px rgba(0,0,0,.16);
 }
 .wts-combat-hero-header,
 .wts-combat-main-event,
@@ -692,6 +710,15 @@
 }
 
 @media(max-width:760px){
+  .wts-combat-arena-backdrop{
+    filter:blur(14px) brightness(1.4) saturate(1.08);
+    transform:scale(1.10);
+  }
+  .wts-combat-arena-foreground{
+    object-fit:cover;
+    transform:scale(.96);
+    filter:brightness(1.55) contrast(1.06) saturate(1.08);
+  }
   .wts-combat-arena-image{
     width:108%;
     height:100%;
