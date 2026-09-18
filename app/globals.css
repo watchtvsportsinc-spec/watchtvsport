@@ -91,18 +91,17 @@
 }
 
 .v2-calendar {
-  box-sizing: border-box;
-  width: min(100%, 1220px);
+  box-sizing: content-box;
+  width: auto;
+  max-width: 1220px;
   min-height: 70vh;
   margin: 0 auto;
-  padding: 24px 18px 48px;
+  padding: 0 18px 48px;
   color: #ffffff;
   font-size: 16px;
 }
 
-/* Align the top rhythm of content pages with the Football sport hub:
-   breadcrumbs start immediately below the site header, then keep their
-   existing 12px gap before the hero. Home keeps its own spacing. */
+/* Same page geometry as the Football/Hockey sport hubs. */
 .v2-calendar:not(.v2-home) {
   padding-top: 0;
 }
@@ -137,6 +136,7 @@
 .v2-calendar-hero {
   position: relative;
   overflow: visible;
+  margin-top: 12px;
   border: 1px solid rgba(96, 165, 250, 0.28);
   border-radius: 20px;
   background:
@@ -854,7 +854,7 @@
 
 @media (max-width: 720px) {
   .v2-calendar {
-    padding: 14px 12px 36px;
+    padding-bottom: 36px;
   }
 
   .v2-calendar-controls {
@@ -984,6 +984,11 @@
 }
 
 @media (max-width: 560px) {
+  .v2-calendar {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
   .v2-favorite-button.is-icon-only,
   .v2-calendar .v2-favorite-button.is-icon-only,
   .v2-favorite-button.is-icon-only.is-compact {

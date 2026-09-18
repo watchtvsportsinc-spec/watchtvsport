@@ -275,12 +275,11 @@
 
 @media(max-width:680px){
   .v2-calendar{
-    padding-left:10px;
-    padding-right:10px;
+    padding-left:18px;
+    padding-right:18px;
   }
   .v2-calendar-hero{
-    border-radius:17px;
-    padding:18px 14px;
+    border-radius:24px;
   }
   .v2-calendar-hero h1{font-size:clamp(27px,8.5vw,38px)}
   .wts-event-hero-top{gap:10px}
@@ -765,15 +764,23 @@
 .v2-calendar-hero.wts-f1-hero,
 .wts-combat-event-hero{
   box-sizing:border-box !important;
+  width:100% !important;
   height:var(--wts-standard-content-hero-height) !important;
   min-height:var(--wts-standard-content-hero-height) !important;
   max-height:var(--wts-standard-content-hero-height) !important;
+  margin-top:12px !important;
+  border-radius:24px !important;
+}
+
+.v2-calendar-hero.wts-f1-hero{
+  padding:34px !important;
 }
 
 /* Match heroes are naturally much shorter than the UFC reference.
    Keep their existing layout, but vertically balance it inside the shared frame. */
 .v2-match-hero{
   display:flex;
+  margin-top:12px !important;
   flex-direction:column;
   justify-content:center;
 }
@@ -826,3 +833,23 @@
   }
 }
 
+
+
+@media(max-width:560px){
+  .v2-calendar{
+    padding-left:12px;
+    padding-right:12px;
+  }
+
+  .wts-standard-hero,
+  .v2-match-hero,
+  .v2-event-hero,
+  .v2-calendar-hero.wts-f1-hero,
+  .wts-combat-event-hero{
+    border-radius:17px !important;
+  }
+
+  .v2-calendar-hero.wts-f1-hero{
+    padding:18px 15px !important;
+  }
+}
