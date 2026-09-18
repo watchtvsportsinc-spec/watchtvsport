@@ -3,6 +3,7 @@ import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import LocalTime from "@/components/LocalTime";
 import SportHero from "@/components/SportHero";
+import styles from "@/components/sport-hub.module.css";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 
 export const metadata: Metadata = {
@@ -115,7 +116,7 @@ export default async function Formula1Page() {
   const seasonLabels = Array.from(new Set(weekends.map((weekend) => weekend.season).filter(Boolean)));
   const seasonLabel = seasonLabels.length === 1 ? seasonLabels[0] : "Current season";
 
-  return <main id="main-content" className="v2-calendar">
+  return <main id="main-content" className={styles.page}>
     {snapshot.warning ? <p className="v2-data-warning" role="status">{snapshot.warning}</p> : null}
     <Breadcrumbs items={[{label:"Home",href:"/"},{label:"Sports",href:"/sports"},{label:"Motorsports",href:"/motorsports"},{label:"Formula 1"}]}/>
     <SportHero
