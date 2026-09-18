@@ -110,8 +110,13 @@ export default function CombatEventHero({
           </span>
 
           <span>
-            <b>Main Card</b>
-            <LocalTime date={mainCardDate} showTimeZone />
+            <b>Event date</b>
+            <LocalTime
+              date={mainCardDate}
+              display="date"
+              showYear
+              showTimeZone
+            />
           </span>
         </div>
 
@@ -122,7 +127,7 @@ export default function CombatEventHero({
           {sessions.map((session) => (
             <span className={session.isMain ? "is-main" : undefined} key={session.id}>
               <b>{session.label}</b>
-              <LocalTime date={session.eventDate} />
+              <LocalTime date={session.eventDate} display="time" />
             </span>
           ))}
         </div>
