@@ -1030,6 +1030,18 @@
   max-width: 720px;
 }
 
+.wts-f1-grand-prix-hero .wts-f1-hero-content {
+  width: 100%;
+  max-width: none;
+}
+
+.wts-f1-grand-prix-hero .wts-event-hero-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+}
+
 .wts-f1-hero .v2-eyebrow,
 .wts-f1-hero h1,
 .wts-f1-hero .v2-hero-copy {
