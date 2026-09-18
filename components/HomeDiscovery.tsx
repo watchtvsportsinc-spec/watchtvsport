@@ -290,6 +290,16 @@ function groupedEventSummary(category: string): string {
   return "Full event schedule on one page";
 }
 
+function groupedDetailPath(event: HomeDiscoveryEvent): string {
+  if (event.sport === "formula-1" && event.eventGroupSlug) {
+    return `/formula-1/grand-prix/${event.eventGroupSlug}`;
+  }
+  if (event.sport === "ufc" && event.eventGroupSlug) {
+    return `/ufc/event/${event.eventGroupSlug}`;
+  }
+  return stripHash(event.detailPath);
+}
+
 function uniqueAccess(events: HomeDiscoveryEvent[]): "Free" | "Paid" | "Access TBC" | "Access varies" {
   const values = Array.from(new Set(events.map((event) => event.access)));
   if (values.length === 1) return values[0] as "Free" | "Paid" | "Access TBC";
@@ -642,7 +652,7 @@ export default function HomeDiscovery({
         )
       );
 
-      const detailPath = stripHash(first.detailPath);
+      const detailPath = groupedDetailPath(first);
       const isFavorite = favorites.items.some((favorite) => {
         const favoritePath = stripHash(favorite.href || favorite.event?.detailPath || "");
         if (favoritePath && favoritePath === detailPath) return true;
