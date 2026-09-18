@@ -346,3 +346,141 @@
     grid-template-columns:56px minmax(0,1fr) auto 26px;
   }
 }
+
+
+/* Compact UFC confirmed bouts */
+.wts-ufc-bout-list{
+  display:grid;
+  gap:8px;
+  margin-top:12px;
+}
+.wts-ufc-bout-row{
+  display:grid;
+  grid-template-columns:128px minmax(0,1fr) 42px minmax(0,1fr);
+  align-items:center;
+  gap:12px;
+  min-height:74px;
+  border:1px solid rgba(96,165,250,.14);
+  border-radius:14px;
+  background:linear-gradient(145deg,rgba(8,25,42,.94),rgba(4,16,28,.96));
+  padding:10px 12px;
+}
+.wts-ufc-bout-meta{
+  display:grid;
+  gap:4px;
+  align-content:center;
+}
+.wts-ufc-bout-meta>span{
+  display:inline-flex;
+  width:max-content;
+  min-height:21px;
+  align-items:center;
+  border:1px solid rgba(104,178,240,.22);
+  border-radius:999px;
+  background:rgba(27,104,163,.08);
+  color:#74c3fb;
+  padding:2px 7px;
+  font-size:7px;
+  font-weight:950;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+}
+.wts-ufc-bout-meta>span.is-title{
+  border-color:rgba(240,181,52,.28);
+  background:rgba(202,141,22,.10);
+  color:#ffd16e;
+}
+.wts-ufc-bout-meta>strong{
+  color:#9eb3c7;
+  font-size:9px;
+  font-weight:800;
+}
+.wts-ufc-fighter{
+  display:flex;
+  min-width:0;
+  align-items:center;
+  gap:10px;
+}
+.wts-ufc-fighter.is-right{
+  justify-content:flex-end;
+  text-align:right;
+}
+.wts-ufc-fighter>div{
+  min-width:0;
+  display:grid;
+  gap:2px;
+}
+.wts-ufc-fighter strong{
+  overflow:hidden;
+  color:#fff;
+  font-size:14px;
+  line-height:1.15;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.wts-ufc-fighter small{
+  color:#6fbdf7;
+  font-size:8px;
+  font-weight:850;
+}
+.wts-ufc-fighter-flag{
+  display:grid;
+  width:34px;
+  height:34px;
+  flex:0 0 34px;
+  place-items:center;
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:50%;
+  background:rgba(9,29,47,.84);
+  font-size:18px;
+  box-shadow:inset 0 1px rgba(255,255,255,.025);
+}
+.wts-ufc-vs{
+  display:grid;
+  width:34px;
+  height:34px;
+  place-items:center;
+  justify-self:center;
+  border:1px solid rgba(92,172,248,.18);
+  border-radius:50%;
+  background:rgba(10,35,56,.72);
+  color:#7b9ab4;
+  font-size:9px;
+  font-weight:950;
+}
+
+@media(max-width:680px){
+  .wts-ufc-bout-row{
+    grid-template-columns:1fr 34px 1fr;
+    grid-template-areas:
+      "meta meta meta"
+      "left vs right";
+    gap:8px;
+    min-height:0;
+    padding:9px;
+  }
+  .wts-ufc-bout-meta{
+    grid-area:meta;
+    display:flex;
+    align-items:center;
+    gap:7px;
+    padding-bottom:7px;
+    border-bottom:1px solid rgba(255,255,255,.05);
+  }
+  .wts-ufc-bout-meta>strong{font-size:8px}
+  .wts-ufc-fighter.is-left{grid-area:left}
+  .wts-ufc-fighter.is-right{grid-area:right}
+  .wts-ufc-vs{grid-area:vs;width:30px;height:30px}
+  .wts-ufc-fighter{
+    gap:6px;
+  }
+  .wts-ufc-fighter strong{
+    font-size:11px;
+  }
+  .wts-ufc-fighter-flag{
+    width:28px;
+    height:28px;
+    flex-basis:28px;
+    font-size:15px;
+  }
+}
