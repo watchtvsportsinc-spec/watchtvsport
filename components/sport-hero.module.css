@@ -40,6 +40,9 @@
   line-height:1;
   letter-spacing:-.05em;
 }
+.titleInitial{
+  color:#63b9ff;
+}
 .description{
   max-width:720px;
   margin:12px 0 0;
