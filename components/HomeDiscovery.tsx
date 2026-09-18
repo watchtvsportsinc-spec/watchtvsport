@@ -267,6 +267,28 @@ function stripHash(path: string): string {
   return path.split("#", 1)[0] || path;
 }
 
+function groupedEventKey(event: HomeDiscoveryEvent): string | null {
+  const category = categoryForSport(event.sport);
+  if (!categoryGroupsEvents(category)) return null;
+  if (event.eventGroupId) return event.eventGroupId;
+  if (event.eventGroupSlug) return `${event.sport}:${event.eventGroupSlug}`;
+
+  const basePath = stripHash(event.detailPath);
+  return basePath ? `path:${basePath}` : null;
+}
+
+function groupedEventType(category: string): string {
+  if (category === "motorsports") return "Grand Prix";
+  if (category === "combat") return "Fight event";
+  return "Event";
+}
+
+function groupedEventSummary(category: string): string {
+  if (category === "motorsports") return "Practice, qualifying & race on one page";
+  if (category === "combat") return "Full fight card, prelims & main action on one page";
+  return "Full event schedule on one page";
+}
+
 function uniqueAccess(events: HomeDiscoveryEvent[]): "Free" | "Paid" | "Access TBC" | "Access varies" {
   const values = Array.from(new Set(events.map((event) => event.access)));
   if (values.length === 1) return values[0] as "Free" | "Paid" | "Access TBC";
@@ -552,10 +574,11 @@ export default function HomeDiscovery({
   const allGroups = useMemo(() => {
     const groups = new Map<string, HomeDiscoveryEvent[]>();
     for (const event of events) {
-      if (!event.eventGroupId) continue;
-      const list = groups.get(event.eventGroupId) ?? [];
+      const groupKey = groupedEventKey(event);
+      if (!groupKey) continue;
+      const list = groups.get(groupKey) ?? [];
       list.push(event);
-      groups.set(event.eventGroupId, list);
+      groups.set(groupKey, list);
     }
     for (const list of groups.values()) {
       list.sort((a, b) => Date.parse(a.eventDate) - Date.parse(b.eventDate));
@@ -568,11 +591,11 @@ export default function HomeDiscovery({
     const groupedMatches = new Map<string, HomeDiscoveryEvent[]>();
 
     for (const event of filteredEvents) {
-      const category = categoryForSport(event.sport);
-      if (event.eventGroupId && categoryGroupsEvents(category)) {
-        const list = groupedMatches.get(event.eventGroupId) ?? [];
+      const groupKey = groupedEventKey(event);
+      if (groupKey) {
+        const list = groupedMatches.get(groupKey) ?? [];
         list.push(event);
-        groupedMatches.set(event.eventGroupId, list);
+        groupedMatches.set(groupKey, list);
         continue;
       }
 
@@ -601,6 +624,7 @@ export default function HomeDiscovery({
       const isFavorite = favorites.items.some((favorite) => {
         const favoritePath = stripHash(favorite.href || favorite.event?.detailPath || "");
         if (favoritePath && favoritePath === detailPath) return true;
+        if (favorite.entityId === groupId) return true;
         return fullSessions.some((session) => favorite.entityId === session.id);
       });
 
@@ -1197,11 +1221,7 @@ export default function HomeDiscovery({
                             : "wts-result-status is-upcoming"
                         }
                       >
-                        {live
-                          ? "Live"
-                          : item.category === "motorsports"
-                            ? "Weekend"
-                            : "Event"}
+                        {live ? "Live" : groupedEventType(item.category)}
                       </span>
                       <strong>
                         {nextSession
@@ -1224,10 +1244,10 @@ export default function HomeDiscovery({
                       </p>
                       <h3>{item.title}</h3>
                       <span>
+                        {groupedEventSummary(item.category)}
                         {nextSession
-                          ? (live ? "Live: " : "Next: ") +
-                            (nextSession.stage || "Session")
-                          : "Schedule"}
+                          ? " · " + (live ? "Live" : "Next") + ": " + (nextSession.stage || "Session")
+                          : ""}
                         {item.venue ? " · " + item.venue : ""}
                       </span>
                     </div>
@@ -1241,8 +1261,10 @@ export default function HomeDiscovery({
                     <div className="wts-discovery-card-open">
                       <span>
                         {item.category === "motorsports"
-                          ? "Open weekend"
-                          : "Open event"}
+                          ? "View Grand Prix"
+                          : item.category === "combat"
+                            ? "View fight card"
+                            : "View event"}
                       </span>
                       <b aria-hidden="true">›</b>
                     </div>
