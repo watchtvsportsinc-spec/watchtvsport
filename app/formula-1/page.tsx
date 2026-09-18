@@ -216,8 +216,10 @@ export default async function Formula1Page() {
                 <Link
                   className="wts-f1-race-link"
                   href={`/formula-1/grand-prix/${weekend.slug}`}
+                  aria-label={`Open ${weekend.name}`}
+                  title={`Open ${weekend.name}`}
                 >
-                  View Grand Prix <b>→</b>
+                  <b aria-hidden="true">→</b>
                 </Link>
               </div>
             </article>
