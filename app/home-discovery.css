@@ -480,6 +480,11 @@
   font-size:8px;
   font-weight:900;
 }
+.wts-result-access-stack{
+  display:grid;
+  justify-items:start;
+  gap:3px;
+}
 .wts-result-access.is-free{
   border:1px solid rgba(67,220,155,.27);
   background:rgba(33,164,104,.12);
@@ -776,7 +781,13 @@
   }
   .wts-discovery-card-time{grid-area:time}
   .wts-discovery-card-main{grid-area:main}
-  .wts-result-access{grid-area:access}
+  .wts-result-access-stack{
+    grid-area:access;
+    align-self:center;
+    align-content:start;
+    min-height:38px;
+    gap:2px;
+  }
   .wts-discovery-card-open{
     grid-area:open;
     width:30px;
@@ -797,7 +808,7 @@
     font-size:7.5px;
   }
   .wts-result-access{
-    min-height:18px;
+    min-height:17px;
     padding:2px 5px;
     font-size:6.5px;
     line-height:1;

@@ -33,6 +33,7 @@ export type HomeDiscoveryEvent = {
   venue?: string;
   country?: string;
   access: "Free" | "Paid" | "Access TBC";
+  accessOptions?: Array<"Free" | "Paid">;
 };
 
 export type HomeDiscoveryInitialState = {
@@ -81,6 +82,7 @@ type GroupResult = {
   endDate: string;
   nextSession?: HomeDiscoveryEvent;
   access: "Free" | "Paid" | "Access TBC" | "Access varies";
+  accessOptions: Array<"Free" | "Paid">;
   isFavorite: boolean;
 };
 
@@ -269,6 +271,11 @@ function uniqueAccess(events: HomeDiscoveryEvent[]): "Free" | "Paid" | "Access T
   if (values.length === 1) return values[0] as "Free" | "Paid" | "Access TBC";
   if (values.length === 0) return "Access TBC";
   return "Access varies";
+}
+
+function availableAccess(events: HomeDiscoveryEvent[]): Array<"Free" | "Paid"> {
+  const values = new Set(events.flatMap((event) => event.accessOptions ?? (event.access === "Free" || event.access === "Paid" ? [event.access] : [])));
+  return (["Paid", "Free"] as const).filter((access) => values.has(access));
 }
 
 function statusLabel(event: HomeDiscoveryEvent): string {
@@ -529,7 +536,10 @@ export default function HomeDiscovery({
 
   const filteredEvents = useMemo(() => {
     return periodEvents
-      .filter((event) => accessFilter === "All" || event.access === accessFilter)
+      .filter((event) =>
+        accessFilter === "All" ||
+        (event.accessOptions ?? [event.access]).includes(accessFilter)
+      )
       .sort((a, b) => Date.parse(a.eventDate) - Date.parse(b.eventDate));
   }, [accessFilter, periodEvents]);
 
@@ -604,6 +614,7 @@ export default function HomeDiscovery({
         endDate: last.eventDate,
         nextSession,
         access: uniqueAccess(fullSessions),
+        accessOptions: availableAccess(fullSessions),
         isFavorite,
       });
     }
@@ -1209,12 +1220,12 @@ export default function HomeDiscovery({
                         {item.venue ? " · " + item.venue : ""}
                       </span>
                     </div>
-                    <span
-                      className={
-                        "wts-result-access " + accessClass(item.access)
-                      }
-                    >
-                      {item.access}
+                    <span className="wts-result-access-stack">
+                      {item.accessOptions.length > 0 ? item.accessOptions.map((access) => (
+                        <span className={"wts-result-access " + accessClass(access)} key={access}>{access}</span>
+                      )) : (
+                        <span className={"wts-result-access " + accessClass(item.access)}>{item.access}</span>
+                      )}
                     </span>
                     <div className="wts-discovery-card-open">
                       <span>
@@ -1230,6 +1241,9 @@ export default function HomeDiscovery({
               }
 
               const event = item.event;
+              const eventAccessOptions = event.accessOptions?.length
+                ? event.accessOptions
+                : [event.access];
               return (
                 <Fragment key={item.id}>
                   {dateHeading}
@@ -1262,12 +1276,10 @@ export default function HomeDiscovery({
                     <h3>{event.title}</h3>
                     <span>{event.stage || event.venue || "Event"}</span>
                   </div>
-                  <span
-                    className={
-                      "wts-result-access " + accessClass(event.access)
-                    }
-                  >
-                    {event.access}
+                  <span className="wts-result-access-stack">
+                    {eventAccessOptions.map((access) => (
+                      <span className={"wts-result-access " + accessClass(access)} key={access}>{access}</span>
+                    ))}
                   </span>
                   <div className="wts-discovery-card-open">
                     <span>Open</span>

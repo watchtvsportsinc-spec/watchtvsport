@@ -22,6 +22,13 @@ function accessLabel(event: EventData): "Free" | "Paid" | "Access TBC" {
   return "Access TBC";
 }
 
+function accessOptions(event: EventData): Array<"Free" | "Paid"> {
+  const confirmed = event.broadcasts.filter((broadcast) => broadcast.coverageStatus === "confirmed");
+  return (["Paid", "Free"] as const).filter((access) =>
+    confirmed.some((broadcast) => broadcast.access === access)
+  );
+}
+
 function toDiscoveryEvent(event: EventData): HomeDiscoveryEvent {
   return {
     id: event.id,
@@ -56,6 +63,7 @@ function toDiscoveryEvent(event: EventData): HomeDiscoveryEvent {
     venue: event.venue,
     country: event.country,
     access: accessLabel(event),
+    accessOptions: accessOptions(event),
   };
 }
 
