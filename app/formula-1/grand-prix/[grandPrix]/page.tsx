@@ -273,6 +273,7 @@ export default async function Formula1GrandPrixPage({
         eyebrow="Weekend schedule"
         title="Practice, qualifying & race"
         sessions={scheduleSessions}
+        showStatus={false}
       />
 
       <BroadcastOffers
