@@ -92,8 +92,10 @@ function RaceCard({ item, completed = false }: { item: WeekendView; completed?: 
         <Link
           className="wts-f1-race-link"
           href={`/sports/motogp/grand-prix/${weekend.slug}`}
+          aria-label={`Open ${weekend.name}`}
+          title={`Open ${weekend.name}`}
         >
-          View Grand Prix <b>→</b>
+          <b aria-hidden="true">→</b>
         </Link>
       </div>
     </article>
