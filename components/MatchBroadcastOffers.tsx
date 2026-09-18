@@ -149,6 +149,7 @@ export default function MatchBroadcastOffers({ event, selectedCountry, selectedA
 
   const freeCount = allOffers.filter((broadcast) => broadcast.access === "Free").length;
   const paidCount = allOffers.filter((broadcast) => broadcast.access === "Paid").length;
+  const hasAffiliateLinks = visibleOffers.some((broadcast) => broadcast.access === "Paid" && Boolean(broadcast.affiliateUrl));
   const verifiedAt = latestVerification(allOffers);
 
   return (
@@ -232,7 +233,7 @@ export default function MatchBroadcastOffers({ event, selectedCountry, selectedA
                       <a
                         className={styles.officialLink}
                         href={href}
-                        rel="noopener noreferrer sponsored"
+                        rel={broadcast.affiliateUrl ? "noopener noreferrer sponsored" : "noopener noreferrer"}
                         target="_blank"
                         aria-label={`Open ${broadcast.broadcaster} official service`}
                       >
@@ -253,6 +254,7 @@ export default function MatchBroadcastOffers({ event, selectedCountry, selectedA
       ) : null}
       <p className={styles.disclaimer}>
         Availability can depend on territory, subscription and account conditions. WatchTVSport links only to official services.
+        {hasAffiliateLinks ? " Some links to paid services are affiliate links. If you subscribe through one, WatchTVSport may earn a commission at no extra cost to you; this helps support the site." : ""}
       </p>
     </section>
   );
