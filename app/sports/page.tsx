@@ -20,7 +20,7 @@ const SPORTS = [
   { href: "/combat-sports", title: "Combat sports", icon: "🥊", slugs: ["ufc"] },
   { href: "/sports/rugby", title: "Rugby", icon: "🏉", slugs: ["rugby"] },
   { href: "/sports/baseball", title: "Baseball", icon: "⚾", slugs: ["baseball"] },
-  { href: "/sports/american-football", title: "American football", icon: "🏈", slugs: ["american-football"] },
+  { href: "/sports/american-football", title: "American Football", icon: "🏈", slugs: ["american-football"] },
   { href: "/sports/cycling", title: "Cycling", icon: "🚴", slugs: ["cycling"] },
 ] as const;
 
