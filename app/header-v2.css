@@ -378,3 +378,28 @@
     padding-bottom: 3px !important;
   }
 }
+
+
+/* Star-only favorites navigation */
+.wts-nav-favorites {
+  width: 40px;
+  min-width: 40px !important;
+  height: 40px;
+  min-height: 40px !important;
+  justify-content: center;
+  padding: 0 !important;
+}
+
+.wts-nav-favorites > span:first-child {
+  font-size: 19px;
+}
+
+@media (max-width: 760px) {
+  .wts-nav-favorites {
+    width: 38px;
+    min-width: 38px !important;
+    height: 38px;
+    min-height: 38px !important;
+    padding: 0 !important;
+  }
+}
