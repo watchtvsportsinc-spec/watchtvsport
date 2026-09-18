@@ -120,7 +120,7 @@ export default async function UfcPage() {
         className={styles.hero}
         aria-labelledby="ufc-title"
         style={{
-          backgroundImage: "url('/mma-combat-arena-bg-dezoom.webp')",
+          backgroundImage: "url('/ufc-arena-bg.webp')",
           backgroundPosition: "center center",
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
