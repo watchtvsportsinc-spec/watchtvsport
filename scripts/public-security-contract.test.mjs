@@ -3,7 +3,7 @@ import test from "node:test";
 
 const SUPABASE_URL = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "https://jywqhiiwsmudthaujhmi.supabase.co").replace(/\/$/, "");
 const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_30SkJ3gyUbPvH5sGFXpyHg_a4Qlzdi-";
-const EXPECTED_ACCESS_CONTRACT_HASH = "f447273869d0ecbd493320b9aeebb5a3";
+const EXPECTED_ACCESS_CONTRACT_HASH = "3a07d714db034218d52c497021254428";
 
 async function request(path, { method = "GET", body, accept = "application/json" } = {}) {
   const response = await fetch(`${SUPABASE_URL}${path}`, {
@@ -45,6 +45,32 @@ test("anon/auth permission, RLS and RPC security fingerprint matches reviewed co
 test("anon can read the published events contract", async () => {
   const result = await request("/rest/v1/events?select=id&limit=1");
   assert.equal(result.status, 200, result.text);
+});
+
+test("anon can call the reviewed competition broadcast rights RPC", async () => {
+  const result = await request("/rest/v1/rpc/get_public_competition_broadcast_rights_v1", {
+    method: "POST",
+    body: {
+      p_sport_slug: "football",
+      p_competition_slug: "champions-league",
+      p_event_date: "2026-09-17T00:00:00Z",
+    },
+  });
+  assert.equal(result.status, 200, result.text);
+  const rights = JSON.parse(result.text);
+  assert.ok(Array.isArray(rights), result.text);
+  assert.ok(rights.length > 0, "Expected at least one published verified Champions League right");
+  assert.ok(
+    rights.every((item) =>
+      typeof item.country_code === "string" &&
+      typeof item.country_name === "string" &&
+      typeof item.broadcaster === "string" &&
+      !("id" in item) &&
+      !("competition_id" in item) &&
+      !("broadcaster_id" in item)
+    ),
+    "Competition rights RPC must remain a narrow public projection without internal identifiers",
+  );
 });
 
 test("anon can call the bounded public events RPC", async () => {
