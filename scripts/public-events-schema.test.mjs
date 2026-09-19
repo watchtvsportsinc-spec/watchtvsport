@@ -62,7 +62,9 @@ function validPayload() {
             broadcaster: "Example Sports",
             access: "Paid",
             url: "https://example.test/watch",
+            sourceName: "Official event schedule",
             sourceUrl: "https://example.test/evidence",
+            lastChecked: "2026-09-14T12:00:00Z",
             coverageType: "partial",
             coverageStatus: "confirmed",
             broadcastType: "live",
@@ -142,6 +144,20 @@ test("rejects non-HTTPS broadcaster links", () => {
     () => parsePublicEventsPayload(payload),
     /must be an HTTPS URL/
   );
+});
+
+test("rejects confirmed offers without dated event-level evidence", () => {
+  const missingSource = validPayload();
+  delete missingSource.events[0].broadcasts[0].sourceName;
+  assert.throws(() => parsePublicEventsPayload(missingSource), /sourceName/);
+
+  const missingUrl = validPayload();
+  delete missingUrl.events[0].broadcasts[0].sourceUrl;
+  assert.throws(() => parsePublicEventsPayload(missingUrl), /sourceUrl/);
+
+  const invalidDate = validPayload();
+  invalidDate.events[0].broadcasts[0].lastChecked = "not-a-date";
+  assert.throws(() => parsePublicEventsPayload(invalidDate), /valid date/);
 });
 
 test("rejects duplicate event identities and detail paths", () => {

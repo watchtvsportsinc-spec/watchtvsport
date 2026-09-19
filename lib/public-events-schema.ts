@@ -148,6 +148,10 @@ function parseBroadcast(value: unknown, field: string): BroadcastInfo {
   if (value.coverageStatus !== "confirmed") throw new PublicEventsPayloadError(`${field} must be confirmed`);
   const coverageType = optionalString(value.coverageType, `${field}.coverageType`, 20);
   if (coverageType && !["full", "partial", "unknown"].includes(coverageType)) throw new PublicEventsPayloadError(`${field}.coverageType is unsupported`);
+  const sourceName = requiredString(value.sourceName, `${field}.sourceName`, 240);
+  const sourceUrl = httpsUrl(value.sourceUrl, `${field}.sourceUrl`);
+  const lastChecked = requiredString(value.lastChecked, `${field}.lastChecked`, 40);
+  if (!Number.isFinite(Date.parse(lastChecked))) throw new PublicEventsPayloadError(`${field}.lastChecked must be a valid date`);
   return {
     countryCode: requiredString(value.countryCode, `${field}.countryCode`, 12).toLowerCase(),
     countryName: requiredString(value.countryName, `${field}.countryName`, 120),
@@ -155,9 +159,9 @@ function parseBroadcast(value: unknown, field: string): BroadcastInfo {
     access,
     url: httpsUrl(value.url, `${field}.url`),
     affiliateUrl: value.affiliateUrl == null ? undefined : httpsUrl(value.affiliateUrl, `${field}.affiliateUrl`),
-    sourceName: optionalString(value.sourceName, `${field}.sourceName`, 240),
-    sourceUrl: value.sourceUrl == null ? undefined : httpsUrl(value.sourceUrl, `${field}.sourceUrl`),
-    lastChecked: optionalString(value.lastChecked, `${field}.lastChecked`, 40),
+    sourceName,
+    sourceUrl,
+    lastChecked,
     notes: optionalString(value.notes, `${field}.notes`, 2_000),
     commentaryLanguages: parseLanguages(value.commentaryLanguages, `${field}.commentaryLanguages`),
     coverageType: coverageType as BroadcastInfo["coverageType"],

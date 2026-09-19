@@ -120,8 +120,12 @@ export function mapMatchToEvent(match: MatchData): EventData {
 }
 
 function prepareEvent(event: EventData): EventData {
+  const normalizedBroadcasts = event.broadcasts.map((broadcast) => ({
+    ...broadcast,
+    broadcastType: broadcast.broadcastType ?? "live" as const,
+  }));
   return withBroadcastLanguageDefaults(
-    withPriorityBroadcasts(normalizeEventParticipants(event))
+    withPriorityBroadcasts(normalizeEventParticipants({ ...event, broadcasts: normalizedBroadcasts }))
   );
 }
 

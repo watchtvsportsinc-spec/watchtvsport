@@ -32,10 +32,16 @@ test("V2 launch sports satisfy runtime structural guardrails", async () => {
     for (const broadcast of event.broadcasts) {
       if (broadcast.coverageStatus !== "confirmed") continue;
       assert.ok(broadcast.countryCode.trim(), `confirmed broadcast missing country: ${event.id}`);
+      assert.match(broadcast.countryCode, /^[a-z]{2}$/, `confirmed broadcast country code must be lowercase ISO-2: ${event.id}`);
       assert.ok(broadcast.countryName.trim(), `confirmed broadcast missing country name: ${event.id}`);
       assert.ok(broadcast.broadcaster.trim(), `confirmed broadcast missing broadcaster: ${event.id}`);
       assert.ok(/^https:\/\//.test(broadcast.url), `confirmed broadcast URL must be https: ${event.id}`);
+      assert.ok(broadcast.sourceName?.trim(), `confirmed broadcast missing source name: ${event.id}`);
+      assert.match(broadcast.sourceUrl ?? "", /^https:\/\//, `confirmed broadcast source URL must be https: ${event.id}`);
+      assert.ok(Number.isFinite(Date.parse(broadcast.lastChecked ?? "")), `confirmed broadcast missing verification date: ${event.id}`);
       assert.ok(["Free", "Paid"].includes(broadcast.access), `invalid access type: ${event.id}`);
+      assert.ok(["live", "delayed", "replay", "highlights"].includes(broadcast.broadcastType ?? ""), `invalid broadcast type: ${event.id}`);
+      assert.ok(!(broadcast.access === "Free" && broadcast.isFreeTrial), `free trial cannot be classified as free: ${event.id}`);
       const broadcastKey = [broadcast.countryCode.toLowerCase(), broadcast.broadcaster.trim().toLowerCase(), broadcast.access, broadcast.url].join("|");
       assert.ok(!broadcastKeys.has(broadcastKey), `duplicate confirmed broadcast: ${event.id} ${broadcastKey}`);
       broadcastKeys.add(broadcastKey);

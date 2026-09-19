@@ -271,13 +271,9 @@ function key(broadcast: BroadcastInfo): string {
 }
 
 export function getPriorityBroadcasts(event: EventData): BroadcastInfo[] {
-  if (event.sport === "football" && event.competitionSlug === "champions-league") {
-    return UCL_FULL;
-  }
-  if (event.sport === "formula-1") return F1_FULL;
-  if (event.sport === "ufc") {
-    return [UFC_US_PARAMOUNT, ...ufc331Regional(event), ...ufc332Cbs(event)];
-  }
+  // Competition-level rights belong in the separate rights layer. They must
+  // never be promoted to an event confirmation without event-specific proof.
+  if (event.sport === "ufc") return ufc332Cbs(event);
   return [];
 }
 
