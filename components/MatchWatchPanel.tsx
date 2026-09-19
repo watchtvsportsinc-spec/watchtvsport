@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { BroadcastInfo } from "@/lib/matches";
+import { broadcasterInitials, getBroadcasterLogo } from "@/lib/broadcaster-logos";
 
 type CompetitionRight = {
   countryCode: string;
@@ -49,6 +50,15 @@ function broadcastLanguages(broadcast: BroadcastInfo) {
 function compactBroadcastMeta(broadcast: BroadcastInfo) {
   const languages = broadcastLanguages(broadcast);
   return languages.length ? languages.map(languageLabel).join(" · ") : "Language pending";
+}
+
+function BroadcasterLogo({ name }: { name: string }) {
+  const logo = getBroadcasterLogo(name);
+  return (
+    <span className={`v2-match-broadcaster-logo${logo?.compact ? " is-wide" : ""}`} aria-hidden="true">
+      {logo ? <img src={logo.src} alt="" loading="lazy" /> : <span>{broadcasterInitials(name)}</span>}
+    </span>
+  );
 }
 
 function normalizedKey(countryCode: string, broadcaster: string) {
@@ -117,6 +127,7 @@ export default function MatchWatchPanel({
         >
           <span className="v2-match-broadcaster-country">{broadcast.countryName}</span>
           <span className="v2-match-broadcaster-service">
+            <BroadcasterLogo name={broadcast.broadcaster} />
             <strong>{broadcast.broadcaster}</strong>
             <small className={meta === "Language pending" ? "is-pending" : ""}>{meta}</small>
           </span>
@@ -209,6 +220,7 @@ export default function MatchWatchPanel({
                 <>
                   <span className="v2-match-broadcaster-country">{right.countryName}</span>
                   <span className="v2-match-broadcaster-service">
+                    <BroadcasterLogo name={right.broadcaster} />
                     <strong>{right.broadcaster}</strong>
                     <small>{coverageLabel(right.coverageType)}</small>
                   </span>
