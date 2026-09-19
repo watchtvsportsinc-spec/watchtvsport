@@ -6,3 +6,14 @@
 .competitionHeroLogo{display:grid;width:54px;height:54px;flex:0 0 auto;place-items:center}
 .competitionHeroLogo img{display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 7px 12px rgba(0,0,0,.28))}
 @media(max-width:600px){.heroTitleRow{gap:8px}.competitionHeroLogo{width:40px;height:40px}}
+
+.eventTitleLine{display:flex;min-width:0;align-items:center;gap:7px;margin-top:2px}
+.eventTitleLine>strong{min-width:0;flex:1;margin-top:0!important}
+.eventTeamLogos{display:flex;flex:0 0 auto;align-items:center}
+.eventTeamLogos :global(span[role="img"]){width:24px!important;height:24px!important;margin-right:-5px;border-radius:50%;background:#081827}
+.eventTeamLogos :global(span[role="img"] img),.eventTeamLogos :global(span[role="img"] svg){width:22px!important;height:22px!important}
+.eventTeamLogos :global(span[role="img"]):last-child{margin-right:0}
+@media(max-width:600px){
+  .eventTeamLogos :global(span[role="img"]){width:20px!important;height:20px!important}
+  .eventTeamLogos :global(span[role="img"] img),.eventTeamLogos :global(span[role="img"] svg){width:18px!important;height:18px!important}
+}
