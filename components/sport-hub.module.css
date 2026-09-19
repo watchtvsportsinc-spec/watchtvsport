@@ -129,3 +129,22 @@ a.participantCard:hover{background:transparent;transform:translateY(-1px)}
     top:-20px;
   }
 }
+
+.competitionMarkBundesliga{position:relative;overflow:hidden}
+.competitionMarkBundesliga img{
+  position:absolute;
+  width:70px!important;
+  height:auto!important;
+  max-width:none!important;
+  max-height:none!important;
+  left:50%;
+  top:-2px;
+  transform:translateX(-50%);
+  filter:none!important;
+}
+@media(max-width:720px){
+  .competitionMarkBundesliga img{
+    width:56px!important;
+    top:-2px;
+  }
+}
