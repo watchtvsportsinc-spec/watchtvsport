@@ -23,9 +23,20 @@
 .participantRail{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .participantCard{display:grid;min-width:0;grid-template-columns:72px minmax(0,1fr);grid-template-rows:auto;align-items:center;column-gap:9px;min-height:88px;border:0;border-radius:0;background:transparent;color:#fff;padding:5px 4px;text-decoration:none}
 a.participantCard:hover{background:transparent;transform:translateY(-1px)}
-.participantVisual{display:grid;width:72px;height:72px;place-items:center;overflow:visible;border-radius:0;background:transparent}
+.participantVisual{display:grid;width:78px;height:78px;place-items:center;overflow:visible;border-radius:0;background:transparent}
 .participantVisual>span{width:68px!important;height:68px!important;max-width:68px!important;max-height:68px!important}
+.participantVisual>span[role="img"]{transform:scale(1.08);transform-origin:center}
 .participantVisual>span[role="img"] img{width:64px!important;height:64px!important;max-width:64px!important;max-height:64px!important;object-fit:contain}
+.participantVisual[data-logo-key="aek-athens"]>span[role="img"]{transform:scale(1.12)}
+.participantVisual[data-logo-key="arsenal"]>span[role="img"]{transform:scale(1.06)}
+.participantVisual[data-logo-key="aston-villa"]>span[role="img"]{transform:scale(1.13)}
+.participantVisual[data-logo-key="atletico-de-madrid"]>span[role="img"]{transform:scale(1.20)}
+.participantVisual[data-logo-key="bayern-munchen"]>span[role="img"]{transform:scale(1.18)}
+.participantVisual[data-logo-key="bodo-glimt"]>span[role="img"]{transform:scale(1.12)}
+.participantVisual[data-logo-key="borussia-dortmund"]>span[role="img"]{transform:scale(1.13)}
+.participantVisual[data-logo-key="club-brugge"]>span[role="img"]{transform:scale(1.30)}
+.participantVisual[data-logo-key="como"]>span[role="img"]{transform:scale(1.12)}
+.participantVisual[data-logo-key="barcelona"]>span[role="img"]{transform:scale(1.10)}
 .participantFlag{width:42px;height:29px;border-radius:4px;object-fit:cover;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
 .playerInitials{display:grid!important;width:44px!important;height:44px!important;place-items:center;border-radius:50%;background:linear-gradient(145deg,#143c62,#0b243b);color:#dff2ff;font-size:12px;font-weight:800}
 .participantCard>strong{align-self:end;overflow:hidden;font-size:11px;line-height:1.18;text-overflow:ellipsis;white-space:nowrap}
@@ -49,8 +60,8 @@ a.participantCard:hover{background:transparent;transform:translateY(-1px)}
 @media(min-width:1040px){
   .directoryCompetitionGrid{grid-template-columns:repeat(4,minmax(0,1fr))}
   .participantRail{grid-template-columns:repeat(10,minmax(0,1fr));gap:3px}
-  .participantCard{grid-template-columns:1fr;grid-template-rows:76px auto;justify-items:center;min-height:102px;text-align:center}
-  .participantVisual{width:72px;height:72px}
+  .participantCard{grid-template-columns:1fr;grid-template-rows:82px auto;justify-items:center;min-height:108px;text-align:center}
+  .participantVisual{width:78px;height:78px}
   .participantCard>strong{align-self:auto;width:100%;font-size:10px}
   .countryGrid{grid-template-columns:repeat(6,minmax(0,1fr))}
   .countryCard{min-height:54px;gap:8px;padding:8px 10px}
