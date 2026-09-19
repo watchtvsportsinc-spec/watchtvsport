@@ -74,7 +74,7 @@ function BroadcasterLogo({ name }: { name: string }) {
         : "";
 
   return (
-    <span className="wts-event-broadcaster-logo-slot">
+    <span className="wts-event-broadcaster-logo-slot" data-broadcaster={name}>
       <span
         className={`v2-match-broadcaster-logo${logo?.compact ? " is-wide" : ""}${styleClass}${logo ? "" : " is-fallback"}`}
         role="img"
