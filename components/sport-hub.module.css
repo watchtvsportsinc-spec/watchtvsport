@@ -21,10 +21,11 @@
 .competitionCopy small{color:#58baff;font-size:9px}
 .directoryCompetitionCard>b{color:#5dc0ff;font-size:22px;font-weight:400}
 .participantRail{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-.participantCard{display:grid;min-width:0;grid-template-columns:62px minmax(0,1fr);grid-template-rows:auto;align-items:center;column-gap:9px;min-height:78px;border:0;border-radius:0;background:transparent;color:#fff;padding:5px 4px;text-decoration:none}
+.participantCard{display:grid;min-width:0;grid-template-columns:72px minmax(0,1fr);grid-template-rows:auto;align-items:center;column-gap:9px;min-height:88px;border:0;border-radius:0;background:transparent;color:#fff;padding:5px 4px;text-decoration:none}
 a.participantCard:hover{background:transparent;transform:translateY(-1px)}
-.participantVisual{display:grid;width:62px;height:62px;place-items:center;overflow:visible;border-radius:0;background:transparent}
-.participantVisual>span{max-width:60px;max-height:60px}
+.participantVisual{display:grid;width:72px;height:72px;place-items:center;overflow:visible;border-radius:0;background:transparent}
+.participantVisual>span{width:68px!important;height:68px!important;max-width:68px!important;max-height:68px!important}
+.participantVisual>span[role="img"] img{width:64px!important;height:64px!important;max-width:64px!important;max-height:64px!important;object-fit:contain}
 .participantFlag{width:42px;height:29px;border-radius:4px;object-fit:cover;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
 .playerInitials{display:grid!important;width:44px!important;height:44px!important;place-items:center;border-radius:50%;background:linear-gradient(145deg,#143c62,#0b243b);color:#dff2ff;font-size:12px;font-weight:800}
 .participantCard>strong{align-self:end;overflow:hidden;font-size:11px;line-height:1.18;text-overflow:ellipsis;white-space:nowrap}
@@ -48,8 +49,8 @@ a.participantCard:hover{background:transparent;transform:translateY(-1px)}
 @media(min-width:1040px){
   .directoryCompetitionGrid{grid-template-columns:repeat(4,minmax(0,1fr))}
   .participantRail{grid-template-columns:repeat(8,minmax(0,1fr))}
-  .participantCard{grid-template-columns:1fr;grid-template-rows:64px auto;justify-items:center;min-height:90px;text-align:center}
-  .participantVisual{width:62px;height:62px}
+  .participantCard{grid-template-columns:1fr;grid-template-rows:76px auto;justify-items:center;min-height:102px;text-align:center}
+  .participantVisual{width:72px;height:72px}
   .participantCard>strong{align-self:auto;width:100%;font-size:10px}
   .countryGrid{grid-template-columns:repeat(6,minmax(0,1fr))}
   .countryCard{min-height:54px;gap:8px;padding:8px 10px}
@@ -71,8 +72,10 @@ a.participantCard:hover{background:transparent;transform:translateY(-1px)}
   .competitionCopy>span,.competitionCopy small{font-size:8px}
   .participantRail{display:flex;gap:7px;overflow-x:auto;margin-right:-10px;padding:1px 10px 3px 0;scrollbar-width:none}
   .participantRail::-webkit-scrollbar{display:none}
-  .participantCard{width:136px;min-width:136px;grid-template-columns:54px minmax(0,1fr);min-height:70px;padding:4px}
-  .participantVisual{width:54px;height:54px}
+  .participantCard{width:142px;min-width:142px;grid-template-columns:60px minmax(0,1fr);min-height:78px;padding:4px}
+  .participantVisual{width:60px;height:60px}
+  .participantVisual>span{width:56px!important;height:56px!important;max-width:56px!important;max-height:56px!important}
+  .participantVisual>span[role="img"] img{width:54px!important;height:54px!important;max-width:54px!important;max-height:54px!important}
   .playerInitials{width:38px!important;height:38px!important;font-size:10px}
   .countryHeading{gap:9px}
   .countryHeading>div>span{font-size:8.5px}
