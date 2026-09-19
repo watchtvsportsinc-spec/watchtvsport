@@ -877,3 +877,44 @@
     border-radius:17px !important;
   }
 }
+
+
+/* Event broadcaster logo column */
+.wts-event-broadcast-service{
+  grid-template-columns:76px minmax(0,1fr);
+  align-items:center;
+  gap:9px;
+}
+.wts-event-broadcaster-logo-slot{
+  display:flex;
+  width:76px;
+  min-width:76px;
+  align-items:center;
+  justify-content:flex-start;
+}
+.wts-event-broadcaster-logo-slot .v2-match-broadcaster-logo{
+  width:100%;
+  flex-basis:100%;
+  justify-content:flex-start;
+}
+.wts-event-broadcast-copy{
+  display:grid;
+  min-width:0;
+  gap:2px;
+}
+.wts-event-broadcaster-name-fallback{
+  color:#fff;
+  font-size:10px;
+  font-weight:800;
+  white-space:nowrap;
+}
+@media(max-width:680px){
+  .wts-event-broadcast-service{
+    grid-template-columns:58px minmax(0,1fr);
+    gap:6px;
+  }
+  .wts-event-broadcaster-logo-slot{
+    width:58px;
+    min-width:58px;
+  }
+}
