@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import LocalTime from "@/components/LocalTime";
-import FavoriteButton from "@/components/FavoriteButton";
 import SportHero from "@/components/SportHero";
 import styles from "@/components/sport-hub.module.css";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
@@ -169,12 +168,6 @@ export default async function Formula1Page() {
           <div className="wts-discovery-list">
             {weekends.map((weekend) => {
               const href = `/formula-1/grand-prix/${weekend.slug}`;
-              const favorite = {
-                kind: "group" as const,
-                entityId: weekend.id,
-                label: weekend.name,
-                href,
-              };
               const accessOptions = [
                 weekend.freeCountries > 0 ? "Free" : null,
                 weekend.paidCountries > 0 ? "Paid" : null,
@@ -227,14 +220,12 @@ export default async function Formula1Page() {
                   </Link>
 
                   <div className="wts-ufc-event-actions">
-                    <FavoriteButton compact favorite={favorite} />
                     <Link
                       className="wts-ufc-event-open"
                       href={href}
                       aria-label={`View ${weekend.name}`}
                     >
-                      <span>View event</span>
-                      <b aria-hidden="true">›</b>
+                      <span>View</span>
                     </Link>
                   </div>
                 </article>
