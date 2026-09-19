@@ -35,8 +35,9 @@
 
 /* Dark monochrome artwork: black becomes white while transparent pixels stay transparent. */
 .v2-match-broadcaster-logo.is-inverted img {
-  filter: grayscale(1) invert(1);
-  mix-blend-mode: screen;
+  filter: brightness(0) invert(1);
+  opacity: .96;
+  mix-blend-mode: normal;
 }
 
 /* Knockout marks such as CANAL+: black artwork disappears into the dark UI and white lettering remains crisp. */
