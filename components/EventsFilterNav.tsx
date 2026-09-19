@@ -6,7 +6,7 @@ type WindowFilter = "all" | "live" | "today" | "tonight" | "tomorrow" | "week";
 
 type FilterState = {
   when: WindowFilter;
-  sport: string;
+  sports: string[];
   competition: string;
   query: string;
   timeZone: string;
@@ -34,12 +34,12 @@ const WINDOW_FILTERS = [
 
 function hrefWith(
   current: FilterState,
-  patch: Partial<Pick<FilterState, "when" | "sport" | "competition" | "query">>,
+  patch: Partial<Pick<FilterState, "when" | "sports" | "competition" | "query">>,
 ): string {
   const next = { ...current, ...patch };
   const params = new URLSearchParams({ view: "all" });
   if (next.when !== "all") params.set("when", next.when);
-  if (next.sport) params.set("sport", next.sport);
+  next.sports.forEach((sport) => params.append("sport", sport));
   if (next.competition) params.set("competition", next.competition);
   if (next.query) params.set("q", next.query);
   if (next.timeZone !== "UTC") params.set("tz", next.timeZone);
@@ -49,8 +49,21 @@ function hrefWith(
 export default function EventsFilterNav({ state }: { state: FilterState }) {
   const router = useRouter();
 
-  function navigate(patch: Partial<Pick<FilterState, "when" | "sport" | "competition" | "query">>) {
+  function navigate(patch: Partial<Pick<FilterState, "when" | "sports" | "competition" | "query">>) {
     router.push(hrefWith(state, patch), { scroll: false });
+  }
+
+  function toggleSport(value: string) {
+    if (!value) {
+      navigate({ sports: [], competition: "" });
+      return;
+    }
+
+    const sports = state.sports.includes(value)
+      ? state.sports.filter((sport) => sport !== value)
+      : [...state.sports, value];
+
+    navigate({ sports, competition: "" });
   }
 
   return (
@@ -71,9 +84,10 @@ export default function EventsFilterNav({ state }: { state: FilterState }) {
       <nav className="wts-filter-pills wts-sport-filter-pills" aria-label="Sports filters">
         {SPORT_FILTERS.map(([value, label, icon]) => (
           <button
-            className={state.sport === value ? "is-active" : undefined}
+            className={(value ? state.sports.includes(value) : state.sports.length === 0) ? "is-active" : undefined}
+            aria-pressed={value ? state.sports.includes(value) : state.sports.length === 0}
             key={label}
-            onClick={() => navigate({ sport: value, competition: "" })}
+            onClick={() => toggleSport(value)}
             type="button"
           >
             <span aria-hidden="true">{icon}</span>
