@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { BroadcastInfo } from "@/lib/matches";
-import { broadcasterInitials, getBroadcasterLogo } from "@/lib/broadcaster-logos";
+import { getBroadcasterLogo } from "@/lib/broadcaster-logos";
 
 type CompetitionRight = {
   countryCode: string;
@@ -60,7 +60,7 @@ function BroadcasterLogo({ name }: { name: string }) {
       role="img"
       aria-label={logo ? name : `${name} initials`}
     >
-      {logo ? <img src={logo.src} alt="" aria-hidden="true" loading="lazy" /> : <span aria-hidden="true">{broadcasterInitials(name)}</span>}
+      {logo ? <img src={logo.src} alt="" aria-hidden="true" loading="lazy" /> : <span className="v2-match-broadcaster-name-fallback" aria-hidden="true">{name}</span>}
     </span>
   );
 }
@@ -136,7 +136,6 @@ export default function MatchWatchPanel({
               <BroadcasterLogo name={broadcast.broadcaster} />
             </span>
             <span className="v2-match-broadcaster-copy">
-              {!hasLogo ? <strong>{broadcast.broadcaster}</strong> : null}
               <small className={meta === "Language pending" ? "is-pending" : ""}>{meta}</small>
             </span>
           </span>
@@ -234,7 +233,6 @@ export default function MatchWatchPanel({
                       <BroadcasterLogo name={right.broadcaster} />
                     </span>
                     <span className="v2-match-broadcaster-copy">
-                      {!hasLogo ? <strong>{right.broadcaster}</strong> : null}
                       <small>{coverageLabel(right.coverageType)}</small>
                     </span>
                   </span>
