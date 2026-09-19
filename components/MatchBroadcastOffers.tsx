@@ -1,6 +1,7 @@
 import type { EventData } from "@/lib/events";
 import type { BroadcastInfo } from "@/lib/matches";
 import styles from "./MatchBroadcastOffers.module.css";
+import { broadcasterInitials, getBroadcasterLogo } from "@/lib/broadcaster-logos";
 
 type AccessFilter = "Free" | "Paid" | "";
 
@@ -17,46 +18,20 @@ function countryFlag(countryCode: string): string {
   return String.fromCodePoint(...Array.from(code, (letter) => 127397 + letter.charCodeAt(0)));
 }
 
-function broadcasterInitials(name: string): string {
-  const words = name.replace(/[^a-zA-Z0-9+ ]/g, " ").split(/\s+/).filter(Boolean);
-  if (!words.length) return "TV";
-  if (words.length === 1) return words[0].slice(0, 3).toUpperCase();
-  return words.slice(0, 2).map((word) => word[0]).join("").toUpperCase();
-}
-
 function BroadcasterLogo({ name }: { name: string }) {
-  if (name === "DAZN") {
-    return (
-      <span className={`${styles.logo} ${styles.logoDazn}`} aria-hidden="true">
-        <svg viewBox="0 0 52 52" role="presentation">
-          <rect x="5" y="5" width="42" height="42" rx="2" />
-          <text x="26" y="23" textAnchor="middle">DA</text>
-          <text x="26" y="38" textAnchor="middle">ZN</text>
-        </svg>
-      </span>
-    );
-  }
-
-  if (name === "CANAL+") {
-    return (
-      <span className={`${styles.logo} ${styles.logoCanal}`} aria-hidden="true">
-        <span>CANAL+</span>
-      </span>
-    );
-  }
-
-  if (name === "Paramount+") {
-    return (
-      <span className={`${styles.logo} ${styles.logoParamount}`} aria-hidden="true">
-        <span className={styles.paramountPeak}>▲</span>
-        <span className={styles.paramountWord}>P+</span>
-      </span>
-    );
-  }
-
+  const logo = getBroadcasterLogo(name);
   return (
-    <span className={`${styles.logo} ${styles.logoFallback}`} aria-hidden="true">
-      {broadcasterInitials(name)}
+    <span className={styles.logo} aria-hidden="true">
+      {logo ? (
+        <img
+          src={logo.src}
+          alt=""
+          loading="lazy"
+          style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+        />
+      ) : (
+        <span>{broadcasterInitials(name)}</span>
+      )}
     </span>
   );
 }
