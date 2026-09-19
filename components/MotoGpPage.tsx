@@ -56,7 +56,7 @@ function RaceCard({ item, completed = false }: { item: WeekendView; completed?: 
   ].filter(Boolean) as Array<"Free" | "Paid">;
 
   return (
-    <article className="wts-ufc-event-row">
+    <article className="wts-ufc-event-row wts-motorsport-event-row">
       <Link className="wts-ufc-event-main" href={href}>
         <div className="wts-discovery-card-time wts-motorsport-event-time">
           <strong>
