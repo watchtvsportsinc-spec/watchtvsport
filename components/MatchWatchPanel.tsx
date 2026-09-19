@@ -55,8 +55,12 @@ function compactBroadcastMeta(broadcast: BroadcastInfo) {
 function BroadcasterLogo({ name }: { name: string }) {
   const logo = getBroadcasterLogo(name);
   return (
-    <span className={`v2-match-broadcaster-logo${logo?.compact ? " is-wide" : ""}`} aria-hidden="true">
-      {logo ? <img src={logo.src} alt="" loading="lazy" /> : <span>{broadcasterInitials(name)}</span>}
+    <span
+      className={`v2-match-broadcaster-logo${logo?.compact ? " is-wide" : ""}`}
+      role="img"
+      aria-label={logo ? name : `${name} initials`}
+    >
+      {logo ? <img src={logo.src} alt="" aria-hidden="true" loading="lazy" /> : <span aria-hidden="true">{broadcasterInitials(name)}</span>}
     </span>
   );
 }
@@ -116,6 +120,7 @@ export default function MatchWatchPanel({
   function broadcasterRows(items: BroadcastInfo[]) {
     return items.map((broadcast, index) => {
       const meta = compactBroadcastMeta(broadcast);
+      const hasLogo = Boolean(getBroadcasterLogo(broadcast.broadcaster));
 
       return (
         <a
@@ -128,7 +133,7 @@ export default function MatchWatchPanel({
           <span className="v2-match-broadcaster-country">{broadcast.countryName}</span>
           <span className="v2-match-broadcaster-service">
             <BroadcasterLogo name={broadcast.broadcaster} />
-            <strong>{broadcast.broadcaster}</strong>
+            {!hasLogo ? <strong>{broadcast.broadcaster}</strong> : null}
             <small className={meta === "Language pending" ? "is-pending" : ""}>{meta}</small>
           </span>
           <span className={broadcast.access === "Free" ? "v2-chip is-free" : "v2-chip is-paid"}>{broadcast.access}</span>
@@ -216,12 +221,13 @@ export default function MatchWatchPanel({
           </header>
           <div className="v2-match-rights-list">
             {supplementalRights.map((right, index) => {
+              const hasLogo = Boolean(getBroadcasterLogo(right.broadcaster));
               const row = (
                 <>
                   <span className="v2-match-broadcaster-country">{right.countryName}</span>
                   <span className="v2-match-broadcaster-service">
                     <BroadcasterLogo name={right.broadcaster} />
-                    <strong>{right.broadcaster}</strong>
+                    {!hasLogo ? <strong>{right.broadcaster}</strong> : null}
                     <small>{coverageLabel(right.coverageType)}</small>
                   </span>
                   <span className={right.access === "Free" ? "v2-chip is-free" : right.access === "Paid" ? "v2-chip is-paid" : "v2-chip"}>
