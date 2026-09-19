@@ -23,3 +23,38 @@
 /* Approved club logos replace generated shirts on match pages. */
 .v2-match-next-team span[role="img"] img{width:34px!important;height:34px!important;object-fit:contain}
 @media(min-width:560px){.v2-match-next-team span[role="img"] img{width:36px!important;height:36px!important}}
+
+
+/* Broadcaster logo column alignment */
+.v2-match-broadcaster-service{
+  display:grid;
+  grid-template-columns:72px minmax(0,1fr);
+  align-items:center;
+  gap:8px;
+}
+.v2-match-broadcaster-logo-slot{
+  display:flex;
+  width:72px;
+  min-width:72px;
+  align-items:center;
+  justify-content:center;
+}
+.v2-match-broadcaster-copy{
+  display:grid;
+  min-width:0;
+  gap:1px;
+}
+.v2-match-broadcaster-copy strong,
+.v2-match-broadcaster-copy small{
+  min-width:0;
+}
+@media(max-width:559px){
+  .v2-match-broadcaster-service{
+    grid-template-columns:58px minmax(0,1fr);
+    gap:6px;
+  }
+  .v2-match-broadcaster-logo-slot{
+    width:58px;
+    min-width:58px;
+  }
+}
