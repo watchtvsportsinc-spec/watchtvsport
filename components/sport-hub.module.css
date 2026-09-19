@@ -12,11 +12,11 @@
 .competitionFilters button:hover{border-color:rgba(90,176,255,.45);color:#dceeff}
 .competitionFilters button.filterActive{border-color:#1799ff;background:#1188ee;color:#fff}
 .directoryCompetitionGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.directoryCompetitionCard{display:grid;grid-template-columns:58px minmax(0,1fr) 18px;align-items:center;gap:11px;min-height:94px;border:1px solid rgba(90,176,255,.2);border-radius:14px;background:linear-gradient(145deg,rgba(8,28,46,.98),rgba(5,18,31,.98));color:#fff;padding:11px 12px;text-decoration:none;transition:border-color .16s ease,background .16s ease,transform .16s ease}
+.directoryCompetitionCard{display:grid;grid-template-columns:78px minmax(0,1fr) 18px;align-items:center;gap:12px;min-height:112px;border:1px solid rgba(90,176,255,.2);border-radius:16px;background:linear-gradient(145deg,rgba(8,28,46,.98),rgba(5,18,31,.98));color:#fff;padding:14px 15px;text-decoration:none;transition:border-color .16s ease,background .16s ease,transform .16s ease}
 .directoryCompetitionCard:hover{border-color:rgba(78,177,255,.52);background:linear-gradient(145deg,rgba(10,39,65,.98),rgba(6,21,35,.98));transform:translateY(-1px)}
-.competitionMark{display:grid;width:52px;height:52px;place-items:center;border:1px solid rgba(92,184,255,.22);border-radius:13px;background:radial-gradient(circle at 35% 25%,rgba(70,178,255,.2),transparent 58%),#081724;color:#74c7ff;font-size:13px;font-weight:900;letter-spacing:.02em}
+.competitionMark{display:grid;width:68px;height:68px;place-items:center;border:1px solid rgba(92,184,255,.22);border-radius:14px;background:radial-gradient(circle at 35% 25%,rgba(70,178,255,.2),transparent 58%),#081724;color:#74c7ff;font-size:13px;font-weight:900;letter-spacing:.02em}
 .competitionCopy{display:grid;min-width:0;gap:3px}
-.competitionCopy strong{overflow:hidden;color:#fff;font-size:13px;line-height:1.14;text-overflow:ellipsis;white-space:nowrap}
+.competitionCopy strong{overflow:hidden;color:#fff;font-size:14px;line-height:1.15;text-overflow:ellipsis;white-space:nowrap}
 .competitionCopy>span{color:#91a7ba;font-size:9px}
 .competitionCopy small{color:#58baff;font-size:9px}
 .directoryCompetitionCard>b{color:#5dc0ff;font-size:22px;font-weight:400}
@@ -78,8 +78,8 @@ a.participantCard:hover{background:transparent;transform:translateY(-1px)}
   .competitionFilters::-webkit-scrollbar{display:none}
   .competitionFilters button{flex:0 0 auto}
   .directoryCompetitionGrid{grid-template-columns:1fr;gap:7px}
-  .directoryCompetitionCard{grid-template-columns:46px minmax(0,1fr) 16px;min-height:75px;padding:8px 9px}
-  .competitionMark{width:42px;height:42px;border-radius:11px;font-size:11px}
+  .directoryCompetitionCard{grid-template-columns:58px minmax(0,1fr) 16px;min-height:88px;padding:10px 11px}
+  .competitionMark{width:54px;height:54px;border-radius:11px;font-size:11px}
   .competitionCopy strong{font-size:12px}
   .competitionCopy>span,.competitionCopy small{font-size:8px}
   .participantRail{display:flex;gap:7px;overflow-x:auto;margin-right:-10px;padding:1px 10px 3px 0;scrollbar-width:none}
@@ -103,10 +103,10 @@ a.participantCard:hover{background:transparent;transform:translateY(-1px)}
 
 .competitionMark img{display:block;width:88%;height:88%;object-fit:contain}
 
-.competitionMarkLogo{width:52px;height:52px;border:0;background:transparent;padding:0;overflow:hidden}
-.competitionMarkLogo img{display:block;width:auto;height:auto;max-width:42px;max-height:42px;object-fit:contain}
+.competitionMarkLogo{width:68px;height:68px;border:0;background:transparent;padding:0;overflow:hidden}
+.competitionMarkLogo img{display:block;width:auto;height:auto;max-width:60px;max-height:60px;object-fit:contain}
 .competitionMarkLight img{filter:brightness(0) invert(1);opacity:.98}
 @media(max-width:720px){
-  .competitionMarkLogo{width:42px;height:42px}
-  .competitionMarkLogo img{max-width:34px;max-height:34px}
+  .competitionMarkLogo{width:54px;height:54px}
+  .competitionMarkLogo img{max-width:48px;max-height:48px}
 }
