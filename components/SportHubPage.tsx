@@ -284,7 +284,7 @@ export default async function SportHubPage({sport,canonical}:{sport:string;canon
   }
   const popularParticipants=Array.from(participantMap.values())
     .sort((a,b)=>b.count-a.count||a.participant.name.localeCompare(b.participant.name))
-    .slice(0,sport==="tennis"?7:8);
+    .slice(0,sport==="tennis"?7:10);
 
   const competitionMediaKeys=competitions.flatMap(item=>[
     item.slug,
@@ -386,7 +386,7 @@ export default async function SportHubPage({sport,canonical}:{sport:string;canon
               ? <img className={styles.participantFlag} src={`/flags/${participant.countryCode.toLowerCase()}.png`} alt="" aria-hidden="true"/>
               : <ParticipantLogo sport={sport} label={participant.name} logoUrl={participantLogos[participantMediaKey(participant)]?.url} countryCode={participant.countryCode} visual={participant.visualProfile} size="md"/>;
           const card=<>
-            <span className={styles.participantVisual}>{visual}</span>
+            <span className={styles.participantVisual} data-logo-key={participantMediaKey(participant)}>{visual}</span>
             <strong>{participant.name}</strong>
           </>;
           return href
