@@ -33,14 +33,10 @@ a.participantCard:hover{border-color:rgba(90,176,255,.48);background:#0a2033}
 .countryHeading>div>span{display:block;margin-top:5px;color:#91a7ba;font-size:10px}
 .countryHeading>a{color:#58baff;font-size:9px;font-weight:850;text-decoration:none;white-space:nowrap}
 .countryGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.countryCard{display:grid;grid-template-columns:36px minmax(0,1fr) 14px;align-items:center;gap:9px;min-height:84px;border:1px solid rgba(90,176,255,.18);border-radius:13px;background:linear-gradient(145deg,#071724,#081c2d);color:#fff;padding:10px;text-decoration:none}
+.countryCard{display:flex;min-height:60px;align-items:center;gap:10px;border:1px solid rgba(90,176,255,.18);border-radius:13px;background:linear-gradient(145deg,#071724,#081c2d);color:#fff;padding:9px 12px;text-decoration:none}
 .countryCard:hover{border-color:rgba(90,176,255,.46);background:#0a2033}
-.countryCard>img{width:34px;height:23px;border-radius:4px;object-fit:cover;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
-.countryCopy{display:grid;min-width:0;gap:3px}
-.countryCopy strong{font-size:11px}
-.countryCopy>span{overflow:hidden;color:#b7c7d4;font-size:9px;text-overflow:ellipsis;white-space:nowrap}
-.countryCopy small{color:#59baff;font-size:8.5px}
-.countryCard>b{color:#5dc0ff;font-size:19px;font-weight:400}
+.countryCard>img{width:34px;height:23px;flex:0 0 auto;border-radius:4px;object-fit:cover;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+.countryCard>strong{overflow:hidden;min-width:0;font-size:11px;font-weight:700;text-overflow:ellipsis;white-space:nowrap}
 .directoryCta{display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:12px;margin-top:26px;border:1px solid rgba(90,176,255,.2);border-radius:15px;background:linear-gradient(145deg,rgba(8,25,41,.96),rgba(5,17,29,.98));padding:13px 14px}
 .ctaIcon{display:grid;width:38px;height:38px;place-items:center;border:1px solid rgba(90,176,255,.28);border-radius:11px;color:#65c0ff;font-size:18px}
 .directoryCta>div{display:grid;gap:3px}
@@ -57,7 +53,7 @@ a.participantCard:hover{border-color:rgba(90,176,255,.48);background:#0a2033}
   .participantCard>strong{align-self:auto;width:100%;font-size:9px}
   .participantCountry{align-self:auto}
   .countryGrid{grid-template-columns:repeat(6,minmax(0,1fr))}
-  .countryCard{grid-template-columns:30px minmax(0,1fr) 10px;gap:7px;min-height:82px;padding:9px}
+  .countryCard{min-height:54px;gap:8px;padding:8px 10px}
   .countryCard>img{width:29px;height:20px}
 }
 
@@ -83,7 +79,7 @@ a.participantCard:hover{border-color:rgba(90,176,255,.48);background:#0a2033}
   .countryHeading>div>span{font-size:8.5px}
   .countryGrid{display:flex;gap:7px;overflow-x:auto;margin-right:-10px;padding:1px 10px 3px 0;scrollbar-width:none}
   .countryGrid::-webkit-scrollbar{display:none}
-  .countryCard{width:174px;min-width:174px;grid-template-columns:32px minmax(0,1fr) 12px;min-height:76px;padding:8px}
+  .countryCard{width:150px;min-width:150px;min-height:54px;padding:8px 10px}
   .directoryCta{grid-template-columns:34px minmax(0,1fr);padding:11px}
   .ctaIcon{width:32px;height:32px}
   .directoryCta>div strong{font-size:12px}

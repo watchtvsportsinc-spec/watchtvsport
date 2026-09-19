@@ -377,12 +377,7 @@ export default async function SportHubPage({sport,canonical}:{sport:string;canon
       <div className={styles.countryGrid}>
         {countryRows.map(country=><Link className={styles.countryCard} href={`/country/${country.countryCode}`} key={country.countryCode}>
           <img src={`/flags/${country.countryCode}.png`} alt="" aria-hidden="true"/>
-          <span className={styles.countryCopy}>
-            <strong>{country.countryName}</strong>
-            <span>{Array.from(country.broadcasters).slice(0,2).join(", ")||"Broadcasters"}</span>
-            <small>{country.competitions.size} competition{country.competitions.size===1?"":"s"}</small>
-          </span>
-          <b aria-hidden="true">›</b>
+          <strong>{country.countryName}</strong>
         </Link>)}
       </div>
     </section>:null}
