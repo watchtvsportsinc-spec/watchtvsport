@@ -4,8 +4,6 @@ import { cache } from "react";
 import { buildSearchSuggestions, type SearchSuggestion } from "./search-suggestions";
 import { getSportLabel, sportAllowsParticipantPages } from "./sports-registry";
 
-const DEFAULT_SUPABASE_URL = "https://jywqhiiwsmudthaujhmi.supabase.co";
-const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_30SkJ3gyUbPvH5sGFXpyHg_a4Qlzdi-";
 const REQUEST_TIMEOUT_MS = 4_000;
 
 type Row = Record<string, unknown>;
@@ -31,13 +29,14 @@ function config(): { url: string; key: string } {
   const url = (
     process.env.SUPABASE_URL ||
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    DEFAULT_SUPABASE_URL
+    ""
   ).replace(/\/$/, "");
   const key =
     process.env.SUPABASE_PUBLISHABLE_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
     process.env.SUPABASE_ANON_KEY ||
-    DEFAULT_SUPABASE_PUBLISHABLE_KEY;
+    "";
+  if (!url || !key) throw new Error("Supabase public read configuration is incomplete");
   return { url, key };
 }
 
@@ -84,6 +83,7 @@ function mergeSuggestion(
 
 async function loadHeaderSearchSuggestions(): Promise<SearchSuggestion[]> {
   const base = buildSearchSuggestions([]);
+  if (process.env.WATCHTVSPORT_DATA_SOURCE?.trim() !== "supabase") return base;
   const suggestions = new Map(base.map((suggestion) => [suggestion.id, suggestion]));
 
   try {

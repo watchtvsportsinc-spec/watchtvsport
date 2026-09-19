@@ -9,9 +9,6 @@ const MAX_RESPONSE_BYTES = 8 * 1024 * 1024;
 const REQUEST_TIMEOUT_MS = 8_000;
 const TARGETED_REVALIDATE_SECONDS = 120;
 
-const DEFAULT_SUPABASE_URL = "https://jywqhiiwsmudthaujhmi.supabase.co";
-const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_30SkJ3gyUbPvH5sGFXpyHg_a4Qlzdi-";
-
 export type PublicEventsSnapshot = {
   events: EventData[];
   source: "local-archive" | "supabase" | "local-fallback";
@@ -82,8 +79,8 @@ function isAllowedSupabaseUrl(value: string): boolean {
 }
 
 function readSupabaseConfig(): { url: string; key: string } {
-  const url = process.env.SUPABASE_URL?.trim() || process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || DEFAULT_SUPABASE_URL;
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY?.trim() || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() || process.env.SUPABASE_ANON_KEY?.trim() || DEFAULT_SUPABASE_PUBLISHABLE_KEY;
+  const url = process.env.SUPABASE_URL?.trim() || process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || "";
+  const key = process.env.SUPABASE_PUBLISHABLE_KEY?.trim() || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() || process.env.SUPABASE_ANON_KEY?.trim() || "";
   if (!url || !isAllowedSupabaseUrl(url)) throw new Error("SUPABASE_URL is missing or invalid");
   if (!key || key.length > 4_096) throw new Error("the Supabase public read key is missing or invalid");
   return { url: url.replace(/\/$/, ""), key };
@@ -154,7 +151,7 @@ async function loadPublicEventsSnapshot(
   limit?: number,
 ): Promise<PublicEventsSnapshot> {
   const filters: PublicEventFilters = { sport, competition, slug, country, from, to, limit };
-  const mode = process.env.WATCHTVSPORT_DATA_SOURCE?.trim() || "supabase";
+  const mode = process.env.WATCHTVSPORT_DATA_SOURCE?.trim() || "local";
   if (mode === "local") return localSnapshot(filters);
   if (mode !== "supabase") return localSnapshot(filters, "Live data configuration is invalid. Showing the bundled archive instead.");
 
