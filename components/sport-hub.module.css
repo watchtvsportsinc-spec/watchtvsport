@@ -48,7 +48,7 @@ a.participantCard:hover{background:transparent;transform:translateY(-1px)}
 
 @media(min-width:1040px){
   .directoryCompetitionGrid{grid-template-columns:repeat(4,minmax(0,1fr))}
-  .participantRail{grid-template-columns:repeat(8,minmax(0,1fr))}
+  .participantRail{grid-template-columns:repeat(10,minmax(0,1fr));gap:3px}
   .participantCard{grid-template-columns:1fr;grid-template-rows:76px auto;justify-items:center;min-height:102px;text-align:center}
   .participantVisual{width:72px;height:72px}
   .participantCard>strong{align-self:auto;width:100%;font-size:10px}
