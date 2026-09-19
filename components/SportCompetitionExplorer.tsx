@@ -9,6 +9,7 @@ export type SportCompetitionExplorerItem=SportCompetitionCard&{
   filterKey:string;
   filterLabel:string;
   sortPriority?:number;
+  logoUrl?:string;
 };
 
 function initials(name:string){
@@ -39,7 +40,9 @@ export default function SportCompetitionExplorer({items,eventNoun}:{items:SportC
 
     <div className={styles.directoryCompetitionGrid}>
       {visible.map(item=><Link className={styles.directoryCompetitionCard} href={item.href} key={item.slug}>
-        <span className={styles.competitionMark} aria-hidden="true">{initials(item.name)}</span>
+        <span className={styles.competitionMark} aria-hidden="true">
+          {item.logoUrl?<img src={item.logoUrl} alt="" loading="lazy"/>:initials(item.name)}
+        </span>
         <span className={styles.competitionCopy}>
           <strong>{item.name}</strong>
           <span>{item.season??item.filterLabel}</span>
