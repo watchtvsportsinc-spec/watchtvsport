@@ -11,7 +11,7 @@ export type SportCompetitionExplorerItem=SportCompetitionCard&{
   sortPriority?:number;
   logoUrl?:string;
   logoTone?:"default"|"light";
-  logoVariant?:"default"|"cdf";
+  logoVariant?:"default"|"cdf"|"bundesliga";
 };
 
 function initials(name:string){
@@ -42,7 +42,7 @@ export default function SportCompetitionExplorer({items,eventNoun}:{items:SportC
 
     <div className={styles.directoryCompetitionGrid}>
       {visible.map(item=><Link className={styles.directoryCompetitionCard} href={item.href} key={item.slug}>
-        <span className={`${styles.competitionMark} ${item.logoUrl?styles.competitionMarkLogo:""} ${item.logoTone==="light"?styles.competitionMarkLight:""} ${item.logoVariant==="cdf"?styles.competitionMarkCdf:""}`} aria-hidden="true">
+        <span className={`${styles.competitionMark} ${item.logoUrl?styles.competitionMarkLogo:""} ${item.logoTone==="light"?styles.competitionMarkLight:""} ${item.logoVariant==="cdf"?styles.competitionMarkCdf:""} ${item.logoVariant==="bundesliga"?styles.competitionMarkBundesliga:""}`} aria-hidden="true">
           {item.logoUrl?<img src={item.logoUrl} alt="" loading="lazy"/>:initials(item.name)}
         </span>
         <span className={styles.competitionCopy}>
