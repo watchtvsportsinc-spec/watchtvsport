@@ -1132,29 +1132,62 @@
 }
 
 
-/* Motorsport event rows: emphasize date/time without a redundant Grand Prix badge */
+/* F1 + MotoGP share one denser, larger list typography without increasing row height */
+.wts-motorsport-event-row .wts-ufc-event-main{
+  min-height:66px;
+}
+.wts-motorsport-event-row .wts-discovery-card-main{
+  gap:1px;
+}
+.wts-motorsport-event-row .wts-discovery-card-main p{
+  font-size:9px;
+  line-height:1.05;
+}
+.wts-motorsport-event-row .wts-discovery-card-main h3{
+  font-size:15px;
+  line-height:1.05;
+}
+.wts-motorsport-event-row .wts-discovery-card-main>span{
+  font-size:9px;
+  line-height:1.05;
+}
 .wts-motorsport-event-time{
   align-content:center;
-  gap:4px;
+  gap:3px;
 }
 .wts-motorsport-event-time strong{
   color:#dff2ff;
-  font-size:17px;
+  font-size:20px;
   font-weight:950;
-  line-height:1;
-  letter-spacing:-.02em;
+  line-height:.95;
+  letter-spacing:-.025em;
 }
 .wts-motorsport-event-time small{
   color:#90aac0;
-  font-size:10px;
-  font-weight:800;
-  line-height:1.15;
+  font-size:11px;
+  font-weight:850;
+  line-height:1;
 }
 @media(max-width:760px){
+  .wts-motorsport-event-row .wts-ufc-event-main{
+    min-height:0;
+  }
+  .wts-motorsport-event-row .wts-discovery-card-main p{
+    font-size:8px;
+  }
+  .wts-motorsport-event-row .wts-discovery-card-main h3{
+    font-size:13px;
+  }
+  .wts-motorsport-event-row .wts-discovery-card-main>span{
+    font-size:8px;
+  }
+  .wts-motorsport-event-time{
+    gap:2px;
+  }
   .wts-motorsport-event-time strong{
-    font-size:15px;
+    font-size:17px;
   }
   .wts-motorsport-event-time small{
-    font-size:9px;
+    font-size:10px;
   }
 }
