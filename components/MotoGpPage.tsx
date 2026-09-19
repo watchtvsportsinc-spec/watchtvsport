@@ -84,6 +84,9 @@ function RaceCard({ item, completed = false }: { item: WeekendView; completed?: 
           </span>
         </div>
 
+      </Link>
+
+      <div className="wts-ufc-event-actions">
         <span className="wts-result-access-stack">
           {accessOptions.length > 0 ? (
             accessOptions.map((access) => (
@@ -98,9 +101,6 @@ function RaceCard({ item, completed = false }: { item: WeekendView; completed?: 
             <span className="wts-result-access is-tbc">TV TBC</span>
           )}
         </span>
-      </Link>
-
-      <div className="wts-ufc-event-actions">
         <Link
           className="wts-ufc-event-open"
           href={href}
