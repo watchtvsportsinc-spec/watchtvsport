@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import styles from "./verification.module.css";
 
-type ReviewStatus = "review" | "conflict" | "new-competition" | "automatic";
+type ReviewStatus = "review" | "conflict" | "new-competition";
 type Decision = "pending" | "accepted" | "rejected";
 
 type ReviewItem = {
@@ -73,155 +73,138 @@ const INITIAL_ITEMS: ReviewItem[] = [
     before: ["Competition not active in automated collection"],
     after: ["New competition candidate: UFC", "Events found in broadcaster schedules"],
   },
-  {
-    id: "nba-auto",
-    status: "automatic",
-    decision: "accepted",
-    event: "Boston Celtics – New York Knicks",
-    competition: "NBA",
-    country: "Canada",
-    change: "Schedule reconfirmed",
-    source: "Approved official source",
-    checkedAt: "19 Sep 2026 · 01:12",
-    before: ["Event already present"],
-    after: ["No material change", "Verification timestamp refreshed"],
-  },
 ];
 
 const statusLabels: Record<ReviewStatus, string> = {
   review: "To verify",
   conflict: "Conflict",
   "new-competition": "New competition",
-  automatic: "Automatic",
 };
 
 export default function VerificationPage() {
   const [items, setItems] = useState(INITIAL_ITEMS);
-  const [selectedId, setSelectedId] = useState(INITIAL_ITEMS[0].id);
-  const [filter, setFilter] = useState<"all" | ReviewStatus>("all");
+  const [historyOpen, setHistoryOpen] = useState(false);
 
-  const pending = items.filter((item) => item.decision === "pending");
-  const selected = items.find((item) => item.id === selectedId) ?? items[0];
+  const pending = useMemo(() => items.filter((item) => item.decision === "pending"), [items]);
+  const current = pending[0];
+  const reviewed = items.filter((item) => item.decision !== "pending");
+  const progress = INITIAL_ITEMS.length ? Math.round(((INITIAL_ITEMS.length - pending.length) / INITIAL_ITEMS.length) * 100) : 100;
 
-  const counts = useMemo(() => ({
-    pending: pending.length,
-    conflicts: pending.filter((item) => item.status === "conflict").length,
-    newCompetitions: pending.filter((item) => item.status === "new-competition").length,
-    automatic: items.filter((item) => item.status === "automatic").length,
-  }), [items, pending]);
+  function decide(decision: Exclude<Decision, "pending">) {
+    if (!current) return;
+    setItems((existing) =>
+      existing.map((item) => item.id === current.id ? { ...item, decision } : item)
+    );
+  }
 
-  const visibleItems = items.filter((item) => filter === "all" || item.status === filter);
-
-  function decide(id: string, decision: Exclude<Decision, "pending">) {
-    setItems((current) => current.map((item) => item.id === id ? { ...item, decision } : item));
+  function skip() {
+    if (!current || pending.length < 2) return;
+    setItems((existing) => {
+      const index = existing.findIndex((item) => item.id === current.id);
+      if (index < 0) return existing;
+      const copy = [...existing];
+      const [moved] = copy.splice(index, 1);
+      const lastPendingIndex = copy.reduce((last, item, i) => item.decision === "pending" ? i : last, -1);
+      copy.splice(lastPendingIndex + 1, 0, moved);
+      return copy;
+    });
   }
 
   return (
     <main className={styles.page}>
-      <section className={styles.header}>
+      <header className={styles.topbar}>
         <div>
-          <p className={styles.eyebrow}>WatchTVSport · Internal operations</p>
-          <h1>Verification center</h1>
-          <p className={styles.lead}>Review what the daily collection agent found before uncertain changes reach the public site.</p>
+          <p className={styles.eyebrow}>WatchTVSport · Verification</p>
+          <h1>Daily review</h1>
         </div>
-        <div className={styles.runBadge}>
-          <span className={styles.dot} />
-          <div><strong>Daily scan completed</strong><small>19 Sep 2026 · 01:12</small></div>
+        <button className={styles.historyButton} onClick={() => setHistoryOpen((open) => !open)}>
+          History {reviewed.length ? `(${reviewed.length})` : ""}
+        </button>
+      </header>
+
+      <section className={styles.progressWrap} aria-label="Review progress">
+        <div className={styles.progressMeta}>
+          <span>{pending.length ? `${pending.length} remaining` : "Review complete"}</span>
+          <span>{progress}%</span>
         </div>
+        <div className={styles.progressTrack}><span style={{ width: `${progress}%` }} /></div>
       </section>
 
-      <div className={styles.demoNotice}>
-        Interface preview · sample review data only. No action on this page currently writes to Supabase or publishes changes.
-      </div>
+      <div className={styles.demoNotice}>Preview only · actions are local and do not write to Supabase yet.</div>
 
-      <section className={styles.stats} aria-label="Verification summary">
-        <article><span>Needs decision</span><strong>{counts.pending}</strong><small>Manual review queue</small></article>
-        <article><span>Conflicts</span><strong>{counts.conflicts}</strong><small>Sources disagree</small></article>
-        <article><span>New competitions</span><strong>{counts.newCompetitions}</strong><small>Activation required</small></article>
-        <article><span>Automatic</span><strong>{counts.automatic}</strong><small>Trusted checks completed</small></article>
-      </section>
-
-      <section className={styles.workspace}>
-        <div className={styles.queue}>
-          <div className={styles.queueTop}>
-            <div><p className={styles.eyebrow}>Decision queue</p><h2>Items found overnight</h2></div>
-            <select value={filter} onChange={(event) => setFilter(event.target.value as typeof filter)} aria-label="Filter verification items">
-              <option value="all">All items</option>
-              <option value="review">To verify</option>
-              <option value="conflict">Conflicts</option>
-              <option value="new-competition">New competitions</option>
-              <option value="automatic">Automatic</option>
-            </select>
+      {historyOpen ? (
+        <section className={styles.historyPanel}>
+          <div className={styles.historyHeader}>
+            <div><p className={styles.eyebrow}>Audit trail</p><h2>Reviewed today</h2></div>
+            <button onClick={() => setHistoryOpen(false)}>Close</button>
           </div>
-
-          <div className={styles.tableHead}>
-            <span>Event</span><span>Territory</span><span>Detected change</span><span>Status</span>
-          </div>
-
-          <div className={styles.rows}>
-            {visibleItems.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className={selected.id === item.id ? styles.rowActive : styles.row}
-                onClick={() => setSelectedId(item.id)}
-              >
-                <span className={styles.eventCell}><strong>{item.event}</strong><small>{item.competition}</small></span>
-                <span>{item.country}</span>
-                <span>{item.change}</span>
-                <span className={styles.statusWrap}>
-                  <b className={styles["status_" + item.status]}>{statusLabels[item.status]}</b>
-                  {item.decision !== "pending" ? <small className={styles.decision}>{item.decision}</small> : null}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <aside className={styles.detail}>
-          <div className={styles.detailHeader}>
-            <div>
-              <p className={styles.eyebrow}>Selected item</p>
-              <h2>{selected.event}</h2>
-              <p>{selected.competition} · {selected.country}</p>
+          {reviewed.length ? (
+            <div className={styles.historyList}>
+              {reviewed.map((item) => (
+                <div key={item.id}>
+                  <span className={item.decision === "accepted" ? styles.historyAccept : styles.historyReject} />
+                  <p><strong>{item.event}</strong><small>{item.decision === "accepted" ? "Accepted" : "Rejected"} · {item.country}</small></p>
+                </div>
+              ))}
             </div>
-            <b className={styles["status_" + selected.status]}>{statusLabels[selected.status]}</b>
+          ) : <p className={styles.emptyHistory}>No decisions yet.</p>}
+        </section>
+      ) : null}
+
+      {!current ? (
+        <section className={styles.doneCard}>
+          <div className={styles.doneIcon}>✓</div>
+          <p className={styles.eyebrow}>All caught up</p>
+          <h2>Daily review complete</h2>
+          <p>There are no more items waiting for a decision.</p>
+        </section>
+      ) : (
+        <section className={styles.reviewCard} key={current.id}>
+          <div className={styles.cardTop}>
+            <div>
+              <b className={styles["status_" + current.status]}>{statusLabels[current.status]}</b>
+              <p className={styles.changeLabel}>{current.change}</p>
+            </div>
+            <span className={styles.counter}>{INITIAL_ITEMS.length - pending.length + 1} / {INITIAL_ITEMS.length}</span>
+          </div>
+
+          <div className={styles.eventBlock}>
+            <p className={styles.eyebrow}>{current.competition}</p>
+            <h2>{current.event}</h2>
+            <p className={styles.country}>{current.country}</p>
           </div>
 
           <div className={styles.source}>
-            <span>Source</span><strong>{selected.source}</strong><small>Checked {selected.checkedAt}</small>
+            <span>Source</span>
+            <strong>{current.source}</strong>
+            <small>Checked {current.checkedAt}</small>
           </div>
 
           <div className={styles.compare}>
             <section>
-              <div className={styles.compareTitle}><span>Current WatchTVSport</span><small>Before</small></div>
-              {selected.before.map((line) => <p key={line}>{line}</p>)}
+              <div className={styles.compareTitle}><span>Current</span><small>WatchTVSport</small></div>
+              {current.before.map((line) => <p key={line}>{line}</p>)}
             </section>
-            <section>
-              <div className={styles.compareTitle}><span>Agent proposal</span><small>After</small></div>
-              {selected.after.map((line) => <p key={line}>{line}</p>)}
+            <div className={styles.arrow}>→</div>
+            <section className={styles.proposed}>
+              <div className={styles.compareTitle}><span>Proposed</span><small>Agent</small></div>
+              {current.after.map((line) => <p key={line}>{line}</p>)}
             </section>
           </div>
 
-          {selected.decision === "pending" ? (
-            <div className={styles.actions}>
-              <button className={styles.reject} onClick={() => decide(selected.id, "rejected")}>Reject</button>
-              <button className={styles.accept} onClick={() => decide(selected.id, "accepted")}>Accept change</button>
-            </div>
-          ) : (
-            <div className={styles.decided}>Decision recorded locally: <strong>{selected.decision}</strong></div>
-          )}
-        </aside>
-      </section>
+          <div className={styles.actions}>
+            <button className={styles.reject} onClick={() => decide("rejected")}>
+              <span aria-hidden="true">×</span> Reject
+            </button>
+            <button className={styles.skip} onClick={skip} disabled={pending.length < 2}>Skip</button>
+            <button className={styles.accept} onClick={() => decide("accepted")}>
+              <span aria-hidden="true">✓</span> Accept
+            </button>
+          </div>
 
-      <section className={styles.history}>
-        <div><p className={styles.eyebrow}>Audit trail</p><h2>Recent activity</h2></div>
-        <div className={styles.historyList}>
-          {items.filter((item) => item.decision !== "pending").map((item) => (
-            <div key={item.id}><span className={styles.historyDot} /><p><strong>{item.event}</strong><small>{item.decision === "accepted" ? "Accepted / verified" : "Rejected"} · {item.checkedAt}</small></p></div>
-          ))}
-        </div>
-      </section>
+          <p className={styles.hint}>After a decision, this card disappears and the next item appears automatically.</p>
+        </section>
+      )}
     </main>
   );
 }
