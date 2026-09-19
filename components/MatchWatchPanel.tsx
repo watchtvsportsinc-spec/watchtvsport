@@ -132,9 +132,13 @@ export default function MatchWatchPanel({
         >
           <span className="v2-match-broadcaster-country">{broadcast.countryName}</span>
           <span className="v2-match-broadcaster-service">
-            <BroadcasterLogo name={broadcast.broadcaster} />
-            {!hasLogo ? <strong>{broadcast.broadcaster}</strong> : null}
-            <small className={meta === "Language pending" ? "is-pending" : ""}>{meta}</small>
+            <span className="v2-match-broadcaster-logo-slot">
+              <BroadcasterLogo name={broadcast.broadcaster} />
+            </span>
+            <span className="v2-match-broadcaster-copy">
+              {!hasLogo ? <strong>{broadcast.broadcaster}</strong> : null}
+              <small className={meta === "Language pending" ? "is-pending" : ""}>{meta}</small>
+            </span>
           </span>
           <span className={broadcast.access === "Free" ? "v2-chip is-free" : "v2-chip is-paid"}>{broadcast.access}</span>
           <span className="v2-match-broadcaster-action">Official site <span aria-hidden="true">↗</span></span>
@@ -226,9 +230,13 @@ export default function MatchWatchPanel({
                 <>
                   <span className="v2-match-broadcaster-country">{right.countryName}</span>
                   <span className="v2-match-broadcaster-service">
-                    <BroadcasterLogo name={right.broadcaster} />
-                    {!hasLogo ? <strong>{right.broadcaster}</strong> : null}
-                    <small>{coverageLabel(right.coverageType)}</small>
+                    <span className="v2-match-broadcaster-logo-slot">
+                      <BroadcasterLogo name={right.broadcaster} />
+                    </span>
+                    <span className="v2-match-broadcaster-copy">
+                      {!hasLogo ? <strong>{right.broadcaster}</strong> : null}
+                      <small>{coverageLabel(right.coverageType)}</small>
+                    </span>
                   </span>
                   <span className={right.access === "Free" ? "v2-chip is-free" : right.access === "Paid" ? "v2-chip is-paid" : "v2-chip"}>
                     {right.access}
