@@ -41,14 +41,14 @@ const LIGHT_ON_DARK_COMPETITION_LOGOS=new Set([
   "copa-america",
 ]);
 
-const FOOTBALL_COMPETITION_IDENTITY_OVERRIDES:Record<string,{name?:string;logoUrl?:string;logoTone?:"default"|"light";logoVariant?:"default"|"cdf"}>={
+const FOOTBALL_COMPETITION_IDENTITY_OVERRIDES:Record<string,{name?:string;logoUrl?:string;logoTone?:"default"|"light";logoVariant?:"default"|"cdf"|"bundesliga"}>={
   "champions-league":{
     logoUrl:"https://assets.footylogos.com/logos/uefa-champions-league-symbol-white/uefa-champions-league-symbol-white-logo-footylogos.svg",
     logoTone:"default",
   },
   "europa-league":{
     logoUrl:"https://www.footylogos.com/downloads/logo/europa-league-symbol-logo-footylogos.svg",
-    logoTone:"default",
+    logoTone:"light",
   },
   "premier-league":{
     logoUrl:"https://logo.premierleague.com/img/lion-light.svg",
@@ -64,8 +64,9 @@ const FOOTBALL_COMPETITION_IDENTITY_OVERRIDES:Record<string,{name?:string;logoUr
     logoTone:"default",
   },
   "bundesliga":{
-    logoUrl:"https://commons.wikimedia.org/wiki/Special:FilePath/Bundesliga_logo_(2017).svg",
+    logoUrl:"https://assets.footylogos.com/logos/bundesliga-germany/bundesliga-germany-logo-footylogos.svg",
     logoTone:"default",
+    logoVariant:"bundesliga",
   },
   "coupe-de-france":{
     logoUrl:"https://foot-centre.fff.fr/wp-content/uploads/sites/9/2025/08/e200a7041387bf95d7d8cb417cbba561.png",
