@@ -91,3 +91,4 @@ a.participantCard:hover{border-color:rgba(90,176,255,.48);background:#0a2033}
 
 .competitionMarkLogo{border:0;background:transparent;padding:0;overflow:visible}
 .competitionMarkLogo img{display:block;width:100%;height:100%;object-fit:contain}
+.competitionMarkLight img{filter:brightness(0) invert(1);opacity:.98}
