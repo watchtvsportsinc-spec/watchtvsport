@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import LocalTime from "@/components/LocalTime";
-import FavoriteButton from "@/components/FavoriteButton";
 import SportHero from "@/components/SportHero";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 import {
@@ -44,12 +43,6 @@ type WeekendView = {
 function RaceCard({ item, completed = false }: { item: WeekendView; completed?: boolean }) {
   const { weekend, exactNext, confirmed, freeCountries, paidCountries } = item;
   const href = `/sports/motogp/grand-prix/${weekend.slug}`;
-  const favorite = {
-    kind: "group" as const,
-    entityId: `motogp-${weekend.slug}`,
-    label: weekend.name,
-    href,
-  };
   const accessOptions = [
     freeCountries > 0 ? "Free" : null,
     paidCountries > 0 ? "Paid" : null,
@@ -108,14 +101,12 @@ function RaceCard({ item, completed = false }: { item: WeekendView; completed?: 
       </Link>
 
       <div className="wts-ufc-event-actions">
-        <FavoriteButton compact favorite={favorite} />
         <Link
           className="wts-ufc-event-open"
           href={href}
           aria-label={`View ${weekend.name}`}
         >
-          <span>View event</span>
-          <b aria-hidden="true">›</b>
+          <span>View</span>
         </Link>
       </div>
     </article>
