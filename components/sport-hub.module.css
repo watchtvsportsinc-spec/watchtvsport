@@ -27,6 +27,17 @@ a.participantCard:hover{background:transparent;transform:translateY(-1px)}
 .participantVisual>span{width:72px!important;height:72px!important;max-width:72px!important;max-height:72px!important}
 .participantVisual>span[role="img"]{transform:none}
 .participantVisual>span[role="img"] img{width:70px!important;height:70px!important;max-width:70px!important;max-height:70px!important;object-fit:contain}
+.participantVisual>span[role="img"]{transform-origin:center}
+.participantVisual[data-logo-key="aek-athens"]>span[role="img"]{transform:scale(1.02)}
+.participantVisual[data-logo-key="arsenal"]>span[role="img"]{transform:scale(1)}
+.participantVisual[data-logo-key="aston-villa"]>span[role="img"]{transform:scale(1.04)}
+.participantVisual[data-logo-key="atletico-de-madrid"]>span[role="img"]{transform:scale(1)}
+.participantVisual[data-logo-key="bayern-munchen"]>span[role="img"]{transform:scale(1.22)}
+.participantVisual[data-logo-key="bodo-glimt"]>span[role="img"]{transform:scale(1)}
+.participantVisual[data-logo-key="borussia-dortmund"]>span[role="img"]{transform:scale(1.22)}
+.participantVisual[data-logo-key="club-brugge"]>span[role="img"]{transform:scale(1.08)}
+.participantVisual[data-logo-key="como"]>span[role="img"]{transform:scale(1.02)}
+.participantVisual[data-logo-key="barcelona"]>span[role="img"]{transform:scale(1.04)}
 .participantFlag{width:42px;height:29px;border-radius:4px;object-fit:cover;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
 .playerInitials{display:grid!important;width:44px!important;height:44px!important;place-items:center;border-radius:50%;background:linear-gradient(145deg,#143c62,#0b243b);color:#dff2ff;font-size:12px;font-weight:800}
 .participantCard>strong{align-self:end;overflow:hidden;font-size:11px;line-height:1.18;text-overflow:ellipsis;white-space:nowrap}
