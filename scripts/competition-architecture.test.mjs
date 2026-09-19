@@ -13,7 +13,8 @@ test("competition taxonomy preserves key product hierarchy", async () => {
   const { getCompetitionCatalogEntry, allCompetitionCatalogEntries } = await catalog();
   assert.equal(getCompetitionCatalogEntry("football", "champions-league")?.category, "continental");
   assert.equal(getCompetitionCatalogEntry("football", "mls")?.category, "domestic-league");
-  assert.equal(getCompetitionCatalogEntry("football", "ligue-1")?.displayName, "Ligue 1 McDonald's");
+  assert.equal(getCompetitionCatalogEntry("football", "ligue-1")?.displayName, "Ligue 1");
+  assert.ok(getCompetitionCatalogEntry("football", "ligue-1")?.aliases?.includes("Ligue 1 McDonald's"));
   assert.equal(getCompetitionCatalogEntry("football", "premier-league")?.displayName, "Premier League");
   assert.equal(getCompetitionCatalogEntry("football", "laliga")?.displayName, "LALIGA EA SPORTS");
   assert.equal(getCompetitionCatalogEntry("tennis", "roland-garros")?.category, "grand-slam");

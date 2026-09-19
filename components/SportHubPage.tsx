@@ -466,6 +466,8 @@ export default async function SportHubPage({sport,canonical}:{sport:string;canon
       <Link href="#competitions">Explore all competitions →</Link>
     </section>
 
+    <div hidden data-monetization-slot="sport-hub-top" />
+
     <section className={styles.directoryAbout}>
       <span>{cfg.about}</span>
     </section>

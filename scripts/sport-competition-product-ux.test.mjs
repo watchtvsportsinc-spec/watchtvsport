@@ -17,7 +17,7 @@ test("sport and competition pages keep TV discovery and monetization hooks", asy
   assert.match(sportHub, /data-monetization-slot="sport-hub-top"/);
   assert.match(competitionPage, /CompetitionSchedule/);
   assert.match(competitionPage, /data-monetization-slot="competition-top"/);
-  assert.match(f1, /confirmed listings/);
+  assert.match(f1, /coverageStatus === "confirmed"/);
   assert.match(raceSeries, /confirmed/);
 });
 
