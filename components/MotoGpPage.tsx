@@ -74,16 +74,15 @@ function RaceCard({ item, completed = false }: { item: WeekendView; completed?: 
         </div>
 
         <div className="wts-discovery-card-main">
-          <p className="wts-motorsport-row-kicker">
+          <h3 className="wts-motorsport-event-title">
             <img
               className="wts-motorsport-inline-flag"
               src={`/flags/${weekend.flagCode}.png`}
               alt=""
               aria-hidden="true"
             />
-            <span>MotoGP · {weekend.country}</span>
-          </p>
-          <h3>{weekend.name}</h3>
+            <span>{weekend.name}</span>
+          </h3>
           <span>
             {[weekend.venue, formatWeekend(weekend.weekendStart, weekend.weekendEnd), confirmed > 0 ? `${confirmed} confirmed TV options` : null]
               .filter(Boolean)
