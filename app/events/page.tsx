@@ -44,6 +44,18 @@ function firstValue(value: string | string[] | undefined): string {
   return Array.isArray(value) ? value[0] ?? "" : value ?? "";
 }
 
+function allValues(value: string | string[] | undefined): string[] {
+  const values = Array.isArray(value) ? value : value ? [value] : [];
+  return Array.from(
+    new Set(
+      values
+        .flatMap((item) => item.split(","))
+        .map((item) => item.trim().slice(0, 80))
+        .filter(Boolean)
+    )
+  );
+}
+
 function normalize(value: string): string {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 }
@@ -103,14 +115,18 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   const now = new Date();
   const from = new Date(now.getTime() - 12 * 60 * 60 * 1000).toISOString();
   const snapshot = await getPublicEventsSnapshot({ from, limit: 500 });
-  const options = getCalendarFilterOptions(snapshot.events);
+  const selectedSports = allValues(params.sport);
+  const optionEvents = selectedSports.length
+    ? snapshot.events.filter((event) => selectedSports.includes(event.sport))
+    : snapshot.events;
+  const options = getCalendarFilterOptions(optionEvents);
   const suggestions = buildSearchSuggestions(snapshot.events);
   const query = normalize(filters.query);
-  const state = { when, sport: filters.sport, competition: filters.competition, query: filters.query, timeZone: filters.timeZone };
+  const state = { when, sports: selectedSports, competition: filters.competition, query: filters.query, timeZone: filters.timeZone };
 
   const events = snapshot.events.filter((event) => {
     if (!inWindow(event, when, now, filters.timeZone)) return false;
-    if (filters.sport && event.sport !== filters.sport) return false;
+    if (selectedSports.length > 0 && !selectedSports.includes(event.sport)) return false;
     if (filters.competition && event.competitionSlug !== filters.competition) return false;
     if (!query) return true;
     const haystack = normalize([
@@ -138,7 +154,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         <p>All events</p>
         <h1>What's on now and next</h1>
         <span>Filter by time, sport or competition, then open a match to see broadcasters by country.</span>
-        <SearchAutocomplete defaultValue={filters.query} sport={filters.sport} competition={filters.competition} timeZone={filters.timeZone} suggestions={suggestions} searchPath="/events" />
+        <SearchAutocomplete defaultValue={filters.query} sport={selectedSports} competition={filters.competition} timeZone={filters.timeZone} suggestions={suggestions} searchPath="/events" />
       </header>
 
       <section id="sports-filters" className="wts-events-filters" aria-label="Event filters">
@@ -147,7 +163,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
         <form className="wts-competition-filter" action="/events" method="get">
           <input type="hidden" name="view" value="all" />
           {when !== "all" ? <input type="hidden" name="when" value={when} /> : null}
-          {filters.sport ? <input type="hidden" name="sport" value={filters.sport} /> : null}
+          {selectedSports.map((sport) => <input key={sport} type="hidden" name="sport" value={sport} />)}
           {filters.query ? <input type="hidden" name="q" value={filters.query} /> : null}
           {filters.timeZone !== "UTC" ? <input type="hidden" name="tz" value={filters.timeZone} /> : null}
           <select id="events-competition" name="competition" aria-label="Competition" defaultValue={filters.competition}>
@@ -155,7 +171,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
             {options.competitions.map((option) => <option value={option.value} key={option.value}>{option.label}</option>)}
           </select>
           <button type="submit">Apply</button>
-          {(filters.sport || filters.competition || filters.query || when !== "all") ? <Link href="/events">Clear</Link> : null}
+          {(selectedSports.length > 0 || filters.competition || filters.query || when !== "all") ? <Link href="/events">Clear</Link> : null}
         </form>
       </section>
 
