@@ -30,6 +30,16 @@ const DIRECTORY_SPORTS=new Set(["football","basketball","hockey","rugby","baseba
 const CATEGORY_ORDER:CompetitionCategory[]=["continental","domestic-league","domestic-cup","international","grand-slam","tour","league","championship","organization","other"];
 const CATEGORY_LABELS:Record<CompetitionCategory,string>={continental:"European & continental competitions","domestic-league":"Domestic leagues","domestic-cup":"Domestic cups",international:"International competitions","grand-slam":"Grand Slams",tour:"Tours & stage races",league:"Leagues",championship:"Championships",organization:"Organizations",other:"Other competitions"};
 
+const LIGHT_ON_DARK_COMPETITION_LOGOS=new Set([
+  "europa-league",
+  "conference-league",
+  "ligue-1",
+  "bundesliga",
+  "copa-del-rey",
+  "euro",
+  "copa-america",
+]);
+
 function competitionHref(sport:string,slug:string){return sport==="football"?`/football/competition/${slug}`:`/sports/${sport}/competition/${slug}`;}
 function dayKey(value:string|number|Date){return new Date(value).toISOString().slice(0,10);}
 function normalizeSlug(value:string){return value.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/&/g," and ").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");}
@@ -288,7 +298,7 @@ export default async function SportHubPage({sport,canonical}:{sport:string;canon
   const explorerItems:SportCompetitionExplorerItem[]=competitions.map(item=>{
     const filter=competitionFilter(sport,item.category,item.name,item.slug);
     const media=item.competitionId?competitionLogos[`competition:${item.competitionId}`]??competitionLogos[item.slug]:competitionLogos[item.slug];
-    return{...item,filterKey:filter.key,filterLabel:filter.label,sortPriority:item.sortPriority,logoUrl:media?.url};
+    return{...item,filterKey:filter.key,filterLabel:filter.label,sortPriority:item.sortPriority,logoUrl:media?.url,logoTone:LIGHT_ON_DARK_COMPETITION_LOGOS.has(item.slug)?"light":"default"};
   });
 
   const countryMap=new Map<string,{countryCode:string;countryName:string;broadcasters:Set<string>;competitions:Set<string>;listings:number}>();
