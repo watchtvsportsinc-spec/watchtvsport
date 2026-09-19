@@ -189,7 +189,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
             {events.map((event) => {
               const access = accessLabel(event);
               return <article className="wts-schedule-row" key={event.id}>
-                <div className="wts-schedule-competition"><b aria-hidden="true">{sportGlyph(event.sport)}</b><span><strong>{getSportLabel(event.sport)}</strong><small>{event.competition}</small></span></div>
+                <div className="wts-schedule-competition"><b aria-hidden="true">{sportGlyph(event.sport)}</b><span><strong>{getSportLabel(event.sport)}</strong>{normalize(event.competition) !== normalize(getSportLabel(event.sport)) ? <small>{event.competition}</small> : null}</span></div>
                 <div className="wts-schedule-event"><strong>{event.title}{event.status === "live" ? <span className={styles.liveDot} aria-label="Live" /> : null}</strong><small>{event.stage ?? event.venue ?? "Event"}</small></div>
                 <div className="wts-schedule-time"><strong>{event.status === "live" ? "Live now" : formatCalendarTime(event.eventDate, filters.timeZone)}</strong><small>{new Intl.DateTimeFormat("en", { weekday: "short", month: "short", day: "numeric", timeZone: filters.timeZone }).format(new Date(event.eventDate))}</small></div>
                 <div className={`wts-access-pill ${access === "Free" ? "is-free" : access === "Paid" ? "is-paid" : "is-tbc"}`}>{access}</div>
