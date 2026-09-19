@@ -63,7 +63,12 @@ function eventMetadata(event: EventData, canonicalPath: string): Metadata {
   };
 }
 
-async function findEventById(eventId: string): Promise<EventData | null> {
+async function findEventById(eventId: string, slug?: string): Promise<EventData | null> {
+  if (slug) {
+    const targeted = await getPublicEventsSnapshot({ slug, limit: 100 });
+    const exact = targeted.events.find((item) => item.id === eventId);
+    if (exact) return exact;
+  }
   const snapshot = await getPublicEventsSnapshot({ limit: 500 });
   return snapshot.events.find((item) => item.id === eventId) ?? null;
 }
@@ -76,7 +81,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   if (matchup) return fixtureMetadata(matchup);
 
   if (eventId) {
-    const exactEvent = await findEventById(eventId);
+    const exactEvent = await findEventById(eventId, slug);
     if (exactEvent) return eventMetadata(exactEvent, `/event/${slug}?event=${encodeURIComponent(eventId)}`);
     return { title: "Event not found", robots: { index: false, follow: false } };
   }
@@ -98,7 +103,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   if (matchup) return <PermanentFixturePage fixture={matchup} />;
 
   if (eventId) {
-    const exactEvent = await findEventById(eventId);
+    const exactEvent = await findEventById(eventId, slug);
     if (exactEvent) return <UniversalEventPage slug={exactEvent.slug} />;
     notFound();
   }
