@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import LocalTime from "@/components/LocalTime";
-import ParticipantSportVisual from "@/components/ParticipantSportVisual";
+import ParticipantLogo from "@/components/ParticipantLogo";
 import type { ParticipantVisualProfile } from "@/lib/participant-visuals";
 import backgroundStyles from "./match-hero-backgrounds.module.css";
 
@@ -10,6 +10,7 @@ type MatchHeroTeam = {
   href?: string | null;
   countryCode?: string;
   visual?: ParticipantVisualProfile | null;
+  logoUrl?: string | null;
 };
 
 type Props = {
@@ -29,9 +30,10 @@ type Props = {
 function TeamBlock({ sport, team }: { sport: string; team: MatchHeroTeam }) {
   const content = (
     <>
-      <ParticipantSportVisual
+      <ParticipantLogo
         sport={sport}
         label={team.name}
+        logoUrl={team.logoUrl}
         countryCode={team.countryCode}
         visual={team.visual}
         size="lg"
