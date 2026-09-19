@@ -1,10 +1,11 @@
 import Link from "next/link";
 import LocalTime from "@/components/LocalTime";
-import ParticipantSportVisual from "@/components/ParticipantSportVisual";
+import ParticipantLogo from "@/components/ParticipantLogo";
 import { resolveClubSlug } from "@/lib/club-aliases";
 import type { EventData, Participant } from "@/lib/events";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 import { getPublicParticipantProfile } from "@/lib/participant-profiles";
+import { getApprovedMediaAssets } from "@/lib/public-media-assets";
 
 type CurrentParticipant = {
   id?: string;
@@ -92,7 +93,10 @@ export default async function MatchNextGames({
   if (events.length === 0) return null;
 
   const clubSlugs = Array.from(new Set(events.flatMap((event) => [participantSlug(event.participant1), participantSlug(event.participant2)].filter((slug): slug is string => Boolean(slug)))));
-  const profileEntries = await Promise.all(clubSlugs.map(async (slug) => [slug, await getPublicParticipantProfile(slug, sport)] as const));
+  const [profileEntries,teamLogos] = await Promise.all([
+    Promise.all(clubSlugs.map(async (slug) => [slug, await getPublicParticipantProfile(slug, sport)] as const)),
+    getApprovedMediaAssets("participant","team_logo",clubSlugs),
+  ]);
   const profiles = new Map(profileEntries);
 
   function Team({ participant, side }: { participant?: Participant; side: "left" | "right" }) {
@@ -103,9 +107,9 @@ export default async function MatchNextGames({
     const visual = participant.visualProfile ?? (slug ? profiles.get(slug)?.visual : null);
     return (
       <span className={`v2-match-next-team is-${side}`}>
-        {side === "left" ? <ParticipantSportVisual sport={sport} label={participant.name} countryCode={participant.countryCode} visual={visual} size="sm" /> : null}
+        {side === "left" ? <ParticipantLogo sport={sport} label={participant.name} logoUrl={slug?teamLogos[slug]?.url:undefined} countryCode={participant.countryCode} visual={visual} size="sm" /> : null}
         <strong>{participant.name}</strong>
-        {side === "right" ? <ParticipantSportVisual sport={sport} label={participant.name} countryCode={participant.countryCode} visual={visual} size="sm" /> : null}
+        {side === "right" ? <ParticipantLogo sport={sport} label={participant.name} logoUrl={slug?teamLogos[slug]?.url:undefined} countryCode={participant.countryCode} visual={visual} size="sm" /> : null}
       </span>
     );
   }
