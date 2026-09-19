@@ -912,25 +912,36 @@
   width:auto;
   height:auto;
   max-width:82px;
-  max-height:20px;
+  max-height:21px;
   object-fit:contain;
   transform-origin:center;
 }
-.wts-event-broadcaster-logo-slot[data-broadcaster="Sportsnet"] img,
+
+/* Optical normalization: source SVGs have very different aspect ratios and internal whitespace.
+   These scales equalize perceived logo size rather than raw SVG box size. */
+.wts-event-broadcaster-logo-slot[data-broadcaster="Sportsnet"] img{
+  transform:scale(1.18);
+}
 .wts-event-broadcaster-logo-slot[data-broadcaster="TVA Sports"] img{
+  transform:scale(1.20);
+}
+.wts-event-broadcaster-logo-slot[data-broadcaster="UFC Fight Pass"] img{
+  transform:scale(1.22);
+}
+.wts-event-broadcaster-logo-slot[data-broadcaster="UFC Pay-Per-View"] img,
+.wts-event-broadcaster-logo-slot[data-broadcaster="UFC PPV"] img{
+  transform:scale(1.08);
+}
+.wts-event-broadcaster-logo-slot[data-broadcaster="RMC Sport"] img{
+  transform:scale(1.20);
+}
+.wts-event-broadcaster-logo-slot[data-broadcaster="TNT Sports"] img,
+.wts-event-broadcaster-logo-slot[data-broadcaster="TNT Sports Box Office"] img{
   transform:scale(1.10);
 }
 .wts-event-broadcaster-logo-slot[data-broadcaster="CBS"] img,
-.wts-event-broadcaster-logo-slot[data-broadcaster="CBS Sports"] img,
-.wts-event-broadcaster-logo-slot[data-broadcaster="TNT Sports"] img,
-.wts-event-broadcaster-logo-slot[data-broadcaster="TNT Sports Box Office"] img{
-  transform:scale(1.06);
-}
-.wts-event-broadcaster-logo-slot[data-broadcaster="UFC Fight Pass"] img,
-.wts-event-broadcaster-logo-slot[data-broadcaster="UFC Pay-Per-View"] img,
-.wts-event-broadcaster-logo-slot[data-broadcaster="UFC PPV"] img,
-.wts-event-broadcaster-logo-slot[data-broadcaster="RMC Sport"] img{
-  transform:scale(1.04);
+.wts-event-broadcaster-logo-slot[data-broadcaster="CBS Sports"] img{
+  transform:scale(1.00);
 }
 .wts-event-broadcast-copy{
   display:grid;
