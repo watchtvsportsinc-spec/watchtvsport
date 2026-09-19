@@ -110,3 +110,22 @@ a.participantCard:hover{background:transparent;transform:translateY(-1px)}
   .competitionMarkLogo{width:54px;height:54px}
   .competitionMarkLogo img{max-width:48px;max-height:48px}
 }
+
+.competitionMarkCdf{position:relative;overflow:hidden}
+.competitionMarkCdf img{
+  position:absolute;
+  width:316px!important;
+  height:auto!important;
+  max-width:none!important;
+  max-height:none!important;
+  left:-123px;
+  top:-25px;
+  filter:none!important;
+}
+@media(max-width:720px){
+  .competitionMarkCdf img{
+    width:252px!important;
+    left:-99px;
+    top:-20px;
+  }
+}
