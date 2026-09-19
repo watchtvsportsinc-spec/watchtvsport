@@ -1,0 +1,39 @@
+name: Sync team logos
+
+on:
+  push:
+    branches:
+      - refonte/watchtvsport-v2
+    paths:
+      - data/team-logo-sources.json
+      - scripts/sync-team-logos.mjs
+      - .github/workflows/sync-team-logos.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refonte/watchtvsport-v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Download and validate official team logos
+        run: node scripts/sync-team-logos.mjs
+      - name: Commit downloaded assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/team-logos data/team-logos.json
+          if git diff --cached --quiet; then
+            echo "No team-logo changes"
+          else
+            git commit -m "Sync official team logos"
+            git push origin HEAD:refonte/watchtvsport-v2
+          fi
