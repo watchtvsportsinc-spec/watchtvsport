@@ -48,7 +48,7 @@
       "CBS Sports"
     ],
     "compact": true,
-    "darkStyle": "brand"
+    "darkStyle": "invert"
   },
   "dazn": {
     "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/dazn.svg",
@@ -134,16 +134,18 @@
       "Sportsnet"
     ],
     "compact": true,
-    "darkStyle": "brand"
+    "darkStyle": "invert"
   },
   "tnt-sports": {
     "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/tnt-sports.svg",
     "sourceUrl": "https://www.tntsports.co.uk/",
     "aliases": [
-      "TNT Sports"
+      "TNT Sports",
+      "TNT Sports Box Office",
+      "TNT Sports BoxOffice"
     ],
     "compact": true,
-    "darkStyle": "brand"
+    "darkStyle": "invert"
   },
   "tsn": {
     "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/tsn.svg",
@@ -170,7 +172,7 @@
       "TVA Sports"
     ],
     "compact": true,
-    "darkStyle": "brand"
+    "darkStyle": "invert"
   },
   "ufc-fight-pass": {
     "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/ufc-fight-pass.svg",
