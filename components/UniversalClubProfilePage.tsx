@@ -5,11 +5,12 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import FavoriteButton from "@/components/FavoriteButton";
 import FavoriteAwareClubMatch from "@/components/FavoriteAwareClubMatch";
 import LocalTime from "@/components/LocalTime";
-import ParticipantSportVisual from "@/components/ParticipantSportVisual";
+import ParticipantLogo from "@/components/ParticipantLogo";
 import { resolveClubSlug } from "@/lib/club-aliases";
 import type { EventData, Participant } from "@/lib/events";
 import type { FavoriteCandidate } from "@/lib/favorites";
 import { getPublicParticipantEvents } from "@/lib/public-participant-events";
+import { getApprovedMediaAssets } from "@/lib/public-media-assets";
 import { getPublicParticipantProfile } from "@/lib/participant-profiles";
 import { evaluateSeoEligibility, indexableRobots } from "@/lib/seo-indexability";
 import { getSportBySlug, getSportLabel, sportAllowsParticipantPages } from "@/lib/sports-registry";
@@ -29,6 +30,16 @@ function participantMatches(participant: Participant | undefined, participantId:
 function participantSlug(participant?: Participant): string | null {
   if (!participant || participant.type !== "club") return null;
   return participant.slug || resolveClubSlug(participant.name);
+}
+
+function participantLogoKey(participant?: Participant): string | null {
+  if (!participant) return null;
+  if (participant.slug) return participant.slug;
+  if (participant.id.includes(":")) {
+    const value = participant.id.split(":").at(-1);
+    if (value) return value;
+  }
+  return normalizedSlug(participant.name);
 }
 
 function favoriteParticipantId(sport: string, participant?: Participant): string | null {
@@ -198,10 +209,13 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
     [...upcoming, ...recent].flatMap((event) => [participantSlug(event.participant1), participantSlug(event.participant2)]
       .filter((slug): slug is string => Boolean(slug))),
   ));
-  const profileEntries = await Promise.all(
-    clubSlugs.map(async (slug) => [slug, await getPublicParticipantProfile(slug, sport)] as const),
-  );
+  const participantLogoKeys = Array.from(new Set([club, ...clubSlugs]));
+  const [profileEntries, participantLogos] = await Promise.all([
+    Promise.all(clubSlugs.map(async (slug) => [slug, await getPublicParticipantProfile(slug, sport)] as const)),
+    getApprovedMediaAssets("participant", "team_logo", participantLogoKeys),
+  ]);
   const participantProfiles = new Map(profileEntries);
+  const clubLogoUrl = participantLogos[club]?.url;
 
   function visualForParticipant(participant?: Participant) {
     if (!participant) return null;
@@ -209,6 +223,11 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
     if (participantMatches(participant, verifiedParticipantId, club)) return verifiedVisual;
     const slug = participantSlug(participant);
     return slug ? participantProfiles.get(slug)?.visual ?? null : null;
+  }
+
+  function logoForParticipant(participant?: Participant) {
+    const key = participantLogoKey(participant);
+    return key ? participantLogos[key]?.url : undefined;
   }
 
   const teamJsonLd = {
@@ -254,7 +273,7 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
 
         <div className={styles.heroMain}>
           <div className={styles.crest} aria-label={`${clubName} team visual`}>
-            <ParticipantSportVisual sport={sport} label={clubName} countryCode={profile?.countryCode} visual={verified.visual} size="hero" />
+            <ParticipantLogo sport={sport} label={clubName} logoUrl={clubLogoUrl} countryCode={profile?.countryCode} visual={verified.visual} size="hero" />
           </div>
 
           <div className={styles.identity}>
@@ -326,7 +345,7 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
                 <FavoriteAwareClubMatch key={event.id} teams={favoriteTeams} isNext={index === 0}>
                   <Link href={event.detailPath} className={styles.matchRow}>
                     <span className={`${styles.matchTeam} ${styles.matchTeamLeft}`}>
-                      {event.participant1 ? <ParticipantSportVisual sport={sport} label={event.participant1.name} countryCode={event.participant1.countryCode} visual={visualForParticipant(event.participant1)} size="sm" /> : <span className={styles.matchTbc}>?</span>}
+                      {event.participant1 ? <ParticipantLogo sport={sport} label={event.participant1.name} logoUrl={logoForParticipant(event.participant1)} countryCode={event.participant1.countryCode} visual={visualForParticipant(event.participant1)} size="sm" /> : <span className={styles.matchTbc}>?</span>}
                       <strong>{event.participant1?.name ?? "TBC"}</strong>
                     </span>
 
@@ -341,7 +360,7 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
 
                     <span className={`${styles.matchTeam} ${styles.matchTeamRight}`}>
                       <strong>{event.participant2?.name ?? "TBC"}</strong>
-                      {event.participant2 ? <ParticipantSportVisual sport={sport} label={event.participant2.name} countryCode={event.participant2.countryCode} visual={visualForParticipant(event.participant2)} size="sm" /> : <span className={styles.matchTbc}>?</span>}
+                      {event.participant2 ? <ParticipantLogo sport={sport} label={event.participant2.name} logoUrl={logoForParticipant(event.participant2)} countryCode={event.participant2.countryCode} visual={visualForParticipant(event.participant2)} size="sm" /> : <span className={styles.matchTbc}>?</span>}
                     </span>
 
                     <span className={styles.matchAccess} aria-label={access.count ? `${access.count} confirmed broadcaster${access.count === 1 ? "" : "s"}` : "Broadcasters to be confirmed"}>
@@ -366,7 +385,7 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
             {recent.map((event) => (
               <Link href={event.detailPath} key={event.id} className={styles.recentRow}>
                 <span className={`${styles.recentTeam} ${styles.recentTeamLeft}`}>
-                  {event.participant1 ? <ParticipantSportVisual sport={sport} label={event.participant1.name} countryCode={event.participant1.countryCode} visual={visualForParticipant(event.participant1)} size="sm" /> : null}
+                  {event.participant1 ? <ParticipantLogo sport={sport} label={event.participant1.name} logoUrl={logoForParticipant(event.participant1)} countryCode={event.participant1.countryCode} visual={visualForParticipant(event.participant1)} size="sm" /> : null}
                   <strong>{event.participant1?.name ?? "TBC"}</strong>
                 </span>
                 <span className={styles.recentMeta}>
@@ -375,7 +394,7 @@ export default async function UniversalClubProfilePage({ sport, club }: { sport:
                 </span>
                 <span className={`${styles.recentTeam} ${styles.recentTeamRight}`}>
                   <strong>{event.participant2?.name ?? "TBC"}</strong>
-                  {event.participant2 ? <ParticipantSportVisual sport={sport} label={event.participant2.name} countryCode={event.participant2.countryCode} visual={visualForParticipant(event.participant2)} size="sm" /> : null}
+                  {event.participant2 ? <ParticipantLogo sport={sport} label={event.participant2.name} logoUrl={logoForParticipant(event.participant2)} countryCode={event.participant2.countryCode} visual={visualForParticipant(event.participant2)} size="sm" /> : null}
                 </span>
                 <span className={styles.matchArrow} aria-hidden="true">›</span>
               </Link>
