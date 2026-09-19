@@ -1239,8 +1239,9 @@
 .wts-motorsport-event-row .wts-ufc-event-actions{
   min-width:0;
   justify-content:flex-end;
-  gap:6px;
-  padding:8px 10px 8px 4px;
+  gap:5px;
+  padding:8px 8px 8px 4px;
+  border-left:0;
 }
 .wts-motorsport-event-row .wts-result-access-stack{
   display:grid;
@@ -1255,22 +1256,23 @@
   font-weight:700;
 }
 .wts-motorsport-event-row .wts-ufc-event-open{
-  width:58px;
-  min-width:58px;
-  height:32px;
-  border-radius:9px;
-  padding:0 8px;
-  font-size:9.5px;
+  width:50px;
+  min-width:50px;
+  height:30px;
+  border-radius:8px;
+  padding:0 6px;
+  font-size:9px;
   font-weight:800;
 }
 .wts-motorsport-event-row .wts-ufc-event-open span{
   display:inline !important;
-  font-size:9.5px;
+  font-size:9px;
 }
 @media(max-width:760px){
   .wts-motorsport-event-row .wts-ufc-event-actions{
     gap:4px;
-    padding:5px 5px 5px 2px;
+    padding:5px 4px 5px 2px;
+    border-left:0;
   }
   .wts-motorsport-event-row .wts-result-access{
     min-height:19px;
@@ -1278,16 +1280,16 @@
     font-size:7px;
   }
   .wts-motorsport-event-row .wts-ufc-event-open{
-    width:54px;
-    min-width:54px;
-    height:32px;
-    padding:0 7px;
-    border-radius:9px;
-    font-size:9px;
+    width:46px;
+    min-width:46px;
+    height:28px;
+    padding:0 5px;
+    border-radius:8px;
+    font-size:8.5px;
   }
   .wts-motorsport-event-row .wts-ufc-event-open span{
     display:inline !important;
-    font-size:9px;
+    font-size:8.5px;
   }
 }
 @media(max-width:390px){
@@ -1296,13 +1298,13 @@
     padding-right:4px;
   }
   .wts-motorsport-event-row .wts-ufc-event-open{
-    width:50px;
-    min-width:50px;
-    height:30px;
-    padding:0 6px;
-    font-size:8.5px;
+    width:44px;
+    min-width:44px;
+    height:27px;
+    padding:0 5px;
+    font-size:8px;
   }
   .wts-motorsport-event-row .wts-ufc-event-open span{
-    font-size:8.5px;
+    font-size:8px;
   }
 }
