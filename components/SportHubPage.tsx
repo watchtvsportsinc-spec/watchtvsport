@@ -35,6 +35,7 @@ const LIGHT_ON_DARK_COMPETITION_LOGOS=new Set([
   "conference-league",
   "ligue-1",
   "bundesliga",
+  "fa-cup",
   "copa-del-rey",
   "euro",
   "copa-america",
