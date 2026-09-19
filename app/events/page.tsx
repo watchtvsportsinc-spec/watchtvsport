@@ -9,7 +9,6 @@ import { getClubSearchNames, resolveClubName } from "@/lib/club-aliases";
 import type { EventData } from "@/lib/events";
 import type { FavoriteCandidate } from "@/lib/favorites";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
-import { getApprovedMediaAssets } from "@/lib/public-media-assets";
 import { buildSearchSuggestions } from "@/lib/search-suggestions";
 import { getSportLabel } from "@/lib/sports-registry";
 import styles from "./events-page.module.css";
@@ -125,8 +124,6 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   const now = new Date();
   const from = new Date(now.getTime() - 12 * 60 * 60 * 1000).toISOString();
   const snapshot = await getPublicEventsSnapshot({ from, limit: 500 });
-  const competitionLogoKeys = Array.from(new Set(snapshot.events.map((event) => event.competitionSlug).filter(Boolean)));
-  const competitionLogos = await getApprovedMediaAssets("competition", "competition_logo", competitionLogoKeys);
   const options = getCalendarFilterOptions(snapshot.events);
   const suggestions = buildSearchSuggestions(snapshot.events);
   const query = normalize(filters.query);
@@ -192,19 +189,7 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
             {events.map((event) => {
               const access = accessLabel(event);
               return <article className="wts-schedule-row" key={event.id}>
-                <div className="wts-schedule-competition">
-                  <b aria-hidden="true">{sportGlyph(event.sport)}</b>
-                  <span>
-                    <strong>{getSportLabel(event.sport)}</strong>
-                    {competitionLogos[event.competitionSlug]?.url ? (
-                      <span className={styles.competitionLogo} role="img" aria-label={event.competition} title={event.competition}>
-                        <img src={competitionLogos[event.competitionSlug].url} alt="" aria-hidden="true" loading="lazy" />
-                      </span>
-                    ) : (
-                      <small>{event.competition}</small>
-                    )}
-                  </span>
-                </div>
+                <div className="wts-schedule-competition"><b aria-hidden="true">{sportGlyph(event.sport)}</b><span><strong>{getSportLabel(event.sport)}</strong>{normalize(event.competition) !== normalize(getSportLabel(event.sport)) ? <small>{event.competition}</small> : null}</span></div>
                 <div className="wts-schedule-event"><strong>{event.title}{event.status === "live" ? <span className={styles.liveDot} aria-label="Live" /> : null}</strong><small>{event.stage ?? event.venue ?? "Event"}</small></div>
                 <div className="wts-schedule-time"><strong>{event.status === "live" ? "Live now" : formatCalendarTime(event.eventDate, filters.timeZone)}</strong><small>{new Intl.DateTimeFormat("en", { weekday: "short", month: "short", day: "numeric", timeZone: filters.timeZone }).format(new Date(event.eventDate))}</small></div>
                 <div className={`wts-access-pill ${access === "Free" ? "is-free" : access === "Paid" ? "is-paid" : "is-tbc"}`}>{access}</div>
