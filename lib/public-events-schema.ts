@@ -122,6 +122,7 @@ function parseParticipant(value: unknown, field: string): Participant | undefine
   }
   return {
     id: requiredString(value.id, `${field}.id`, 180),
+    slug: optionalSlug(value.slug, `${field}.slug`),
     name: requiredString(value.name, `${field}.name`, 200),
     shortName: optionalString(value.shortName, `${field}.shortName`, 80),
     type: type as Participant["type"],
