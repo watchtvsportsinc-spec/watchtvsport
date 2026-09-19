@@ -83,7 +83,7 @@ const statusLabels: Record<ReviewStatus, string> = {
 
 export default function VerificationPage() {
   const [items, setItems] = useState(INITIAL_ITEMS);
-  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);\n  const [lastDecisionId, setLastDecisionId] = useState<string | null>(null);
 
   const pending = useMemo(() => items.filter((item) => item.decision === "pending"), [items]);
   const current = pending[0];
@@ -97,7 +97,7 @@ export default function VerificationPage() {
     );
   }
 
-  function skip() {
+  function undoLastDecision() {\n    if (!lastDecisionId) return;\n    setItems((existing) => existing.map((item) =>\n      item.id === lastDecisionId ? { ...item, decision: "pending" } : item\n    ));\n    setLastDecisionId(null);\n    setHistoryOpen(false);\n  }\n\n  function skip() {
     if (!current || pending.length < 2) return;
     setItems((existing) => {
       const index = existing.findIndex((item) => item.id === current.id);
@@ -130,7 +130,7 @@ export default function VerificationPage() {
         <div className={styles.progressTrack}><span style={{ width: `${progress}%` }} /></div>
       </section>
 
-      <div className={styles.demoNotice}>Preview only · actions are local and do not write to Supabase yet.</div>
+      <div className={styles.demoNotice}>Preview only · actions are local and do not write to Supabase yet.</div>\n\n      {lastDecisionId ? (\n        <button className={styles.undoButton} onClick={undoLastDecision}>\n          <span aria-hidden="true">↶</span> Undo last decision\n        </button>\n      ) : null}
 
       {historyOpen ? (
         <section className={styles.historyPanel}>
