@@ -203,6 +203,9 @@ export default async function Formula1Page() {
                       </span>
                     </div>
 
+                  </Link>
+
+                  <div className="wts-ufc-event-actions">
                     <span className="wts-result-access-stack">
                       {accessOptions.length > 0 ? (
                         accessOptions.map((access) => (
@@ -217,9 +220,6 @@ export default async function Formula1Page() {
                         <span className="wts-result-access is-tbc">TV TBC</span>
                       )}
                     </span>
-                  </Link>
-
-                  <div className="wts-ufc-event-actions">
                     <Link
                       className="wts-ufc-event-open"
                       href={href}
