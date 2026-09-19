@@ -1,6 +1,8 @@
+import type { CSSProperties } from "react";
 import FavoriteButton from "@/components/FavoriteButton";
 import LocalTime from "@/components/LocalTime";
 import type { FavoriteCandidate } from "@/lib/favorites";
+import { UFC_HERO_BACKDROP, UFC_HERO_POSITION } from "@/lib/ufc-branding";
 
 export type CombatEventSession = {
   id: string;
@@ -57,6 +59,10 @@ export default function CombatEventHero({
     <section
       className="v2-calendar-hero wts-combat-event-hero"
       aria-labelledby="combat-event-title"
+      style={{
+        "--wts-combat-hero-image": `url('${UFC_HERO_BACKDROP}')`,
+        "--wts-combat-hero-position": UFC_HERO_POSITION,
+      } as CSSProperties}
     >
       <div className="wts-combat-hero-header">
         <div>

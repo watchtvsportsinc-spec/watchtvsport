@@ -12,12 +12,13 @@ import type { ParticipantVisualProfile } from "@/lib/participant-visuals";
 import { getPublicCompetition } from "@/lib/public-competition";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 import { getApprovedMediaAssets } from "@/lib/public-media-assets";
+import { UFC_HERO_BACKDROP } from "@/lib/ufc-branding";
 import { evaluateSeoEligibility, indexableRobots } from "@/lib/seo-indexability";
 import { getSportLabel } from "@/lib/sports-registry";
 import styles from "./competition-page.module.css";
 
 type TeamLink={name:string;slug:string;visual?:ParticipantVisualProfile;countryCode?:string;type:"club"|"national_team"};
-const BACKDROPS:Record<string,string>={football:"/sports/football.webp",basketball:"/sports/basketball.webp",hockey:"/sports/hockey.webp",tennis:"/sports/tennis.webp","formula-1":"/sports/formula-1.webp",motogp:"/sports/motogp.webp",ufc:"/sports/ufc.webp",rugby:"/sports/all-sports.webp",baseball:"/sports/all-sports.webp","american-football":"/sports/all-sports.webp",cycling:"/sports/all-sports.webp"};
+const BACKDROPS:Record<string,string>={football:"/sports/football.webp",basketball:"/sports/basketball.webp",hockey:"/sports/hockey.webp",tennis:"/sports/tennis.webp","formula-1":"/sports/formula-1.webp",motogp:"/sports/motogp.webp",ufc:UFC_HERO_BACKDROP,rugby:"/sports/all-sports.webp",baseball:"/sports/all-sports.webp","american-football":"/sports/all-sports.webp",cycling:"/sports/all-sports.webp"};
 function slugify(value:string){return value.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/&/g," and ").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");}
 function eventParticipantKey(participant?:{id:string;slug?:string;name:string}){if(!participant)return undefined;if(participant.slug)return participant.slug;if(participant.id.includes(":"))return participant.id.split(":").at(-1);return slugify(participant.name);}
 export function competitionPath(sport:string,competition:string){return sport==="football"?`/football/competition/${competition}`:`/sports/${sport}/competition/${competition}`;}

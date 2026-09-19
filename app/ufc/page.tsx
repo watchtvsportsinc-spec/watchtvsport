@@ -4,6 +4,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import UfcEventGrid, { type UfcHubCard } from "@/components/UfcEventGrid";
 import SportHero from "@/components/SportHero";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
+import { UFC_HERO_BACKDROP, UFC_HERO_POSITION } from "@/lib/ufc-branding";
 import styles from "@/components/sport-hub.module.css";
 
 export const metadata: Metadata = {
@@ -140,9 +141,9 @@ export default async function UfcPage() {
         eyebrow="Combat sports · Organization"
         title="UFC"
         description="Upcoming numbered events and Fight Nights, grouped as complete cards with their published sessions and verified official viewing options."
-        backdrop="/ufc-arena-bg.webp"
+        backdrop={UFC_HERO_BACKDROP}
         titleId="ufc-title"
-        backgroundPosition="center center"
+        backgroundPosition={UFC_HERO_POSITION}
         stats={heroStats}
       />
 
