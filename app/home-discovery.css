@@ -1231,3 +1231,58 @@
     font-size:15px;
   }
 }
+
+
+/* F1 + MotoGP list actions: no favorite, one larger View button */
+.wts-motorsport-event-row .wts-ufc-event-actions{
+  min-width:118px;
+  justify-content:center;
+  padding:8px 10px;
+}
+.wts-motorsport-event-row .wts-ufc-event-open{
+  width:108px;
+  min-width:108px;
+  height:44px;
+  border-radius:12px;
+  padding:0 14px;
+  font-size:12px;
+  font-weight:950;
+}
+.wts-motorsport-event-row .wts-ufc-event-open span{
+  display:inline !important;
+  font-size:12px;
+}
+@media(max-width:760px){
+  .wts-motorsport-event-row .wts-ufc-event-actions{
+    min-width:88px;
+    padding:5px 6px 5px 3px;
+  }
+  .wts-motorsport-event-row .wts-ufc-event-open{
+    width:82px;
+    min-width:82px;
+    height:40px;
+    padding:0 10px;
+    border-radius:11px;
+    font-size:11px;
+  }
+  .wts-motorsport-event-row .wts-ufc-event-open span{
+    display:inline !important;
+    font-size:11px;
+  }
+}
+@media(max-width:390px){
+  .wts-motorsport-event-row .wts-ufc-event-actions{
+    min-width:76px;
+    padding-right:4px;
+  }
+  .wts-motorsport-event-row .wts-ufc-event-open{
+    width:72px;
+    min-width:72px;
+    height:38px;
+    padding:0 8px;
+    font-size:10px;
+  }
+  .wts-motorsport-event-row .wts-ufc-event-open span{
+    font-size:10px;
+  }
+}
