@@ -21,16 +21,17 @@ function countryFlag(countryCode: string): string {
 function BroadcasterLogo({ name }: { name: string }) {
   const logo = getBroadcasterLogo(name);
   return (
-    <span className={styles.logo} aria-hidden="true">
+    <span className={styles.logo} role="img" aria-label={logo ? name : `${name} initials`}>
       {logo ? (
         <img
           src={logo.src}
           alt=""
+          aria-hidden="true"
           loading="lazy"
           style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
         />
       ) : (
-        <span>{broadcasterInitials(name)}</span>
+        <span aria-hidden="true">{broadcasterInitials(name)}</span>
       )}
     </span>
   );
@@ -186,11 +187,12 @@ export default function MatchBroadcastOffers({ event, selectedCountry, selectedA
                   const href = broadcast.affiliateUrl ?? broadcast.url;
                   const key = [broadcast.countryCode, broadcast.broadcaster, href, broadcast.access].join("|");
                   const language = compactLanguages(broadcast.commentaryLanguages);
+                  const hasLogo = Boolean(getBroadcasterLogo(broadcast.broadcaster));
                   return (
                     <article className={styles.offer} key={key}>
                       <BroadcasterLogo name={broadcast.broadcaster} />
                       <div className={styles.offerMain}>
-                        <h4>{broadcast.broadcaster}</h4>
+                        {!hasLogo ? <h4>{broadcast.broadcaster}</h4> : null}
                         <p className={styles.coverageFull}>{coverageLabel(broadcast)}</p>
                         {broadcast.commentaryLanguages?.length ? (
                           <p className={styles.detail}>Commentary: {broadcast.commentaryLanguages.join(", ")}</p>
