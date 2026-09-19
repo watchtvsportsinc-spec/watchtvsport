@@ -86,3 +86,5 @@ a.participantCard:hover{border-color:rgba(90,176,255,.48);background:#0a2033}
   .directoryCta>div span{font-size:8.5px}
   .directoryCta>a{grid-column:1 / -1;justify-content:center;width:100%;min-height:34px}
 }
+
+.competitionMark img{display:block;width:88%;height:88%;object-fit:contain}
