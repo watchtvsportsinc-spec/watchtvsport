@@ -11,6 +11,10 @@ type Props = {
   selectedAccess?: string;
   title?: string;
   competitionRights?: PublicCompetitionBroadcastRight[];
+  showFilters?: boolean;
+  rightsEyebrow?: string;
+  rightsTitle?: string;
+  rightsDescription?: string;
 };
 
 type AggregatedOffer = {
@@ -102,6 +106,10 @@ export default function BroadcastOffers({
   selectedAccess,
   title = "Where to watch",
   competitionRights = [],
+  showFilters = true,
+  rightsEyebrow = "Competition-level rights",
+  rightsTitle = "Official competition broadcasters",
+  rightsDescription = "These services hold verified rights for the competition in their territory. This does not confirm that every session of this specific event is carried by the service.",
 }: Props) {
   const allOffers = aggregate(events);
   const countries = Array.from(
@@ -117,11 +125,13 @@ export default function BroadcastOffers({
   ).sort((a, b) => a.name.localeCompare(b.name));
 
   const country =
-    selectedCountry && countries.some((item) => item.code === selectedCountry)
+    showFilters &&
+    selectedCountry &&
+    countries.some((item) => item.code === selectedCountry)
       ? selectedCountry
       : "";
   const access: AccessFilter =
-    selectedAccess === "Free" || selectedAccess === "Paid"
+    showFilters && (selectedAccess === "Free" || selectedAccess === "Paid")
       ? selectedAccess
       : "";
 
@@ -192,7 +202,7 @@ export default function BroadcastOffers({
         <p>{visibleOffers.length} confirmed</p>
       </div>
 
-      {(countries.length > 1 || freeCount > 0 || paidCount > 0) ? (
+      {showFilters && (countries.length > 1 || freeCount > 0 || paidCount > 0) ? (
         <form method="get" className="wts-event-broadcast-filters">
           <label htmlFor="country-broadcast-filter">
             <span>Country</span>
@@ -317,15 +327,9 @@ export default function BroadcastOffers({
         >
           <div className="wts-event-rights-heading">
             <div>
-              <p className="v2-eyebrow">Competition-level rights</p>
-              <h3 id="event-competition-rights-title">
-                Official competition broadcasters
-              </h3>
-              <p>
-                These services hold verified rights for the competition in
-                their territory. This does not confirm that every session of
-                this specific event is carried by the service.
-              </p>
+              <p className="v2-eyebrow">{rightsEyebrow}</p>
+              <h3 id="event-competition-rights-title">{rightsTitle}</h3>
+              <p>{rightsDescription}</p>
             </div>
             <span>{supplementalRights.length} rights</span>
           </div>
