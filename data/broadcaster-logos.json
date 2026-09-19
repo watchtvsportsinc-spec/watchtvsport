@@ -1,22 +1,194 @@
 {
-  "dazn": {
-    "src": "https://dazngroup.com/wp-content/uploads/2024/09/dazn.svg",
-    "sourceUrl": "https://dazngroup.com/",
-    "aliases": ["DAZN", "DAZN Canada"],
-    "compact": false,
-    "darkStyle": "invert"
+  "amazon-prime-video": {
+    "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/amazon-prime-video.svg",
+    "sourceUrl": "https://www.amazon.co.uk/primevideo",
+    "aliases": [
+      "Amazon Prime Video",
+      "Prime Video"
+    ],
+    "compact": true,
+    "darkStyle": "brand"
+  },
+  "apple-tv": {
+    "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/apple-tv.svg",
+    "sourceUrl": "https://tv.apple.com/",
+    "aliases": [
+      "Apple TV",
+      "Apple TV+"
+    ],
+    "compact": true,
+    "darkStyle": "brand"
+  },
+  "bbc": {
+    "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/bbc.svg",
+    "sourceUrl": "https://www.bbc.co.uk/",
+    "aliases": [
+      "BBC",
+      "BBC Sport"
+    ],
+    "compact": true,
+    "darkStyle": "brand"
   },
   "canal-plus": {
-    "src": "https://upload.wikimedia.org/wikipedia/commons/5/5d/Logo_Canal%2B_1995.svg",
-    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Logo_Canal%2B_1995.svg",
-    "aliases": ["CANAL+", "Canal Plus", "CanalPlus"],
+    "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/canal-plus.svg",
+    "sourceUrl": "https://www.canalplus.com/",
+    "aliases": [
+      "CANAL+",
+      "Canal Plus",
+      "CanalPlus"
+    ],
     "compact": true,
-    "darkStyle": "knockout"
+    "darkStyle": "brand"
+  },
+  "cbs": {
+    "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/cbs.svg",
+    "sourceUrl": "https://www.cbs.com/",
+    "aliases": [
+      "CBS",
+      "CBS Sports"
+    ],
+    "compact": true,
+    "darkStyle": "brand"
+  },
+  "dazn": {
+    "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/dazn.svg",
+    "sourceUrl": "https://www.dazn.com/",
+    "aliases": [
+      "DAZN",
+      "DAZN Canada"
+    ],
+    "compact": false,
+    "darkStyle": "brand"
+  },
+  "noovo": {
+    "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/noovo.svg",
+    "sourceUrl": "https://www.noovo.ca/",
+    "aliases": [
+      "Noovo"
+    ],
+    "compact": true,
+    "darkStyle": "brand"
+  },
+  "onesoccer": {
+    "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/onesoccer.svg",
+    "sourceUrl": "https://onesoccer.ca/",
+    "aliases": [
+      "OneSoccer",
+      "One Soccer"
+    ],
+    "compact": true,
+    "darkStyle": "brand"
   },
   "paramount-plus": {
-    "src": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Paramount%2B_logo.svg",
-    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Paramount%2B_logo.svg",
-    "aliases": ["Paramount+", "Paramount Plus", "ParamountPlus"],
+    "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/paramount-plus.svg",
+    "sourceUrl": "https://www.paramountplus.com/",
+    "aliases": [
+      "Paramount+",
+      "Paramount Plus",
+      "ParamountPlus"
+    ],
+    "compact": true,
+    "darkStyle": "brand"
+  },
+  "rds": {
+    "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/rds.svg",
+    "sourceUrl": "https://www.rds.ca/",
+    "aliases": [
+      "RDS"
+    ],
+    "compact": true,
+    "darkStyle": "brand"
+  },
+  "rds-2": {
+    "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/rds-2.svg",
+    "sourceUrl": "https://www.rds.ca/",
+    "aliases": [
+      "RDS 2",
+      "RDS2"
+    ],
+    "compact": true,
+    "darkStyle": "brand"
+  },
+  "rmc-sport": {
+    "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/rmc-sport.svg",
+    "sourceUrl": "https://rmcsport.tv/",
+    "aliases": [
+      "RMC Sport"
+    ],
+    "compact": true,
+    "darkStyle": "brand"
+  },
+  "sky-sports": {
+    "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/sky-sports.svg",
+    "sourceUrl": "https://www.skysports.com/",
+    "aliases": [
+      "Sky Sports"
+    ],
+    "compact": true,
+    "darkStyle": "brand"
+  },
+  "sportsnet": {
+    "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/sportsnet.svg",
+    "sourceUrl": "https://www.sportsnet.ca/",
+    "aliases": [
+      "Sportsnet"
+    ],
+    "compact": true,
+    "darkStyle": "brand"
+  },
+  "tnt-sports": {
+    "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/tnt-sports.svg",
+    "sourceUrl": "https://www.tntsports.co.uk/",
+    "aliases": [
+      "TNT Sports"
+    ],
+    "compact": true,
+    "darkStyle": "brand"
+  },
+  "tsn": {
+    "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/tsn.svg",
+    "sourceUrl": "https://www.tsn.ca/",
+    "aliases": [
+      "TSN"
+    ],
+    "compact": true,
+    "darkStyle": "brand"
+  },
+  "tudn": {
+    "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/tudn.svg",
+    "sourceUrl": "https://www.tudn.com/",
+    "aliases": [
+      "TUDN"
+    ],
+    "compact": true,
+    "darkStyle": "brand"
+  },
+  "tva-sports": {
+    "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/tva-sports.svg",
+    "sourceUrl": "https://www.tvasports.ca/",
+    "aliases": [
+      "TVA Sports"
+    ],
+    "compact": true,
+    "darkStyle": "brand"
+  },
+  "ufc-fight-pass": {
+    "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/ufc-fight-pass.svg",
+    "sourceUrl": "https://www.ufc.com/fightpass",
+    "aliases": [
+      "UFC Fight Pass",
+      "Fight Pass"
+    ],
+    "compact": true,
+    "darkStyle": "brand"
+  },
+  "ufc-ppv": {
+    "src": "https://jywqhiiwsmudthaujhmi.supabase.co/storage/v1/object/public/broadcaster-logos/ufc-ppv.svg",
+    "sourceUrl": "https://www.ufc.com/watch",
+    "aliases": [
+      "UFC Pay-Per-View",
+      "UFC PPV"
+    ],
     "compact": true,
     "darkStyle": "brand"
   }
