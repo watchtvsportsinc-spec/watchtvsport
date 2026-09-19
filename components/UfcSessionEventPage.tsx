@@ -306,6 +306,10 @@ export default async function UfcSessionEventPage({
         selectedCountry={selectedCountry}
         selectedAccess={selectedAccess}
         competitionRights={competitionRights}
+        showFilters={false}
+        rightsEyebrow="Official UFC broadcasters"
+        rightsTitle="Event coverage not yet confirmed"
+        rightsDescription="These services hold verified UFC rights in their territory, but this specific session has not yet been confirmed."
         title={"Where to watch " + label}
       />
 
