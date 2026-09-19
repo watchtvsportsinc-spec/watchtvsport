@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
-import ParticipantSportVisual from "@/components/ParticipantSportVisual";
+import ParticipantLogo from "@/components/ParticipantLogo";
 import SportCompetitionExplorer, { type SportCompetitionExplorerItem } from "@/components/SportCompetitionExplorer";
 import SportCompetitionGrid, { type SportCompetitionCard } from "@/components/SportCompetitionGrid";
 import SportHero from "@/components/SportHero";
 import { classifyCompetition, displayCompetitionName, type CompetitionCategory } from "@/lib/competition-catalog";
 import type { Participant } from "@/lib/events";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
+import { getApprovedMediaAssets } from "@/lib/public-media-assets";
 import { getPublicSportCompetitions } from "@/lib/public-sport-competitions";
 import { evaluateSeoEligibility, indexableRobots } from "@/lib/seo-indexability";
 import { getSportLabel } from "@/lib/sports-registry";
@@ -66,6 +67,15 @@ function participantInitials(name:string){
   return name.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join("").toUpperCase();
 }
 
+function participantMediaKey(participant:Participant){
+  if(participant.slug)return participant.slug;
+  if(participant.id.includes(":")){
+    const value=participant.id.split(":").at(-1);
+    if(value)return value;
+  }
+  return normalizeSlug(participant.name);
+}
+
 export async function buildSportHubMetadata(sport:string,canonical?:string):Promise<Metadata>{
   const cfg=SPORT_COPY[sport];
   if(!cfg)return{title:"Sport not found | WatchTVSport",robots:{index:false,follow:false}};
@@ -95,7 +105,7 @@ export default async function SportHubPage({sport,canonical}:{sport:string;canon
   const events=snapshot.events;
   const now=Date.now();
   const today=dayKey(now);
-  const map=new Map<string,SportCompetitionCard & {category:CompetitionCategory;sortPriority?:number}>();
+  const map=new Map<string,SportCompetitionCard & {category:CompetitionCategory;sortPriority?:number;competitionId?:string}>();
 
   for(const c of permanent){
     const category=(c.competitionType as CompetitionCategory)||classifyCompetition(sport,c.slug);
@@ -106,6 +116,7 @@ export default async function SportHubPage({sport,canonical}:{sport:string;canon
       href:competitionHref(sport,c.slug),
       category,
       sortPriority:c.sortPriority,
+      competitionId:c.id,
       eventCount:0,
       next:null,
       nextTitle:null,
@@ -247,11 +258,6 @@ export default async function SportHubPage({sport,canonical}:{sport:string;canon
     </main>;
   }
 
-  const explorerItems:SportCompetitionExplorerItem[]=competitions.map(item=>{
-    const filter=competitionFilter(sport,item.category,item.name,item.slug);
-    return{...item,filterKey:filter.key,filterLabel:filter.label,sortPriority:item.sortPriority};
-  });
-
   const participantMap=new Map<string,{participant:Participant;count:number}>();
   for(const event of events){
     for(const participant of [event.participant1,event.participant2]){
@@ -269,6 +275,21 @@ export default async function SportHubPage({sport,canonical}:{sport:string;canon
   const popularParticipants=Array.from(participantMap.values())
     .sort((a,b)=>b.count-a.count||a.participant.name.localeCompare(b.participant.name))
     .slice(0,sport==="tennis"?7:8);
+
+  const competitionMediaKeys=competitions.flatMap(item=>[
+    item.slug,
+    ...(item.competitionId?[`competition:${item.competitionId}`]:[]),
+  ]);
+  const participantMediaKeys=sport==="tennis"?[]:popularParticipants.map(({participant})=>participantMediaKey(participant));
+  const [competitionLogos,participantLogos]=await Promise.all([
+    getApprovedMediaAssets("competition","competition_logo",competitionMediaKeys),
+    getApprovedMediaAssets("participant","team_logo",participantMediaKeys),
+  ]);
+  const explorerItems:SportCompetitionExplorerItem[]=competitions.map(item=>{
+    const filter=competitionFilter(sport,item.category,item.name,item.slug);
+    const media=item.competitionId?competitionLogos[`competition:${item.competitionId}`]??competitionLogos[item.slug]:competitionLogos[item.slug];
+    return{...item,filterKey:filter.key,filterLabel:filter.label,sortPriority:item.sortPriority,logoUrl:media?.url};
+  });
 
   const countryMap=new Map<string,{countryCode:string;countryName:string;broadcasters:Set<string>;competitions:Set<string>;listings:number}>();
   for(const event of events){
@@ -353,7 +374,7 @@ export default async function SportHubPage({sport,canonical}:{sport:string;canon
             ? <span className={styles.playerInitials} aria-hidden="true">{participantInitials(participant.name)}</span>
             : participant.visualType==="flag"&&participant.countryCode
               ? <img className={styles.participantFlag} src={`/flags/${participant.countryCode.toLowerCase()}.png`} alt="" aria-hidden="true"/>
-              : <ParticipantSportVisual sport={sport} label={participant.name} countryCode={participant.countryCode} visual={participant.visualProfile} size="sm"/>;
+              : <ParticipantLogo sport={sport} label={participant.name} logoUrl={participantLogos[participantMediaKey(participant)]?.url} countryCode={participant.countryCode} visual={participant.visualProfile} size="sm"/>;
           const card=<>
             <span className={styles.participantVisual}>{visual}</span>
             <strong>{participant.name}</strong>
