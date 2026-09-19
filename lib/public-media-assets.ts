@@ -41,7 +41,7 @@ async function loadApprovedMediaAssets(entityType: string, assetKind: string, jo
       {
         headers: { apikey: key, Authorization: `Bearer ${key}` },
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-        next: { revalidate: 3600, tags: ["approved-media-assets"] },
+        next: { revalidate: 120, tags: ["approved-media-assets"] },
       },
     );
     if (!response.ok) return {};
