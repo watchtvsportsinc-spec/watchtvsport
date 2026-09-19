@@ -23,10 +23,10 @@
 .participantRail{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .participantCard{display:grid;min-width:0;grid-template-columns:72px minmax(0,1fr);grid-template-rows:auto;align-items:center;column-gap:9px;min-height:88px;border:0;border-radius:0;background:transparent;color:#fff;padding:5px 4px;text-decoration:none}
 a.participantCard:hover{background:transparent;transform:translateY(-1px)}
-.participantVisual{display:grid;width:78px;height:78px;place-items:center;overflow:visible;border-radius:0;background:transparent}
-.participantVisual>span{width:72px!important;height:72px!important;max-width:72px!important;max-height:72px!important}
+.participantVisual{display:grid;width:72px;height:72px;place-items:center;overflow:visible;border-radius:0;background:transparent}
+.participantVisual>span{width:66px!important;height:66px!important;max-width:66px!important;max-height:66px!important}
 .participantVisual>span[role="img"]{transform:none}
-.participantVisual>span[role="img"] img{width:70px!important;height:70px!important;max-width:70px!important;max-height:70px!important;object-fit:contain}
+.participantVisual>span[role="img"] img{width:64px!important;height:64px!important;max-width:64px!important;max-height:64px!important;object-fit:contain}
 .participantVisual>span[role="img"]{transform-origin:center}
 .participantVisual[data-logo-key="aek-athens"]>span[role="img"]{transform:scale(1.02)}
 .participantVisual[data-logo-key="arsenal"]>span[role="img"]{transform:scale(1)}
@@ -61,8 +61,8 @@ a.participantCard:hover{background:transparent;transform:translateY(-1px)}
 @media(min-width:1040px){
   .directoryCompetitionGrid{grid-template-columns:repeat(4,minmax(0,1fr))}
   .participantRail{grid-template-columns:repeat(10,minmax(0,1fr));gap:3px}
-  .participantCard{grid-template-columns:1fr;grid-template-rows:82px auto;justify-items:center;min-height:108px;text-align:center}
-  .participantVisual{width:78px;height:78px}
+  .participantCard{grid-template-columns:1fr;grid-template-rows:76px auto;justify-items:center;min-height:102px;text-align:center}
+  .participantVisual{width:72px;height:72px}
   .participantCard>strong{align-self:auto;width:100%;font-size:10px}
   .countryGrid{grid-template-columns:repeat(6,minmax(0,1fr))}
   .countryCard{min-height:54px;gap:8px;padding:8px 10px}
