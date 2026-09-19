@@ -9,7 +9,7 @@ import { evaluateSeoEligibility, indexableRobots } from "@/lib/seo-indexability"
 
 type PageProps = {
   params: Promise<{ slug: string }>;
-  searchParams?: Promise<{ event?: string }>;
+  searchParams?: Promise<{ event?: string; country?: string; access?: string }>;
 };
 
 function fixtureEligibility(fixture: PublicFixture) {
@@ -97,14 +97,14 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
 
 export default async function EventPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
-  const { event: eventId } = (await searchParams) ?? {};
+  const { event: eventId, country, access } = (await searchParams) ?? {};
 
   const matchup = await getPublicMatchupPage(slug, eventId);
   if (matchup) return <PermanentFixturePage fixture={matchup} />;
 
   if (eventId) {
     const exactEvent = await findEventById(eventId, slug);
-    if (exactEvent) return <UniversalEventPage slug={exactEvent.slug} />;
+    if (exactEvent) return <UniversalEventPage slug={exactEvent.slug} selectedCountry={country} selectedAccess={access} />;
     notFound();
   }
 
@@ -117,5 +117,5 @@ export default async function EventPage({ params, searchParams }: PageProps) {
 
   const genericPath = `/event/${slug}`;
   if (event.detailPath && event.detailPath !== genericPath) permanentRedirect(event.detailPath);
-  return <UniversalEventPage slug={slug} />;
+  return <UniversalEventPage slug={slug} selectedCountry={country} selectedAccess={access} />;
 }
