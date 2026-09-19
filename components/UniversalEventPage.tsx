@@ -7,6 +7,7 @@ import FavoriteButton from "@/components/FavoriteButton";
 import MatchHero from "@/components/MatchHero";
 import MatchNextGames from "@/components/MatchNextGames";
 import MatchWatchPanel from "@/components/MatchWatchPanel";
+import UfcSessionEventPage from "@/components/UfcSessionEventPage";
 import { resolveClubSlug } from "@/lib/club-aliases";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 import { getPublicParticipantProfile } from "@/lib/participant-profiles";
@@ -27,8 +28,9 @@ function latestChecked(event:EventData){const values=event.broadcasts.map(b=>b.l
 function checkedLabel(value:string){const parsed=new Date(value);return Number.isNaN(parsed.getTime())?value.split("T")[0]:new Intl.DateTimeFormat("en",{month:"short",day:"numeric",year:"numeric"}).format(parsed);}
 function schemaPerformer(participant:Participant){return participant.type==="player"?{"@type":"Person",name:participant.name}:{"@type":"SportsTeam",name:participant.name};}
 
-export default async function UniversalEventPage({slug}:{slug:string}){
+export default async function UniversalEventPage({slug,selectedCountry,selectedAccess}:{slug:string;selectedCountry?:string;selectedAccess?:string}){
  const snapshot=await getPublicEventsSnapshot({slug,limit:1});const event=snapshot.events.find(e=>e.slug===slug);if(!event)notFound();
+ if(event.sport==="ufc"&&event.eventGroupSlug&&event.sessionType)return <UfcSessionEventPage event={event} selectedCountry={selectedCountry} selectedAccess={selectedAccess}/>;
  const eventSportHref=sportHref(event.sport);const eventCompetitionHref=competitionHref(event);const p1href=participantHref(event,event.participant1);const p2href=participantHref(event,event.participant2);const confirmed=event.broadcasts.filter(b=>b.coverageStatus==="confirmed");const free=confirmed.filter(b=>b.access==="Free");const countries=new Map<string,typeof confirmed>();for(const b of confirmed){countries.set(b.countryCode,[...(countries.get(b.countryCode)??[]),b]);}
  const favorite={kind:"event" as const,entityId:event.id,label:event.title,href:event.detailPath,event:{detailPath:event.detailPath,eventDate:event.eventDate,sport:event.sport,competition:event.competition,participantNames:[event.participant1?.name,event.participant2?.name].filter((name):name is string=>Boolean(name))}};const lastChecked=latestChecked(event);const isHeadToHead=Boolean(event.participant1&&event.participant2);const p1Slug=participantProfileSlug(event.participant1);const p2Slug=participantProfileSlug(event.participant2);
  const logoKeys=[p1Slug,p2Slug].filter((value):value is string=>Boolean(value));
