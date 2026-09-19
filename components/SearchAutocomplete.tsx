@@ -8,7 +8,7 @@ import type { SearchSuggestion } from "@/lib/search-suggestions";
 
 type Props = {
   defaultValue?: string;
-  sport?: string;
+  sport?: string | string[];
   competition?: string;
   timeZone?: string;
   suggestions: SearchSuggestion[];
@@ -174,7 +174,8 @@ export default function SearchAutocomplete({
     const params = new URLSearchParams({ view: "all" });
     const trimmed = query.trim();
     if (trimmed) params.set("q", trimmed);
-    if (sport) params.set("sport", sport);
+    const sports = Array.isArray(sport) ? sport : sport ? [sport] : [];
+    sports.forEach((value) => params.append("sport", value));
     if (competition) params.set("competition", competition);
     if (timeZone && timeZone !== "UTC") params.set("tz", timeZone);
     router.push(`${searchPath}?${params.toString()}`);
