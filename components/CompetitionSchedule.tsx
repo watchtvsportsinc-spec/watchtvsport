@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import ParticipantLogo from "@/components/ParticipantLogo";
+import type { ParticipantVisualProfile } from "@/lib/participant-visuals";
 import styles from "./competition-page.module.css";
 
 export type CompetitionScheduleItem = {
@@ -11,6 +13,9 @@ export type CompetitionScheduleItem = {
   eventDate: string;
   stage?: string;
   status?: "scheduled" | "live" | "finished";
+  sport?: string;
+  participant1?: { name: string; logoUrl?: string; countryCode?: string; visual?: ParticipantVisualProfile };
+  participant2?: { name: string; logoUrl?: string; countryCode?: string; visual?: ParticipantVisualProfile };
   confirmed: number;
   freeCountries: number;
   paidCountries: number;
@@ -54,7 +59,18 @@ export default function CompetitionSchedule({ items }: { items: CompetitionSched
         const isFinished = event.status === "finished" || Date.parse(event.eventDate) < now;
         return <Link className={styles.eventRow} href={event.detailPath} key={event.id}>
           <div className={styles.eventState}><span className={isLive ? styles.live : isFinished ? styles.finished : styles.upcoming}>{isLive ? "LIVE" : isFinished ? "FT" : timeLabel(event.eventDate)}</span></div>
-          <div className={styles.eventIdentity}><small>{event.stage ?? "Event"}</small><strong>{event.title}</strong></div>
+          <div className={styles.eventIdentity}>
+            <small>{event.stage ?? "Event"}</small>
+            <div className={styles.eventTitleLine}>
+              {event.sport && event.participant1 && event.participant2 ? (
+                <span className={styles.eventTeamLogos} aria-hidden="true">
+                  <ParticipantLogo sport={event.sport} label={event.participant1.name} logoUrl={event.participant1.logoUrl} countryCode={event.participant1.countryCode} visual={event.participant1.visual} size="sm"/>
+                  <ParticipantLogo sport={event.sport} label={event.participant2.name} logoUrl={event.participant2.logoUrl} countryCode={event.participant2.countryCode} visual={event.participant2.visual} size="sm"/>
+                </span>
+              ) : null}
+              <strong>{event.title}</strong>
+            </div>
+          </div>
           <div className={styles.eventTv}><b>{event.confirmed}</b><span>confirmed</span>{event.freeCountries > 0 ? <em>Free in {event.freeCountries}</em> : event.paidCountries > 0 ? <em>Paid in {event.paidCountries}</em> : null}</div>
           <span className={styles.chevron}>›</span>
         </Link>;
