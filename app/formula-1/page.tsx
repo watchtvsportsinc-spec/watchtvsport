@@ -190,18 +190,19 @@ export default async function Formula1Page() {
                       <small><LocalTime date={nextDate} display="date" /></small>
                     </div>
 
+                    <div className="wts-motorsport-flag-cell">
+                      {flagCode ? (
+                        <img
+                          className="wts-motorsport-inline-flag"
+                          src={`/flags/${flagCode}.png`}
+                          alt=""
+                          aria-hidden="true"
+                        />
+                      ) : null}
+                    </div>
+
                     <div className="wts-discovery-card-main">
-                      <h3 className="wts-motorsport-event-title">
-                        {flagCode ? (
-                          <img
-                            className="wts-motorsport-inline-flag"
-                            src={`/flags/${flagCode}.png`}
-                            alt=""
-                            aria-hidden="true"
-                          />
-                        ) : null}
-                        <span>{weekend.name}</span>
-                      </h3>
+                      <h3 className="wts-motorsport-event-title">{weekend.name}</h3>
                       <span>
                         {[weekend.venue, `${weekend.sessionCount} published sessions`, weekend.confirmed > 0 ? `${weekend.confirmed} confirmed TV options` : null]
                           .filter(Boolean)
