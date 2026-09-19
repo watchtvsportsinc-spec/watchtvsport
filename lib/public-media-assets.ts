@@ -1,9 +1,8 @@
 import "server-only";
 
 import { cache } from "react";
+import { getEnabledPublicSupabaseConfig } from "./public-supabase-config";
 
-const DEFAULT_SUPABASE_URL = "https://jywqhiiwsmudthaujhmi.supabase.co";
-const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_30SkJ3gyUbPvH5sGFXpyHg_a4Qlzdi-";
 const REQUEST_TIMEOUT_MS = 4_000;
 
 export type ApprovedMediaAsset = {
@@ -14,12 +13,6 @@ export type ApprovedMediaAsset = {
 };
 
 type Row = Record<string, unknown>;
-
-function config() {
-  const url = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/$/, "");
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY;
-  return { url, key };
-}
 
 function text(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
@@ -32,16 +25,18 @@ function rows(value: unknown): Row[] {
 async function loadApprovedMediaAssets(entityType: string, assetKind: string, joinedKeys: string): Promise<Record<string, ApprovedMediaAsset>> {
   const keys = joinedKeys.split("\n").map((key) => key.trim()).filter(Boolean);
   if (!keys.length) return {};
+  const config = getEnabledPublicSupabaseConfig();
+  if (!config) return {};
 
   try {
-    const { url, key } = config();
+    const { url, key } = config;
     const filter = keys.map((value) => `"${value.replaceAll('"', "")}"`).join(",");
     const response = await fetch(
       `${url}/rest/v1/media_assets?entity_type=eq.${encodeURIComponent(entityType)}&asset_kind=eq.${encodeURIComponent(assetKind)}&entity_key=in.(${encodeURIComponent(filter)})&verification_status=eq.approved&is_current=eq.true&storage_url=not.is.null&select=entity_key,storage_url,alt_text,source_name,verified_at&order=verified_at.desc.nullslast`,
       {
         headers: { apikey: key, Authorization: `Bearer ${key}` },
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-        cache: "no-store",
+        next: { revalidate: 3600, tags: ["public-media-assets"] },
       },
     );
     if (!response.ok) return {};

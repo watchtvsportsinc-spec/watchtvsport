@@ -2,15 +2,14 @@ import "server-only";
 
 import { cache } from "react";
 import { isParticipantPatternStyle,isParticipantRenderFamily,safeVisualColor,type ParticipantVisualProfile } from "./participant-visuals";
+import { getEnabledPublicSupabaseConfig } from "./public-supabase-config";
 
-const DEFAULT_SUPABASE_URL="https://jywqhiiwsmudthaujhmi.supabase.co";
-const DEFAULT_SUPABASE_PUBLISHABLE_KEY="sb_publishable_30SkJ3gyUbPvH5sGFXpyHg_a4Qlzdi-";
 const REQUEST_TIMEOUT_MS=4_000;
 type Row=Record<string,unknown>;
 
 export type PublicCompetitionTeam={id:string;slug:string;name:string;shortName?:string;visual?:ParticipantVisualProfile};
 export type PublicCompetition={id:string;slug:string;name:string;displayName?:string;seasonLabel?:string;sport:string;sportName:string;competitionType?:string;regionLabel?:string;countryCode?:string;sortPriority?:number;metadataStatus?:string;teams:PublicCompetitionTeam[]};
-function config(){const url=(process.env.SUPABASE_URL||process.env.NEXT_PUBLIC_SUPABASE_URL||DEFAULT_SUPABASE_URL).replace(/\/$/,"");const key=process.env.SUPABASE_PUBLISHABLE_KEY||process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||process.env.SUPABASE_ANON_KEY||DEFAULT_SUPABASE_PUBLISHABLE_KEY;return{url,key};}
+function config(){const value=getEnabledPublicSupabaseConfig();if(!value)throw new Error("Supabase public reads are disabled or incomplete");return value;}
 function headers(key:string){return{apikey:key,Authorization:`Bearer ${key}`};}
 async function getJson(url:string,key:string):Promise<unknown>{const response=await fetch(url,{headers:headers(key),signal:AbortSignal.timeout(REQUEST_TIMEOUT_MS),next:{revalidate:3600,tags:["public-competition-memberships"]}});if(!response.ok)throw new Error(`Supabase request failed with ${response.status}`);return response.json();}
 function rows(value:unknown):Row[]{return Array.isArray(value)?value.filter((item):item is Row=>Boolean(item)&&typeof item==="object"&&!Array.isArray(item)):[];}

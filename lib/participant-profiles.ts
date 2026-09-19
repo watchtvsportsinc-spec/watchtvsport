@@ -7,9 +7,8 @@ import {
   safeVisualColor,
   type ParticipantVisualProfile,
 } from "./participant-visuals";
+import { getEnabledPublicSupabaseConfig, type PublicSupabaseConfig } from "./public-supabase-config";
 
-const DEFAULT_SUPABASE_URL = "https://jywqhiiwsmudthaujhmi.supabase.co";
-const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_30SkJ3gyUbPvH5sGFXpyHg_a4Qlzdi-";
 const REQUEST_TIMEOUT_MS = 4_000;
 
 export type ParticipantProfile = {
@@ -62,16 +61,9 @@ export type PublicParticipantProfile = {
   sources: ParticipantProfileSource[];
 };
 
-type SupabaseReadConfig = { url: string; key: string };
-
-function configCandidates(): SupabaseReadConfig[] {
-  const configuredUrl = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/$/, "");
-  const configuredKey = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY;
-  const candidates: SupabaseReadConfig[] = [
-    { url: configuredUrl, key: configuredKey },
-    { url: DEFAULT_SUPABASE_URL, key: DEFAULT_SUPABASE_PUBLISHABLE_KEY },
-  ];
-  return candidates.filter((candidate, index, all) => all.findIndex((entry) => entry.url === candidate.url && entry.key === candidate.key) === index);
+function configCandidates(): PublicSupabaseConfig[] {
+  const config = getEnabledPublicSupabaseConfig();
+  return config ? [config] : [];
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {

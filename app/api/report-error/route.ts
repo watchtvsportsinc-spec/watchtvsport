@@ -1,13 +1,6 @@
 import { NextResponse } from "next/server";
+import { readPublicSupabaseConfig } from "@/lib/public-supabase-config";
 
-const DEFAULT_SUPABASE_URL = "https://jywqhiiwsmudthaujhmi.supabase.co";
-const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_30SkJ3gyUbPvH5sGFXpyHg_a4Qlzdi-";
-
-function config() {
-  const url = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/$/, "");
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY;
-  return { url, key };
-}
 
 function text(value: unknown, max: number) {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
@@ -50,7 +43,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "Email address is not valid." }, { status: 400 });
   }
 
-  const { url, key } = config();
+  const config = readPublicSupabaseConfig();
+  if (!config) {
+    return NextResponse.json(
+      { ok: false, error: "Correction intake is temporarily unavailable." },
+      { status: 503 },
+    );
+  }
+  const { url, key } = config;
   try {
     const response = await fetch(`${url}/rest/v1/listing_corrections`, {
       method: "POST",

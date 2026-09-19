@@ -7,9 +7,8 @@ import {
   safeVisualColor,
   type ParticipantVisualProfile,
 } from "./participant-visuals";
+import { getEnabledPublicSupabaseConfig } from "./public-supabase-config";
 
-const DEFAULT_SUPABASE_URL = "https://jywqhiiwsmudthaujhmi.supabase.co";
-const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_30SkJ3gyUbPvH5sGFXpyHg_a4Qlzdi-";
 const REQUEST_TIMEOUT_MS = 4_000;
 
 type Row = Record<string, unknown>;
@@ -32,10 +31,8 @@ export type PublicUfcBout = {
 };
 
 function configs() {
-  const configuredUrl = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/$/, "");
-  const configuredKey = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY;
-  const values = [{ url: configuredUrl, key: configuredKey }, { url: DEFAULT_SUPABASE_URL, key: DEFAULT_SUPABASE_PUBLISHABLE_KEY }];
-  return values.filter((value,index,all)=>all.findIndex(other=>other.url===value.url&&other.key===value.key)===index);
+  const config = getEnabledPublicSupabaseConfig();
+  return config ? [config] : [];
 }
 
 function isRecord(value: unknown): value is Row {

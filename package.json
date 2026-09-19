@@ -9,7 +9,7 @@
     "lint": "eslint",
     "test": "npm run test:imports && npm run test:data && npm run test:seed && npm run test:supabase-apply && npm run test:quality && npm run test:logos",
     "test:imports": "node --test scripts/import-validation.test.mjs",
-    "test:data": "node --test scripts/world-cup-archive-import.test.mjs scripts/public-events-schema.test.mjs scripts/public-data-source-contract.test.mjs",
+    "test:data": "node --test scripts/world-cup-archive-import.test.mjs scripts/public-events-schema.test.mjs scripts/public-data-source-contract.test.mjs scripts/ingestion-safety-contract.test.mjs",
     "test:seed": "node --test scripts/export-v2-multisport-seed.test.mjs",
     "test:supabase-apply": "node --test scripts/apply-v2-seed-to-supabase.test.mjs",
     "test:quality": "node --test scripts/v2-quality-audit.test.mjs scripts/competition-architecture.test.mjs scripts/sport-competition-product-ux.test.mjs scripts/permanent-fixture-pages.test.mjs scripts/favorites-contract.test.mjs scripts/seo-contract.test.mjs",

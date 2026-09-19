@@ -1,9 +1,8 @@
 import "server-only";
+import { getEnabledPublicSupabaseConfig } from "./public-supabase-config";
 
 const REQUEST_TIMEOUT_MS = 8_000;
 const REVALIDATE_SECONDS = 300;
-const DEFAULT_SUPABASE_URL = "https://jywqhiiwsmudthaujhmi.supabase.co";
-const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_30SkJ3gyUbPvH5sGFXpyHg_a4Qlzdi-";
 
 export type PublicCompetitionBroadcastRight = {
   countryCode: string;
@@ -18,12 +17,6 @@ export type PublicCompetitionBroadcastRight = {
   lastChecked?: string;
 };
 
-function config() {
-  const url = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/$/, "");
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY;
-  return { url, key };
-}
-
 function normalizeAccess(value: unknown): "Free" | "Paid" | "Unknown" {
   return value === "Free" || value === "Paid" ? value : "Unknown";
 }
@@ -37,7 +30,9 @@ export async function getPublicCompetitionBroadcastRights(input: {
   competition: string;
   eventDate?: string;
 }): Promise<PublicCompetitionBroadcastRight[]> {
-  const { url, key } = config();
+  const config = getEnabledPublicSupabaseConfig();
+  if (!config) return [];
+  const { url, key } = config;
 
   try {
     const response = await fetch(`${url}/rest/v1/rpc/get_public_competition_broadcast_rights_v1`, {
