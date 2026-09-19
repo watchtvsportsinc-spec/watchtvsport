@@ -384,11 +384,10 @@ export default async function SportHubPage({sport,canonical}:{sport:string;canon
             ? <span className={styles.playerInitials} aria-hidden="true">{participantInitials(participant.name)}</span>
             : participant.visualType==="flag"&&participant.countryCode
               ? <img className={styles.participantFlag} src={`/flags/${participant.countryCode.toLowerCase()}.png`} alt="" aria-hidden="true"/>
-              : <ParticipantLogo sport={sport} label={participant.name} logoUrl={participantLogos[participantMediaKey(participant)]?.url} countryCode={participant.countryCode} visual={participant.visualProfile} size="sm"/>;
+              : <ParticipantLogo sport={sport} label={participant.name} logoUrl={participantLogos[participantMediaKey(participant)]?.url} countryCode={participant.countryCode} visual={participant.visualProfile} size="md"/>;
           const card=<>
             <span className={styles.participantVisual}>{visual}</span>
             <strong>{participant.name}</strong>
-            {participant.countryCode?<span className={styles.participantCountry}>{participant.countryCode.toUpperCase()}</span>:null}
           </>;
           return href
             ? <Link className={styles.participantCard} href={href} key={participant.id}>{card}</Link>
