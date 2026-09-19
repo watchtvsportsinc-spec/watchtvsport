@@ -191,7 +191,7 @@ export default async function Formula1Page() {
                     </div>
 
                     <div className="wts-discovery-card-main">
-                      <p className="wts-motorsport-row-kicker">
+                      <h3 className="wts-motorsport-event-title">
                         {flagCode ? (
                           <img
                             className="wts-motorsport-inline-flag"
@@ -200,9 +200,8 @@ export default async function Formula1Page() {
                             aria-hidden="true"
                           />
                         ) : null}
-                        <span>Formula 1{weekend.country ? " · " + weekend.country : ""}</span>
-                      </p>
-                      <h3>{weekend.name}</h3>
+                        <span>{weekend.name}</span>
+                      </h3>
                       <span>
                         {[weekend.venue, `${weekend.sessionCount} published sessions`, weekend.confirmed > 0 ? `${weekend.confirmed} confirmed TV options` : null]
                           .filter(Boolean)
