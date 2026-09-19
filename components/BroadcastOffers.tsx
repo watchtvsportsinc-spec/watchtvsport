@@ -1,6 +1,7 @@
 import type { EventData } from "@/lib/events";
 import type { BroadcastInfo } from "@/lib/matches";
 import type { PublicCompetitionBroadcastRight } from "@/lib/public-broadcast-rights";
+import { getBroadcasterLogo } from "@/lib/broadcaster-logos";
 
 type AccessFilter = "Free" | "Paid" | "";
 
@@ -60,6 +61,32 @@ function aggregate(events: EventData[]): AggregatedOffer[] {
     (a, b) =>
       a.broadcast.countryName.localeCompare(b.broadcast.countryName) ||
       a.broadcast.broadcaster.localeCompare(b.broadcast.broadcaster)
+  );
+}
+
+function BroadcasterLogo({ name }: { name: string }) {
+  const logo = getBroadcasterLogo(name);
+  const styleClass =
+    logo?.darkStyle === "invert"
+      ? " is-inverted"
+      : logo?.darkStyle === "knockout"
+        ? " is-knockout"
+        : "";
+
+  return (
+    <span className="wts-event-broadcaster-logo-slot">
+      <span
+        className={`v2-match-broadcaster-logo${logo?.compact ? " is-wide" : ""}${styleClass}${logo ? "" : " is-fallback"}`}
+        role="img"
+        aria-label={logo ? name : `${name} broadcaster`}
+      >
+        {logo ? (
+          <img src={logo.src} alt="" aria-hidden="true" loading="lazy" />
+        ) : (
+          <span className="wts-event-broadcaster-name-fallback" aria-hidden="true">{name}</span>
+        )}
+      </span>
+    </span>
   );
 }
 
@@ -240,15 +267,18 @@ export default function BroadcastOffers({
                       target="_blank"
                     >
                       <span className="wts-event-broadcast-service">
-                        <strong>{broadcast.broadcaster}</strong>
-                        {events.length > 1 ? (
-                          <small>{sessions.join(" · ")}</small>
-                        ) : null}
-                        {broadcast.commentaryLanguages?.length ? (
-                          <small>
-                            {broadcast.commentaryLanguages.join(", ")}
-                          </small>
-                        ) : null}
+                        <BroadcasterLogo name={broadcast.broadcaster} />
+                        <span className="wts-event-broadcast-copy">
+                          {!getBroadcasterLogo(broadcast.broadcaster) ? <strong>{broadcast.broadcaster}</strong> : null}
+                          {events.length > 1 ? (
+                            <small>{sessions.join(" · ")}</small>
+                          ) : null}
+                          {broadcast.commentaryLanguages?.length ? (
+                            <small>
+                              {broadcast.commentaryLanguages.join(", ")}
+                            </small>
+                          ) : null}
+                        </span>
                       </span>
 
                       <span
@@ -308,8 +338,11 @@ export default function BroadcastOffers({
                     {right.countryName}
                   </span>
                   <span className="wts-event-broadcast-service">
-                    <strong>{right.broadcaster}</strong>
-                    <small>{coverageLabel(right.coverageType)}</small>
+                    <BroadcasterLogo name={right.broadcaster} />
+                    <span className="wts-event-broadcast-copy">
+                      {!getBroadcasterLogo(right.broadcaster) ? <strong>{right.broadcaster}</strong> : null}
+                      <small>{coverageLabel(right.coverageType)}</small>
+                    </span>
                   </span>
                   <span
                     className={
