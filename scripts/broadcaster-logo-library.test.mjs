@@ -5,7 +5,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const TRUSTED_LOGO_HOSTS = new Set(["dazngroup.com", "upload.wikimedia.org"]);
+const TRUSTED_LOGO_HOSTS = new Set(["jywqhiiwsmudthaujhmi.supabase.co"]);
 
 function normalize(value) {
   return String(value)
