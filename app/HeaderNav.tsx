@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { buildSearchSuggestions, type SearchSuggestion } from "@/lib/search-suggestions";
+import type { SearchSuggestion } from "@/lib/search-suggestions";
 import { favoriteKey } from "@/lib/favorites";
 import { toggleFavorite, useFavorites } from "@/lib/favorites-client";
 
@@ -11,8 +11,6 @@ const links = [
   { href: "/events", label: "Events" },
   { href: "/sports", label: "Sports" },
 ];
-
-const headerSuggestions = buildSearchSuggestions([]);
 
 function normalize(value: string): string {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
@@ -41,7 +39,7 @@ function sportsIsActive(pathname: string): boolean {
   return pathname.startsWith("/sports") || pathname.startsWith("/football") || pathname.startsWith("/formula-1") || pathname.startsWith("/motorsports") || pathname.startsWith("/combat-sports") || pathname.startsWith("/ufc");
 }
 
-export default function HeaderNav() {
+export default function HeaderNav({ suggestions }: { suggestions: SearchSuggestion[] }) {
   const pathname = usePathname();
   const router = useRouter();
   const homeIsActive = pathname === "/";
@@ -55,13 +53,13 @@ export default function HeaderNav() {
 
   const matches = useMemo(() => {
     if (!query.trim()) return [];
-    return headerSuggestions
+    return suggestions
       .map((suggestion) => ({ suggestion, score: scoreSuggestion(suggestion, query) }))
       .filter((item) => item.score >= 0)
       .sort((a, b) => b.score - a.score || a.suggestion.label.localeCompare(b.suggestion.label))
       .slice(0, 7)
       .map((item) => item.suggestion);
-  }, [query]);
+  }, [query, suggestions]);
 
   function goToSuggestion(suggestion: SearchSuggestion) {
     setOpen(false);
@@ -82,7 +80,7 @@ export default function HeaderNav() {
     }
 
     const normalizedQuery = normalize(trimmed);
-    const exact = headerSuggestions.find((suggestion) =>
+    const exact = suggestions.find((suggestion) =>
       [suggestion.value, suggestion.label, ...suggestion.searchTerms].some((term) => normalize(term) === normalizedQuery),
     );
     if (exact) {
