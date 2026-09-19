@@ -183,7 +183,7 @@ export default async function Formula1Page() {
               const nextDate = weekend.nextSession ?? weekend.firstSession;
 
               return (
-                <article className="wts-ufc-event-row" key={weekend.id}>
+                <article className="wts-ufc-event-row wts-motorsport-event-row" key={weekend.id}>
                   <Link className="wts-ufc-event-main" href={href}>
                     <div className="wts-discovery-card-time wts-motorsport-event-time">
                       <strong><LocalTime date={nextDate} display="time" /></strong>
