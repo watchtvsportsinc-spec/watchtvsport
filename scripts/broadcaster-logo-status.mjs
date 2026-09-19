@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const STRICT = process.argv.includes("--strict");
-const TRUSTED_LOGO_HOSTS = new Set(["dazngroup.com", "upload.wikimedia.org"]);
+const TRUSTED_LOGO_HOSTS = new Set(["jywqhiiwsmudthaujhmi.supabase.co"]);
 
 function parseEnvValue(raw) {
   const value = raw.trim();
