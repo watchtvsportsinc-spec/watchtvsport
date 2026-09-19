@@ -41,6 +41,39 @@ const LIGHT_ON_DARK_COMPETITION_LOGOS=new Set([
   "copa-america",
 ]);
 
+const FOOTBALL_COMPETITION_IDENTITY_OVERRIDES:Record<string,{name?:string;logoUrl?:string;logoTone?:"default"|"light";logoVariant?:"default"|"cdf"}>={
+  "champions-league":{
+    logoUrl:"https://assets.footylogos.com/logos/uefa-champions-league-symbol-white/uefa-champions-league-symbol-white-logo-footylogos.svg",
+    logoTone:"default",
+  },
+  "europa-league":{
+    logoUrl:"https://www.footylogos.com/downloads/logo/europa-league-symbol-logo-footylogos.svg",
+    logoTone:"default",
+  },
+  "premier-league":{
+    logoUrl:"https://logo.premierleague.com/img/lion-light.svg",
+    logoTone:"default",
+  },
+  "ligue-1":{
+    name:"Ligue 1",
+    logoUrl:"https://assets.footylogos.com/logos/ligue-1-france/ligue-1-france-logo-footylogos.svg",
+    logoTone:"light",
+  },
+  "laliga":{
+    logoUrl:"https://assets.laliga.com/assets/logos/LL_RGB_v_monocromatic_negativo/LL_RGB_v_monocromatic_negativo.png",
+    logoTone:"default",
+  },
+  "bundesliga":{
+    logoUrl:"https://commons.wikimedia.org/wiki/Special:FilePath/Bundesliga_logo_(2017).svg",
+    logoTone:"default",
+  },
+  "coupe-de-france":{
+    logoUrl:"https://foot-centre.fff.fr/wp-content/uploads/sites/9/2025/08/e200a7041387bf95d7d8cb417cbba561.png",
+    logoTone:"default",
+    logoVariant:"cdf",
+  },
+};
+
 function competitionHref(sport:string,slug:string){return sport==="football"?`/football/competition/${slug}`:`/sports/${sport}/competition/${slug}`;}
 function dayKey(value:string|number|Date){return new Date(value).toISOString().slice(0,10);}
 function normalizeSlug(value:string){return value.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/&/g," and ").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");}
@@ -123,7 +156,7 @@ export default async function SportHubPage({sport,canonical}:{sport:string;canon
     map.set(c.slug,{
       sport,
       slug:c.slug,
-      name:c.displayName||c.name,
+      name:displayCompetitionName(sport,c.slug,c.displayName||c.name),
       href:competitionHref(sport,c.slug),
       category,
       sortPriority:c.sortPriority,
@@ -299,7 +332,17 @@ export default async function SportHubPage({sport,canonical}:{sport:string;canon
   const explorerItems:SportCompetitionExplorerItem[]=competitions.map(item=>{
     const filter=competitionFilter(sport,item.category,item.name,item.slug);
     const media=item.competitionId?competitionLogos[`competition:${item.competitionId}`]??competitionLogos[item.slug]:competitionLogos[item.slug];
-    return{...item,filterKey:filter.key,filterLabel:filter.label,sortPriority:item.sortPriority,logoUrl:media?.url,logoTone:LIGHT_ON_DARK_COMPETITION_LOGOS.has(item.slug)?"light":"default"};
+    const override=sport==="football"?FOOTBALL_COMPETITION_IDENTITY_OVERRIDES[item.slug]:undefined;
+    return{
+      ...item,
+      name:override?.name??item.name,
+      filterKey:filter.key,
+      filterLabel:filter.label,
+      sortPriority:item.sortPriority,
+      logoUrl:override?.logoUrl??media?.url,
+      logoTone:override?.logoTone??(LIGHT_ON_DARK_COMPETITION_LOGOS.has(item.slug)?"light":"default"),
+      logoVariant:override?.logoVariant??"default",
+    };
   });
 
   const countryMap=new Map<string,{countryCode:string;countryName:string;broadcasters:Set<string>;competitions:Set<string>;listings:number}>();
