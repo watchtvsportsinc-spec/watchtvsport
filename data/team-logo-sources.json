@@ -79,7 +79,7 @@
       "sport": "american-football",
       "sourceName": "NFL",
       "sourcePageUrl": "https://www.nfl.com/teams/",
-      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/bedyixmmjhszfcx5wv2l",
+      "assetUrl": "https://static.www.nfl.com/t_person_squared_mobile/t_lazy/f_auto/league/api/clubs/logos/CLE",
       "sourceType": "league",
       "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
     },
@@ -129,7 +129,7 @@
       "sport": "american-football",
       "sourceName": "NFL",
       "sourcePageUrl": "https://www.nfl.com/teams/",
-      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/u6camnphqvjc6mku6u3c",
+      "assetUrl": "https://static.www.nfl.com/t_person_squared_mobile/t_lazy/f_auto/league/api/clubs/logos/HOU",
       "sourceType": "league",
       "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
     },
@@ -189,7 +189,7 @@
       "sport": "american-football",
       "sourceName": "NFL",
       "sourcePageUrl": "https://www.nfl.com/teams/",
-      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/ssfh7d2tbkbltexf0xqg",
+      "assetUrl": "https://static.www.nfl.com/t_person_squared_mobile/t_lazy/f_auto/league/api/clubs/logos/LA",
       "sourceType": "league",
       "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
     },
@@ -249,7 +249,7 @@
       "sport": "american-football",
       "sourceName": "NFL",
       "sourcePageUrl": "https://www.nfl.com/teams/",
-      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/vdqo4iiufmdrimkaxslj",
+      "assetUrl": "https://static.www.nfl.com/t_person_squared_mobile/t_lazy/f_auto/league/api/clubs/logos/NYJ",
       "sourceType": "league",
       "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
     },
@@ -309,7 +309,7 @@
       "sport": "american-football",
       "sourceName": "NFL",
       "sourcePageUrl": "https://www.nfl.com/teams/",
-      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/wxdf3ixx9hqg4k9bw5ju",
+      "assetUrl": "https://static.www.nfl.com/t_person_squared_mobile/t_lazy/f_auto/league/api/clubs/logos/TEN",
       "sourceType": "league",
       "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
     },
@@ -704,5 +704,6 @@
       "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
     }
   ],
-  "syncRequestedAt": "2026-09-18T22:45:00-04:00"
+  "syncRequestedAt": "2026-09-18T22:45:00-04:00",
+  "updatedAt": "2026-09-18"
 }
