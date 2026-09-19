@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import EventsFilterNav from "@/components/EventsFilterNav";
-import FavoriteButton from "@/components/FavoriteButton";
 import SearchAutocomplete from "@/components/SearchAutocomplete";
 import TimezoneSync from "@/components/TimezoneSync";
 import { getCalendarFilterOptions, getDateKey, formatCalendarTime, parseCalendarFilters } from "@/lib/calendar";
 import { getClubSearchNames, resolveClubName } from "@/lib/club-aliases";
 import type { EventData } from "@/lib/events";
-import type { FavoriteCandidate } from "@/lib/favorites";
 import { getPublicEventsSnapshot } from "@/lib/public-events";
 import { buildSearchSuggestions } from "@/lib/search-suggestions";
 import { getSportLabel } from "@/lib/sports-registry";
@@ -97,25 +95,6 @@ function participantSearchNames(name?: string): string[] {
   return getClubSearchNames(resolveClubName(name));
 }
 
-function favoriteForEvent(event: EventData): FavoriteCandidate {
-  const participantNames = [event.participant1?.name, event.participant2?.name]
-    .filter((name): name is string => Boolean(name));
-
-  return {
-    kind: "event",
-    entityId: event.id,
-    label: event.title,
-    href: event.detailPath,
-    event: {
-      detailPath: event.detailPath,
-      eventDate: event.eventDate,
-      sport: event.sport,
-      competition: event.competition,
-      participantNames,
-    },
-  };
-}
-
 export default async function EventsPage({ searchParams }: EventsPageProps) {
   const params = (await searchParams) ?? {};
   const filters = parseCalendarFilters(params);
@@ -194,7 +173,6 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
                 <div className="wts-schedule-time"><strong>{event.status === "live" ? "Live now" : formatCalendarTime(event.eventDate, filters.timeZone)}</strong><small>{new Intl.DateTimeFormat("en", { weekday: "short", month: "short", day: "numeric", timeZone: filters.timeZone }).format(new Date(event.eventDate))}</small></div>
                 <div className={`wts-access-pill ${access === "Free" ? "is-free" : access === "Paid" ? "is-paid" : "is-tbc"}`}>{access}</div>
                 <div className={styles.actions}>
-                  <span className={styles.favoriteAction}><FavoriteButton favorite={favoriteForEvent(event)} compact /></span>
                   <Link className="wts-open-event" prefetch={false} href={event.detailPath}><span>Open</span><b aria-hidden="true">›</b></Link>
                 </div>
               </article>;
