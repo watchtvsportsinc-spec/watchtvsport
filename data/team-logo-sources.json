@@ -1,0 +1,707 @@
+{
+  "version": 1,
+  "generatedAt": "2026-09-18",
+  "purpose": "Official-source candidates for team logos not yet locally stored in WatchTVSport V2. Source bytes are preserved without stretching or independent X/Y scaling.",
+  "entries": [
+    {
+      "entityKey": "arizona-cardinals",
+      "displayName": "Arizona Cardinals",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/u9fltoslqdsyao8cpm0k",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "atlanta-falcons",
+      "displayName": "Atlanta Falcons",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/d8m7hzpsbrl6pnqht8op",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "baltimore-ravens",
+      "displayName": "Baltimore Ravens",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/ucsdijmddsqcj1i9tddd",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "buffalo-bills",
+      "displayName": "Buffalo Bills",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/giphcy6ie9mxbnldntsf",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "carolina-panthers",
+      "displayName": "Carolina Panthers",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/ervfzgrqdpnc7lh5gqwq",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "chicago-bears",
+      "displayName": "Chicago Bears",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/ijrplti0kmzsyoaikhv1",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "cincinnati-bengals",
+      "displayName": "Cincinnati Bengals",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/okxpteoliyayufypqalq",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "cleveland-browns",
+      "displayName": "Cleveland Browns",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/bedyixmmjhszfcx5wv2l",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "dallas-cowboys",
+      "displayName": "Dallas Cowboys",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/ieid8hoygzdlmzo0tnf6",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "denver-broncos",
+      "displayName": "Denver Broncos",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/t0p7m5cjdjy18rnzzqbx",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "detroit-lions",
+      "displayName": "Detroit Lions",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/ocvxwnapdvwevupe4tpr",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "green-bay-packers",
+      "displayName": "Green Bay Packers",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/gppfvr7n8gljgjaqux2x",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "houston-texans",
+      "displayName": "Houston Texans",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/u6camnphqvjc6mku6u3c",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "indianapolis-colts",
+      "displayName": "Indianapolis Colts",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/ketwqeuschqzjsllbid5",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "jacksonville-jaguars",
+      "displayName": "Jacksonville Jaguars",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/qycbib6ivrm9dqaexryk",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "kansas-city-chiefs",
+      "displayName": "Kansas City Chiefs",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/ujshjqvmnxce8m4obmvs",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "las-vegas-raiders",
+      "displayName": "Las Vegas Raiders",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/gzcojbzcyjgubgyb6xf2",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "los-angeles-chargers",
+      "displayName": "Los Angeles Chargers",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/dhfidtn8jrumakbogeu4",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "los-angeles-rams",
+      "displayName": "Los Angeles Rams",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/ssfh7d2tbkbltexf0xqg",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "miami-dolphins",
+      "displayName": "Miami Dolphins",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/lits6p8ycthy9to70bnt",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "minnesota-vikings",
+      "displayName": "Minnesota Vikings",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/teguylrnqqmfcwxvcmmz",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "new-england-patriots",
+      "displayName": "New England Patriots",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/moyfxx3dq5pio4aiftnc",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "new-orleans-saints",
+      "displayName": "New Orleans Saints",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/grhjkahghjkk17v43hdx",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "new-york-giants",
+      "displayName": "New York Giants",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/t6mhdmgizi6qhndh8b9p",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "new-york-jets",
+      "displayName": "New York Jets",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/vdqo4iiufmdrimkaxslj",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "philadelphia-eagles",
+      "displayName": "Philadelphia Eagles",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/puhrqgj71gobgdkdo6uq",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "pittsburgh-steelers",
+      "displayName": "Pittsburgh Steelers",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/xujg9t3t4u5nmjgr54wx",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "san-francisco-49ers",
+      "displayName": "San Francisco 49ers",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/dxibuyxbk0b9ua5ih9hn",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "seattle-seahawks",
+      "displayName": "Seattle Seahawks",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/gcytzwpjdzbpwnwxincg",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "tampa-bay-buccaneers",
+      "displayName": "Tampa Bay Buccaneers",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/v8uqiualryypwqgvwcih",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "tennessee-titans",
+      "displayName": "Tennessee Titans",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/wxdf3ixx9hqg4k9bw5ju",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "washington-commanders",
+      "displayName": "Washington Commanders",
+      "sport": "american-football",
+      "sourceName": "NFL",
+      "sourcePageUrl": "https://www.nfl.com/teams/",
+      "assetUrl": "https://static.www.nfl.com/image/private/f_png/league/xymxwrxtyj9fhaemhdyd",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "afc-bournemouth",
+      "displayName": "AFC Bournemouth",
+      "sport": "football",
+      "sourceName": "Premier League",
+      "sourcePageUrl": "https://www.premierleague.com/en/clubs",
+      "assetUrl": "https://resources.premierleague.com/premierleague25/badges-alt/91.svg",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "brentford",
+      "displayName": "Brentford",
+      "sport": "football",
+      "sourceName": "Premier League",
+      "sourcePageUrl": "https://www.premierleague.com/en/clubs",
+      "assetUrl": "https://resources.premierleague.com/premierleague25/badges-alt/94.svg",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "brighton-hove-albion",
+      "displayName": "Brighton & Hove Albion",
+      "sport": "football",
+      "sourceName": "Premier League",
+      "sourcePageUrl": "https://www.premierleague.com/en/clubs",
+      "assetUrl": "https://resources.premierleague.com/premierleague25/badges-alt/36.svg",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "chelsea",
+      "displayName": "Chelsea",
+      "sport": "football",
+      "sourceName": "Premier League",
+      "sourcePageUrl": "https://www.premierleague.com/en/clubs",
+      "assetUrl": "https://resources.premierleague.com/premierleague25/badges-alt/8.svg",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "cologne",
+      "displayName": "Cologne",
+      "sport": "football",
+      "sourceName": "Bundesliga",
+      "sourcePageUrl": "https://www.bundesliga.com/en/bundesliga/clubs",
+      "assetUrl": "https://assets.bundesliga.com/clublogos/DFL-SEA-0001KA/DFL-CLU-000008.svg",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "coventry-city",
+      "displayName": "Coventry City",
+      "sport": "football",
+      "sourceName": "Premier League",
+      "sourcePageUrl": "https://www.premierleague.com/en/clubs",
+      "assetUrl": "https://resources.premierleague.com/premierleague25/badges-alt/9.svg",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "crystal-palace",
+      "displayName": "Crystal Palace",
+      "sport": "football",
+      "sourceName": "Premier League",
+      "sourcePageUrl": "https://www.premierleague.com/en/clubs",
+      "assetUrl": "https://resources.premierleague.com/premierleague25/badges-alt/31.svg",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "deportivo-alaves",
+      "displayName": "Deportivo Alavés",
+      "sport": "football",
+      "sourceName": "LALIGA",
+      "sourcePageUrl": "https://www.laliga.com/clubes/d-alaves/plantilla",
+      "assetUrl": "https://assets.laliga.com/assets/2020/09/01/xsmall/27002754a98bf535807fe49a24cc63ea.png",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "everton",
+      "displayName": "Everton",
+      "sport": "football",
+      "sourceName": "Premier League",
+      "sourcePageUrl": "https://www.premierleague.com/en/clubs",
+      "assetUrl": "https://resources.premierleague.com/premierleague25/badges-alt/11.svg",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "fenerbahce",
+      "displayName": "Fenerbahçe",
+      "sport": "football",
+      "sourceName": "UEFA",
+      "sourcePageUrl": "https://www.uefa.com/",
+      "assetUrl": "https://img.uefa.com/imgml/TP/teams/logos/240x240/52692.png",
+      "sourceType": "governing_body",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "feyenoord",
+      "displayName": "Feyenoord",
+      "sport": "football",
+      "sourceName": "UEFA",
+      "sourcePageUrl": "https://www.uefa.com/",
+      "assetUrl": "https://img.uefa.com/imgml/TP/teams/logos/240x240/52749.png",
+      "sourceType": "governing_body",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "fulham",
+      "displayName": "Fulham",
+      "sport": "football",
+      "sourceName": "Premier League",
+      "sourcePageUrl": "https://www.premierleague.com/en/clubs",
+      "assetUrl": "https://resources.premierleague.com/premierleague25/badges-alt/54.svg",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "galatasaray",
+      "displayName": "Galatasaray",
+      "sport": "football",
+      "sourceName": "UEFA",
+      "sourcePageUrl": "https://www.uefa.com/",
+      "assetUrl": "https://img.uefa.com/imgml/TP/teams/logos/240x240/50067.png",
+      "sourceType": "governing_body",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "hamburg",
+      "displayName": "Hamburg",
+      "sport": "football",
+      "sourceName": "Bundesliga",
+      "sourcePageUrl": "https://www.bundesliga.com/en/bundesliga/clubs",
+      "assetUrl": "https://assets.bundesliga.com/clublogos/DFL-SEA-0001KA/DFL-CLU-00000C.svg",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "havre-ac",
+      "displayName": "Havre AC",
+      "sport": "football",
+      "sourceName": "Havre Athletic Club",
+      "sourcePageUrl": "https://hac.football/fr",
+      "assetUrl": "https://hac.football/assets/images/logo-clubs/hac.svg",
+      "sourceType": "official",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "hull-city",
+      "displayName": "Hull City",
+      "sport": "football",
+      "sourceName": "Premier League",
+      "sourcePageUrl": "https://www.premierleague.com/en/clubs",
+      "assetUrl": "https://resources.premierleague.com/premierleague25/badges-alt/88.svg",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "inter",
+      "displayName": "Inter",
+      "sport": "football",
+      "sourceName": "UEFA",
+      "sourcePageUrl": "https://www.uefa.com/",
+      "assetUrl": "https://img.uefa.com/imgml/TP/teams/logos/240x240/50138.png",
+      "sourceType": "governing_body",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "ipswich-town",
+      "displayName": "Ipswich Town",
+      "sport": "football",
+      "sourceName": "Premier League",
+      "sourcePageUrl": "https://www.premierleague.com/en/clubs",
+      "assetUrl": "https://resources.premierleague.com/premierleague25/badges-alt/40.svg",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "lask",
+      "displayName": "LASK",
+      "sport": "football",
+      "sourceName": "UEFA",
+      "sourcePageUrl": "https://www.uefa.com/",
+      "assetUrl": "https://img.uefa.com/imgml/TP/teams/logos/240x240/63405.png",
+      "sourceType": "governing_body",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "le-mans-fc",
+      "displayName": "Le Mans FC",
+      "sport": "football",
+      "sourceName": "Le Mans FC / Havre Athletic Club official match data",
+      "sourcePageUrl": "https://www.lemansfc.fr/index.php?actu=3552&section=actualites-contenu",
+      "assetUrl": "https://hac.football/storage/832/Logo_Le_Mans_FC_-_2010.svg.png",
+      "sourceType": "official",
+      "licenseNote": "Current Le Mans FC crest, cross-checked against the club's official 40th-anniversary identity article; asset mirrored in official HAC match data. Trademark identification only; no free-content license claimed."
+    },
+    {
+      "entityKey": "leeds-united",
+      "displayName": "Leeds United",
+      "sport": "football",
+      "sourceName": "Premier League",
+      "sourcePageUrl": "https://www.premierleague.com/en/clubs",
+      "assetUrl": "https://resources.premierleague.com/premierleague25/badges-alt/2.svg",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "manchester-united",
+      "displayName": "Manchester United",
+      "sport": "football",
+      "sourceName": "Premier League",
+      "sourcePageUrl": "https://www.premierleague.com/en/clubs",
+      "assetUrl": "https://resources.premierleague.com/premierleague25/badges-alt/1.svg",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "napoli",
+      "displayName": "Napoli",
+      "sport": "football",
+      "sourceName": "UEFA",
+      "sourcePageUrl": "https://www.uefa.com/",
+      "assetUrl": "https://img.uefa.com/imgml/TP/teams/logos/240x240/50136.png",
+      "sourceType": "governing_body",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "newcastle-united",
+      "displayName": "Newcastle United",
+      "sport": "football",
+      "sourceName": "Premier League",
+      "sourcePageUrl": "https://www.premierleague.com/en/clubs",
+      "assetUrl": "https://resources.premierleague.com/premierleague25/badges-alt/4.svg",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "nottingham-forest",
+      "displayName": "Nottingham Forest",
+      "sport": "football",
+      "sourceName": "Premier League",
+      "sourcePageUrl": "https://www.premierleague.com/en/clubs",
+      "assetUrl": "https://resources.premierleague.com/premierleague25/badges-alt/17.svg",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "ogc-nice",
+      "displayName": "OGC Nice",
+      "sport": "football",
+      "sourceName": "OGC Nice",
+      "sourcePageUrl": "https://www.ogcnice.com/fr/",
+      "assetUrl": "https://www.ogcnice-assets.com/images/logo/club/grand/500208.png",
+      "sourceType": "official",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "olympique-de-marseille",
+      "displayName": "Olympique de Marseille",
+      "sport": "football",
+      "sourceName": "Olympique de Marseille",
+      "sourcePageUrl": "https://www.om.fr/fr/branding",
+      "assetUrl": "https://www.om.fr/_next/static/immutable/media/logo-om-blue.32tlxxbh_ford.svg",
+      "sourceType": "official",
+      "licenseNote": "Current 2026 OM identity asset from the club's official branding page. Trademark identification only; no free-content license claimed."
+    },
+    {
+      "entityKey": "olympique-lyonnais",
+      "displayName": "Olympique Lyonnais",
+      "sport": "football",
+      "sourceName": "UEFA",
+      "sourcePageUrl": "https://www.uefa.com/uefaeuropaleague/clubs/5312--lyon/",
+      "assetUrl": "https://img.uefa.com/imgml/TP/teams/logos/240x240/5312.png",
+      "sourceType": "governing_body",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "porto",
+      "displayName": "Porto",
+      "sport": "football",
+      "sourceName": "UEFA",
+      "sourcePageUrl": "https://www.uefa.com/",
+      "assetUrl": "https://img.uefa.com/imgml/TP/teams/logos/240x240/50064.png",
+      "sourceType": "governing_body",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "psv-eindhoven",
+      "displayName": "PSV Eindhoven",
+      "sport": "football",
+      "sourceName": "UEFA",
+      "sourcePageUrl": "https://www.uefa.com/",
+      "assetUrl": "https://img.uefa.com/imgml/TP/teams/logos/240x240/50062.png",
+      "sourceType": "governing_body",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "roma",
+      "displayName": "Roma",
+      "sport": "football",
+      "sourceName": "UEFA",
+      "sourcePageUrl": "https://www.uefa.com/",
+      "assetUrl": "https://img.uefa.com/imgml/TP/teams/logos/240x240/50137.png",
+      "sourceType": "governing_body",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "sabah",
+      "displayName": "Sabah",
+      "sport": "football",
+      "sourceName": "UEFA",
+      "sourcePageUrl": "https://www.uefa.com/",
+      "assetUrl": "https://img.uefa.com/imgml/TP/teams/logos/240x240/2609356.png",
+      "sourceType": "governing_body",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "shakhtar-donetsk",
+      "displayName": "Shakhtar Donetsk",
+      "sport": "football",
+      "sourceName": "UEFA",
+      "sourcePageUrl": "https://www.uefa.com/",
+      "assetUrl": "https://img.uefa.com/imgml/TP/teams/logos/240x240/52707.png",
+      "sourceType": "governing_body",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "slavia-praha",
+      "displayName": "Slavia Praha",
+      "sport": "football",
+      "sourceName": "UEFA",
+      "sourcePageUrl": "https://www.uefa.com/",
+      "assetUrl": "https://img.uefa.com/imgml/TP/teams/logos/240x240/52498.png",
+      "sourceType": "governing_body",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "slovan-bratislava",
+      "displayName": "Slovan Bratislava",
+      "sport": "football",
+      "sourceName": "UEFA",
+      "sourcePageUrl": "https://www.uefa.com/",
+      "assetUrl": "https://img.uefa.com/imgml/TP/teams/logos/240x240/52797.png",
+      "sourceType": "governing_body",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "sunderland",
+      "displayName": "Sunderland",
+      "sport": "football",
+      "sourceName": "Premier League",
+      "sourcePageUrl": "https://www.premierleague.com/en/clubs",
+      "assetUrl": "https://resources.premierleague.com/premierleague25/badges-alt/56.svg",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "tottenham-hotspur",
+      "displayName": "Tottenham Hotspur",
+      "sport": "football",
+      "sourceName": "Premier League",
+      "sourcePageUrl": "https://www.premierleague.com/en/clubs",
+      "assetUrl": "https://resources.premierleague.com/premierleague25/badges-alt/6.svg",
+      "sourceType": "league",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    },
+    {
+      "entityKey": "viking",
+      "displayName": "Viking",
+      "sport": "football",
+      "sourceName": "UEFA",
+      "sourcePageUrl": "https://www.uefa.com/",
+      "assetUrl": "https://img.uefa.com/imgml/TP/teams/logos/240x240/52319.png",
+      "sourceType": "governing_body",
+      "licenseNote": "Official trademark/logo asset used for team identification. Source provenance is recorded; this entry does not claim a free-content license."
+    }
+  ]
+}
