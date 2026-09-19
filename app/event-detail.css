@@ -886,21 +886,51 @@
 
 /* Event broadcaster logo column */
 .wts-event-broadcast-service{
-  grid-template-columns:76px minmax(0,1fr);
+  grid-template-columns:92px minmax(0,1fr);
   align-items:center;
-  gap:9px;
+  gap:10px;
 }
 .wts-event-broadcaster-logo-slot{
   display:flex;
-  width:76px;
-  min-width:76px;
+  width:92px;
+  min-width:92px;
+  height:28px;
   align-items:center;
   justify-content:flex-start;
 }
-.wts-event-broadcaster-logo-slot .v2-match-broadcaster-logo{
-  width:100%;
-  flex-basis:100%;
-  justify-content:flex-start;
+.wts-event-broadcaster-logo-slot .v2-match-broadcaster-logo,
+.wts-event-broadcaster-logo-slot .v2-match-broadcaster-logo.is-wide{
+  display:flex;
+  width:86px;
+  height:26px;
+  flex:0 0 86px;
+  align-items:center;
+  justify-content:center;
+}
+.wts-event-broadcaster-logo-slot .v2-match-broadcaster-logo img,
+.wts-event-broadcaster-logo-slot .v2-match-broadcaster-logo.is-wide img{
+  width:auto;
+  height:auto;
+  max-width:82px;
+  max-height:20px;
+  object-fit:contain;
+  transform-origin:center;
+}
+.wts-event-broadcaster-logo-slot[data-broadcaster="Sportsnet"] img,
+.wts-event-broadcaster-logo-slot[data-broadcaster="TVA Sports"] img{
+  transform:scale(1.10);
+}
+.wts-event-broadcaster-logo-slot[data-broadcaster="CBS"] img,
+.wts-event-broadcaster-logo-slot[data-broadcaster="CBS Sports"] img,
+.wts-event-broadcaster-logo-slot[data-broadcaster="TNT Sports"] img,
+.wts-event-broadcaster-logo-slot[data-broadcaster="TNT Sports Box Office"] img{
+  transform:scale(1.06);
+}
+.wts-event-broadcaster-logo-slot[data-broadcaster="UFC Fight Pass"] img,
+.wts-event-broadcaster-logo-slot[data-broadcaster="UFC Pay-Per-View"] img,
+.wts-event-broadcaster-logo-slot[data-broadcaster="UFC PPV"] img,
+.wts-event-broadcaster-logo-slot[data-broadcaster="RMC Sport"] img{
+  transform:scale(1.04);
 }
 .wts-event-broadcast-copy{
   display:grid;
@@ -915,12 +945,24 @@
 }
 @media(max-width:680px){
   .wts-event-broadcast-service{
-    grid-template-columns:58px minmax(0,1fr);
-    gap:6px;
+    grid-template-columns:70px minmax(0,1fr);
+    gap:7px;
   }
   .wts-event-broadcaster-logo-slot{
-    width:58px;
-    min-width:58px;
+    width:70px;
+    min-width:70px;
+    height:24px;
+  }
+  .wts-event-broadcaster-logo-slot .v2-match-broadcaster-logo,
+  .wts-event-broadcaster-logo-slot .v2-match-broadcaster-logo.is-wide{
+    width:66px;
+    height:23px;
+    flex-basis:66px;
+  }
+  .wts-event-broadcaster-logo-slot .v2-match-broadcaster-logo img,
+  .wts-event-broadcaster-logo-slot .v2-match-broadcaster-logo.is-wide img{
+    max-width:64px;
+    max-height:17px;
   }
 }
 
