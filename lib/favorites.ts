@@ -212,11 +212,12 @@ export function parseFavoritesSnapshot(raw: string | null): FavoriteCollection {
     if (collection.schemaVersion !== FAVORITES_SCHEMA_VERSION || !Array.isArray(collection.items)) return EMPTY_FAVORITES;
 
     const uniqueItems = new Map<string, FavoriteItem>();
-    for (const rawItem of collection.items.slice(0, MAX_FAVORITES)) {
+    for (const rawItem of collection.items) {
       const item = sanitizeFavoriteItem(rawItem);
       if (!item) continue;
       const key = favoriteKey(item);
       if (!uniqueItems.has(key)) uniqueItems.set(key, item);
+      if (uniqueItems.size >= MAX_FAVORITES) break;
     }
 
     return { schemaVersion: FAVORITES_SCHEMA_VERSION, items: Array.from(uniqueItems.values()) };

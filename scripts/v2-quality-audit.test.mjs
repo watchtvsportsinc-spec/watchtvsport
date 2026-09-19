@@ -23,7 +23,12 @@ test("V2 launch sports satisfy runtime structural guardrails", async () => {
     ids.add(event.id);
     assert.ok(event.detailPath.startsWith("/"), `invalid detail path: ${event.detailPath}`);
     assert.ok(event.title.trim().length > 0, `empty title: ${event.id}`);
+    assert.ok(Number.isFinite(Date.parse(event.eventDate)), `invalid event date: ${event.id}`);
+    if (event.participant1 && event.participant2) {
+      assert.notEqual(event.participant1.id, event.participant2.id, `event has the same participant twice: ${event.id}`);
+    }
 
+    const broadcastKeys = new Set();
     for (const broadcast of event.broadcasts) {
       if (broadcast.coverageStatus !== "confirmed") continue;
       assert.ok(broadcast.countryCode.trim(), `confirmed broadcast missing country: ${event.id}`);
@@ -31,7 +36,19 @@ test("V2 launch sports satisfy runtime structural guardrails", async () => {
       assert.ok(broadcast.broadcaster.trim(), `confirmed broadcast missing broadcaster: ${event.id}`);
       assert.ok(/^https:\/\//.test(broadcast.url), `confirmed broadcast URL must be https: ${event.id}`);
       assert.ok(["Free", "Paid"].includes(broadcast.access), `invalid access type: ${event.id}`);
+      const broadcastKey = [broadcast.countryCode.toLowerCase(), broadcast.broadcaster.trim().toLowerCase(), broadcast.access, broadcast.url].join("|");
+      assert.ok(!broadcastKeys.has(broadcastKey), `duplicate confirmed broadcast: ${event.id} ${broadcastKey}`);
+      broadcastKeys.add(broadcastKey);
     }
+  }
+
+  const groupSignatures = new Map();
+  for (const event of events) {
+    if (!event.eventGroupId) continue;
+    const signature = `${event.sport}|${event.competitionSlug}|${event.eventGroupSlug ?? ""}`;
+    const existing = groupSignatures.get(event.eventGroupId);
+    assert.ok(!existing || existing === signature, `inconsistent event group: ${event.eventGroupId}`);
+    groupSignatures.set(event.eventGroupId, signature);
   }
 
   const ucl = events.filter((e) => e.sport === "football" && e.competitionSlug === "champions-league");
