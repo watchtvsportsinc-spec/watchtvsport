@@ -1134,10 +1134,10 @@
 
 /* F1 + MotoGP share the same compact motorsport row */
 .wts-motorsport-event-row .wts-ufc-event-main{
-  grid-template-columns:100px 34px minmax(0,1fr) 64px;
+  grid-template-columns:100px 34px minmax(0,1fr);
   gap:8px;
   min-height:66px;
-  padding-right:2px;
+  padding-right:6px;
 }
 .wts-motorsport-flag-cell{
   display:grid;
@@ -1159,7 +1159,7 @@
   overflow:hidden;
   color:#fff;
   font-size:22px;
-  font-weight:950;
+  font-weight:700;
   line-height:1;
   letter-spacing:-.025em;
   text-overflow:ellipsis;
@@ -1168,7 +1168,7 @@
 .wts-motorsport-event-row .wts-discovery-card-main>span{
   color:#7895ad;
   font-size:11px;
-  font-weight:650;
+  font-weight:500;
   line-height:1.05;
 }
 .wts-motorsport-event-time{
@@ -1178,20 +1178,20 @@
 .wts-motorsport-event-time strong{
   color:#dff2ff;
   font-size:20px;
-  font-weight:950;
+  font-weight:800;
   line-height:.95;
   letter-spacing:-.025em;
 }
 .wts-motorsport-event-time small{
   color:#90aac0;
   font-size:11px;
-  font-weight:850;
+  font-weight:700;
   line-height:1;
 }
 
 @media(max-width:760px){
   .wts-motorsport-event-row .wts-ufc-event-main{
-    grid-template-columns:68px 24px minmax(0,1fr) minmax(30px,max-content);
+    grid-template-columns:68px 24px minmax(0,1fr);
     gap:4px;
     min-height:0;
     padding-right:2px;
@@ -1222,7 +1222,7 @@
 
 @media(max-width:390px){
   .wts-motorsport-event-row .wts-ufc-event-main{
-    grid-template-columns:66px 22px minmax(0,1fr) minmax(28px,max-content);
+    grid-template-columns:66px 22px minmax(0,1fr);
     gap:4px;
   }
   .wts-motorsport-inline-flag{
@@ -1235,60 +1235,74 @@
 }
 
 
-/* F1 + MotoGP list actions: compact View button, access badges tight to the right */
-.wts-motorsport-event-row .wts-result-access-stack{
-  justify-self:end;
-  justify-items:end;
-}
+/* F1 + MotoGP actions: access badge directly beside a smaller View button */
 .wts-motorsport-event-row .wts-ufc-event-actions{
-  min-width:76px;
-  justify-content:flex-start;
-  padding:8px 8px 8px 2px;
+  min-width:0;
+  justify-content:flex-end;
+  gap:6px;
+  padding:8px 10px 8px 4px;
+}
+.wts-motorsport-event-row .wts-result-access-stack{
+  display:grid;
+  min-width:0;
+  justify-items:end;
+  gap:3px;
+}
+.wts-motorsport-event-row .wts-result-access{
+  min-height:22px;
+  padding:3px 7px;
+  font-size:8px;
+  font-weight:700;
 }
 .wts-motorsport-event-row .wts-ufc-event-open{
-  width:68px;
-  min-width:68px;
-  height:36px;
-  border-radius:10px;
-  padding:0 10px;
-  font-size:10px;
-  font-weight:950;
+  width:58px;
+  min-width:58px;
+  height:32px;
+  border-radius:9px;
+  padding:0 8px;
+  font-size:9.5px;
+  font-weight:800;
 }
 .wts-motorsport-event-row .wts-ufc-event-open span{
   display:inline !important;
-  font-size:10px;
+  font-size:9.5px;
 }
 @media(max-width:760px){
   .wts-motorsport-event-row .wts-ufc-event-actions{
-    min-width:66px;
+    gap:4px;
     padding:5px 5px 5px 2px;
   }
-  .wts-motorsport-event-row .wts-ufc-event-open{
-    width:60px;
-    min-width:60px;
-    height:34px;
-    padding:0 8px;
-    border-radius:9px;
-    font-size:9.5px;
-  }
-  .wts-motorsport-event-row .wts-ufc-event-open span{
-    display:inline !important;
-    font-size:9.5px;
-  }
-}
-@media(max-width:390px){
-  .wts-motorsport-event-row .wts-ufc-event-actions{
-    min-width:60px;
-    padding-right:3px;
+  .wts-motorsport-event-row .wts-result-access{
+    min-height:19px;
+    padding:2px 5px;
+    font-size:7px;
   }
   .wts-motorsport-event-row .wts-ufc-event-open{
     width:54px;
     min-width:54px;
     height:32px;
-    padding:0 6px;
+    padding:0 7px;
+    border-radius:9px;
     font-size:9px;
   }
   .wts-motorsport-event-row .wts-ufc-event-open span{
+    display:inline !important;
     font-size:9px;
+  }
+}
+@media(max-width:390px){
+  .wts-motorsport-event-row .wts-ufc-event-actions{
+    gap:3px;
+    padding-right:4px;
+  }
+  .wts-motorsport-event-row .wts-ufc-event-open{
+    width:50px;
+    min-width:50px;
+    height:30px;
+    padding:0 6px;
+    font-size:8.5px;
+  }
+  .wts-motorsport-event-row .wts-ufc-event-open span{
+    font-size:8.5px;
   }
 }
